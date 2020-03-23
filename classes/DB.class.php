@@ -1,6 +1,6 @@
 <?php
 
-/* 
+/*
  * Copyright (C) 2020 Sergey Ilyin <developer@ilyins.ru>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,24 +17,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-include_once 'config.php';
-
-spl_autoload_register(function ($class) {
-    include __DIR__."/classes/{$class}.class.php";
-});
-
-$inputRemoteAddr = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
-$inputRequestMethod = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
-$logDir = __DIR__.dirname(filter_input(INPUT_SERVER, 'PHP_SELF'));
-
-switch ($inputRequestMethod){
-    case 'GET':
-        $inputRequestData = filter_input_array(INPUT_GET);
-        break;
-    case 'POST':
-        $inputRequestData = filter_input_array(INPUT_POST);
-        break;
+/**
+ * Class for working with DB
+ *
+ * @author Sergey Ilyin <developer@ilyins.ru>
+ */
+class DB {
+    public static function query($query){
+        /**
+         * @static
+         * @param string $query
+         * @return object(mysqli_result)
+         * @author Sergey Ilyin <developer@ilyins.ru>
+         */
+        $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
+        $mysqli->set_charset('utf8');
+        $errNo = $mysqli->errno;
+        $result = $mysqli->query($query);
+        $mysqli->close();
+        switch (strtok($query," ")){
+            case 'INSERT':
+            case 'UPDATE':
+                return $errNo;
+            default:
+                return $result;
+        }
+    }
 }
-
-Logs::clear($logDir);
-Logs::add($logDir, basename(__FILE__,".php"), "{$inputRemoteAddr} | {$inputRequestMethod} | ".print_r($inputRequestData,TRUE));
