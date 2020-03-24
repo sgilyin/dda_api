@@ -23,29 +23,30 @@
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class Logs {
-    public static function clear($folder) {
-        /**
-         * @static
-         * @param string $folder Request dir
-         * @return nothing
-         * @author Sergey Ilyin <developer@ilyins.ru>
-         */
-        foreach (glob($folder."/log/*.log") as $file) {
+
+    /**
+     * Clear logs
+     * 
+     * @param string $logDir
+     */
+    public static function clear($logDir) {
+
+        foreach (glob("$logDir/log/*.log") as $file) {
             if(time() - filectime($file) > 604800){
                 unlink($file);
             }
         }
     }
 
-    public static function add($folder,$file,$text){
-        /**
-         * @static
-         * @param string $folder Request dir
-         * @param string $file Filename
-         * @param string $text Text for log
-         * @return nothing
-         * @author Sergey Ilyin <developer@ilyins.ru>
-         */
-        file_put_contents("{$folder}/log/{$file}_".date('Ymd').".log",PHP_EOL.date('d-m-Y G:i').' | '.$text, FILE_APPEND);
+    /**
+     * Add position into log
+     * 
+     * @param string $logDir
+     * @param string $file
+     * @param string $text
+     */
+    public static function add($logDir,$file,$text){
+
+        file_put_contents("$logDir/log/{$file}_".date('Ymd').'.log',PHP_EOL.date('d-m-Y G:i')." | $text", FILE_APPEND);
     }
 }

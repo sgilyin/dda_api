@@ -20,12 +20,13 @@
 include_once 'config.php';
 
 spl_autoload_register(function ($class) {
-    include __DIR__."/classes/{$class}.class.php";
+    include __DIR__."/classes/$class.class.php";
 });
 
 $inputRemoteAddr = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
 $inputRequestMethod = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
 $logDir = __DIR__.dirname(filter_input(INPUT_SERVER, 'PHP_SELF'));
+$login = substr(dirname(filter_input(INPUT_SERVER, 'PHP_SELF')),1);
 
 switch ($inputRequestMethod){
     case 'GET':
@@ -37,4 +38,6 @@ switch ($inputRequestMethod){
 }
 
 Logs::clear($logDir);
-Logs::add($logDir, basename(__FILE__,".php"), "{$inputRemoteAddr} | {$inputRequestMethod} | ".print_r($inputRequestData,TRUE));
+Logs::add($logDir, basename(__FILE__,".php"), "$inputRemoteAddr | $inputRequestMethod | ".print_r($inputRequestData,TRUE));
+
+var_dump(DB::newGetcourseUser(time()."@domain.zone", "+7(999)888-77-66", 12345));

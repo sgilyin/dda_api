@@ -23,13 +23,15 @@
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class DB {
+
+    /**
+     * Execute request to DB and return result or error
+     * 
+     * @param string $query
+     * @return object(mysqli_result) or integer if error
+     */
     public static function query($query){
-        /**
-         * @static
-         * @param string $query
-         * @return object(mysqli_result)
-         * @author Sergey Ilyin <developer@ilyins.ru>
-         */
+
         $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
         $mysqli->set_charset('utf8');
         $errNo = $mysqli->errno;
@@ -42,5 +44,19 @@ class DB {
             default:
                 return $result;
         }
+    }
+
+    /**
+     * Add new user to MySQL database
+     * 
+     * @param string $email
+     * @param string $phone
+     * @param integer $id
+     * @return object or integer if error
+     */
+    public static function newGetcourseUser($email, $phone, $id){
+        $phoneNum = substr(preg_replace('/[^0-9]/', '', $phone), -15);
+
+        return static::query("INSERT INTO gc_users (`email`, `phone`, `id`) VALUES ('$email', '$phoneNum', '$id')");
     }
 }

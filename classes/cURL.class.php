@@ -23,16 +23,18 @@
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class cURL {
+
+    /**
+     * Execute request to some server
+     * 
+     * @param string $url
+     * @param array $post
+     * @param array $headers
+     * @param string $logDir
+     * @return response
+     */
     public static function executeRequest($url,$post,$headers,$logDir) {
-        /**
-         * @static
-         * @param string $url URL for request
-         * @param array $post Array for POST
-         * @param array $headers Array for HEADERS
-         * @param string $logDir Dir for log
-         * @return unknown Return server response
-         * @author Sergey Ilyin <developer@ilyins.ru>
-         */
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         if($post){
@@ -45,7 +47,7 @@ class cURL {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         $result = curl_exec($ch);
         curl_close($ch);
-        if ($logDir){Logs::add($logDir,'cURL',date('d-m-Y G:i')." | {$url}".PHP_EOL.print_r($post,TRUE).PHP_EOL.print_r($result,TRUE));}
+        if ($logDir){Logs::add($logDir,'cURL',date('d-m-Y G:i')." | $url".PHP_EOL.print_r($post,TRUE).PHP_EOL.print_r($result,TRUE));}
         return $result;
     }
 }
