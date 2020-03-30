@@ -52,11 +52,105 @@ class DB {
      * @param string $email
      * @param string $phone
      * @param integer $id
-     * @return object or integer if error
+     * @return integer
      */
-    public static function newGetcourseUser($email, $phone, $id){
+    public static function addGetcourseUser($email, $phone, $id){
         $phoneNum = substr(preg_replace('/[^0-9]/', '', $phone), -15);
 
         return static::query("INSERT INTO gc_users (`email`, `phone`, `id`) VALUES ('$email', '$phoneNum', '$id')");
+    }
+
+    /**
+     * Update user in MySQL database
+     * 
+     * @param string $email
+     * @param string $phone
+     * @param integer $id
+     * @return integer
+     */
+    public static function updateGetcourseUser($email, $phone, $id){
+        $phoneNum = substr(preg_replace('/[^0-9]/', '', $phone), -15);
+
+        return static::query("UPDATE gc_users SET email='$email', phone='$phoneNum' WHERE id='$id'");
+    }
+
+    /**
+     * Synchronizes Getcourse users with MySQL database
+     * 
+     * @param string $logDir
+     * @return boolean
+     */
+    public static function syncGetcourseUsers($logDir){
+        $mysqli = static::query("SELECT last FROM request WHERE service='getcourse'");
+        $result = $mysqli->fetch_object();
+        $last = strtotime($result->last);
+        if (time() - $last > 180){
+            $export_ids = static::runGetcourseExports($logDir);
+            static::query("TRUNCATE TABLE gc_users");
+            for ($i=0; $i<count($export_ids); $i++) {
+                $json = static::getGetcourseExportData($export_ids[$i],$logDir);
+                for ($j=0; $j<count($json->info->items); $j++) {
+                    $id = $json->info->items[$j][0];
+                    $email = $json->info->items[$j][1];
+                    $phone = substr(preg_replace('/[^0-9]/', '', $json->info->items[$j][7]), -15);
+                    static::query("INSERT INTO gc_users (`id`, `email`, `phone`) VALUES ('$id', '$email', '$phone')");
+                }
+            }
+            static::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='getcourse'");
+            return TRUE;
+        } else {
+            return FALSE;
+        }
+    }
+
+    /**
+     * Run export users from GetCourse
+     * 
+     * @param string $logDir
+     * @return array
+     */
+    private function runGetcourseExports($logDir){
+//        $export_ids[] = static::getGetcourseExportId('in_base', $logDir);
+//        $export_ids[] = static::getGetcourseExportId('active', $logDir);
+        $export_ids[] = 302170;
+        $export_ids[] = 302172;
+
+        return $export_ids;
+    }
+
+    /**
+     * Get export id
+     * 
+     * @param string $status
+     * @param string $logDir
+     * @return integer
+     */
+    private function getGetcourseExportId($status, $logDir){
+        $post['key'] = GC_API_KEY;
+        $url = "https://".GC_ACCOUNT.".getcourse.ru/pl/api/account/users?status=$status";
+        do {
+            $response = cURL::executeRequest($url, $post, false, $logDir);
+            $json = json_decode($response);
+            sleep(60);
+        } while (!$json->success);
+        return $json->info->export_id;
+    }
+
+    /**
+     * Get export data
+     * 
+     * @param integer $export_id
+     * @param string $logDir
+     * @return json
+     */
+    private function getGetcourseExportData($export_id, $logDir){
+        $url = "https://".GC_ACCOUNT.".getcourse.ru/pl/api/account/exports/$export_id";
+        $post['key'] = GC_API_KEY;
+        do {
+            $response = cURL::executeRequest($url, $post, false, $logDir);
+            $json = json_decode($response);
+            sleep(60);
+        } while (!$json->success);
+        return $json;
     }
 }
