@@ -25,12 +25,69 @@
 class Dadata {
 
     /**
+     * Standardizes Name in Dadata
+     * @param array $inputRequestData
+     * @param string $logDir
+     * @return string
+     */
+    public static function cleanName($inputRequestData, $logDir) {
+        $dadataName = json_decode(static::clean('name', $inputRequestData['data'], $logDir));
+        $params['user']['email'] = $inputRequestData['email'];
+        if ($dadataName[0]->name){
+            $params['user']['addfields']['Имя'] = $dadataName[0]->name;
+            $params['user']['addfields']['Имя DADATA'] = $dadataName[0]->name;
+        }
+        if ($dadataName[0]->surname){
+            $params['user']['addfields']['Фамилия'] = $dadataName[0]->surname;
+            $params['user']['addfields']['Фамилия DADATA'] = $dadataName[0]->surname;
+        }
+        if ($dadataName[0]->patronymic){
+            $params['user']['addfields']['Ваше Отчество'] = $dadataName[0]->patronymic;
+        }
+        if ($dadataName[0]->gender){
+            $params['user']['addfields']['Пол DADATA'] = $dadataName[0]->gender;
+        }
+        if ($dadataName[0]->qc){
+            $params['user']['addfields']['QC ФИО DADATA'] = $dadataName[0]->qc;
+        }
+        return GetCourse::userAdd($params, $logDir);
+    }
+
+    /**
+     * Standardizes Phone in Dadata
+     * 
+     * @param array $inputRequestData
+     * @param string $logDir
+     * @return string
+     */
+    public static function cleanPhone($inputRequestData, $logDir) {
+        $dadataPhone = json_decode(static::clean('phone', $inputRequestData['data'], $logDir));
+        $params['user']['email'] = $inputRequestData['email'];
+        if ($dadataPhone[0]->phone){
+            $params['user']['addfields']['Телефон'] = $dadataPhone[0]->phone;
+        }
+        if ($dadataPhone[0]->country){
+            $params['user']['addfields']['Страна мобильного по DADATA'] = $dadataPhone[0]->country;
+        }
+        if ($dadataPhone[0]->region){
+            $params['user']['addfields']['Регион мобильного по DADATA'] = $dadataPhone[0]->region;
+        }
+        if ($dadataPhone[0]->provider){
+            $params['user']['addfields']['Моб оператор DADATA'] = $dadataPhone[0]->provider;
+        }
+        if ($dadataPhone[0]->timezone){
+            $params['user']['addfields']['UTC+'] = substr(preg_replace('/[^0-9]/', '', $dadataPhone[0]->provider), -2);
+        }
+        return GetCourse::userAdd($params, $logDir);
+    }
+
+    /**
      * Standardizes data in Dadata
      * 
      * @param string $type
      * @param string $value
      * @param string $logDir
-     * @return object
+     * @return string
      */
     public static function clean($type, $value, $logDir) {
         $url = "https://cleaner.dadata.ru/api/v1/clean/$type";

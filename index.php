@@ -19,6 +19,9 @@
 
 include_once 'config.php';
 
+ini_set('max_execution_time', '300');
+set_time_limit(300);
+
 spl_autoload_register(function ($class) {
     include __DIR__."/classes/$class.class.php";
 });
@@ -40,4 +43,27 @@ switch ($inputRequestMethod){
 Logs::clear($logDir);
 Logs::add($logDir, basename(__FILE__,".php"), "$inputRemoteAddr | $inputRequestMethod | ".print_r($inputRequestData,TRUE));
 
-var_dump(DB::newGetcourseUser(time()."@domain.zone", "+7(999)888-77-66", 12345));
+switch ($inputRequestData['cmd']) {
+    case 'dadataCleanName':
+        if ($inputRequestData['email'] && $inputRequestData['data']){
+            Dadata::cleanName($inputRequestData, $logDir);
+        }
+        break;
+
+    case 'dadataCleanPhone':
+        if ($inputRequestData['email'] && $inputRequestData['data']){
+            Dadata::cleanPhone($inputRequestData, $logDir);
+        }
+        break;
+
+    case 'cron':
+        SMSC::sendWaGc($logDir);
+        SMSC::syncMessages($login, $logDir);
+        break;
+
+    default:
+        break;
+}
+
+//var_dump(SMSC::sendWaGc());
+//var_dump(DB::syncGetcourseUsers($logDir));

@@ -55,28 +55,25 @@ class SMSC {
         return json_encode(array('success' => $success,));
     }
 
-    public static function sendWaGc(){
+    public static function sendWaGc($logDir){
         $success = false;
         $obj = DB::query("SELECT * FROM smsc_messages WHERE success=0");
-        $messages = $obj->fetch_all;
+        $messages = $obj->fetch_all();
         for ($i = 0; $i <= count($messages); $i++) {
             $id = $messages[$i][0];
             if (preg_match("/Вам пишет .*:/",$messages[$i][2])){
 //                Wazzup24::queue($messages[$i][3],$messages[$i][1],substr($messages[$i][2], stripos($messages[$i][2],':')+2),FALSE);
                 echo "<br>".$messages[$i][3],$messages[$i][1],substr($messages[$i][2], stripos($messages[$i][2],':')+2);
-                DB::query("UPDATE smsc_messages SET success=1 WHERE id=$id");
+//                DB::query("UPDATE smsc_messages SET success=1 WHERE id=$id");
             }
             if (preg_match("/\|\d*\|\S*@\S*\|http\S*\|/",$messages[$i][2])){
                 global $addFields;
                 $msg_part=explode("|", $messages[$i][2]);
-//                $login = $messages[$i][3];
                 $params['user']['email'] = $msg_part[2];
                 $params['user']['addfields'] = array(
                     $addFields->{$msg_part[1]} => $msg_part[3],
-//                            API_Authorization::get($login,$msg_part[1]) => $msg_part[3],
                     );
-                    var_dump($params);
-//                API_GetCourse::user_add($login,$params);
+                GetCourse::userAdd($params, $logDir);
                 DB::query("UPDATE smsc_messages SET success=1 WHERE id=$id");
             }
         }

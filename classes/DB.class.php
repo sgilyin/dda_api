@@ -75,7 +75,7 @@ class DB {
     }
 
     /**
-     * Synchronizes Getcourse users with MySQL database
+     * Synchronizes GetCourse users with MySQL database
      * 
      * @param string $logDir
      * @return boolean
