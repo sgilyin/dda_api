@@ -56,14 +56,25 @@ switch ($inputRequestData['cmd']) {
         }
         break;
 
+    case 'sendWazzup24':
+        if ($inputRequestData['to'] && ($inputRequestData['text'] || $inputRequestData['content'])){
+            Wazzup24::queue($login, $inputRequestData);
+        }
+        break;
+
     case 'cron':
         SMSC::sendWaGc($logDir);
+        Wazzup24::send($logDir);
         SMSC::syncMessages($login, $logDir);
+        break;
+
+    case 'test':
+        var_dump(Wazzup24::send($logDir));
         break;
 
     default:
         break;
 }
 
-//var_dump(SMSC::sendWaGc());
+
 //var_dump(DB::syncGetcourseUsers($logDir));

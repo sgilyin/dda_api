@@ -34,11 +34,11 @@ class Dadata {
         $dadataName = json_decode(static::clean('name', $inputRequestData['data'], $logDir));
         $params['user']['email'] = $inputRequestData['email'];
         if ($dadataName[0]->name){
-            $params['user']['addfields']['Имя'] = $dadataName[0]->name;
+            $params['user']['addfields']['first_name'] = $dadataName[0]->name;
             $params['user']['addfields']['Имя DADATA'] = $dadataName[0]->name;
         }
         if ($dadataName[0]->surname){
-            $params['user']['addfields']['Фамилия'] = $dadataName[0]->surname;
+            $params['user']['addfields']['last_name'] = $dadataName[0]->surname;
             $params['user']['addfields']['Фамилия DADATA'] = $dadataName[0]->surname;
         }
         if ($dadataName[0]->patronymic){
@@ -49,6 +49,8 @@ class Dadata {
         }
         if ($dadataName[0]->qc){
             $params['user']['addfields']['QC ФИО DADATA'] = $dadataName[0]->qc;
+        } else {
+            $params['user']['addfields']['QC ФИО DADATA'] = 0;
         }
         return GetCourse::userAdd($params, $logDir);
     }
@@ -64,7 +66,7 @@ class Dadata {
         $dadataPhone = json_decode(static::clean('phone', $inputRequestData['data'], $logDir));
         $params['user']['email'] = $inputRequestData['email'];
         if ($dadataPhone[0]->phone){
-            $params['user']['addfields']['Телефон'] = $dadataPhone[0]->phone;
+            $params['user']['addfields']['phone'] = $dadataPhone[0]->phone;
         }
         if ($dadataPhone[0]->country){
             $params['user']['addfields']['Страна мобильного по DADATA'] = $dadataPhone[0]->country;
