@@ -47,6 +47,6 @@ class Logs {
      */
     public static function add($logDir,$file,$text){
 
-        file_put_contents("$logDir/log/{$file}_".date('Ymd').'.log',PHP_EOL.date('d-m-Y G:i')." | $text", FILE_APPEND);
+        file_put_contents("$logDir/log/{$file}_".date('Ymd').'.log',PHP_EOL.date('Y-m-d H:i:s')." | $text", FILE_APPEND);
     }
 }

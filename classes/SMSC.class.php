@@ -74,7 +74,7 @@ class SMSC {
                 $params['user']['addfields'] = array(
                     $addFields->{$msg_part[1]} => $msg_part[3],
                     );
-                GetCourse::userAdd($params, $logDir);
+                GetCourse::addUser($params, $logDir);
                 DB::query("UPDATE smsc_messages SET success=1 WHERE id=$id");
             }
         }

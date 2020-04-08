@@ -47,7 +47,7 @@ class cURL {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         $result = curl_exec($ch);
         curl_close($ch);
-        if ($logDir){Logs::add($logDir,'cURL',date('d-m-Y G:i')." | $url".PHP_EOL.print_r($post,TRUE).PHP_EOL.print_r($result,TRUE));}
+        if ($logDir){Logs::add($logDir,'cURL',"$url | ".serialize($post)." | ". serialize($result));}
         return $result;
     }
 }

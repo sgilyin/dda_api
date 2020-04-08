@@ -31,28 +31,30 @@ class Dadata {
      * @return string
      */
     public static function cleanName($inputRequestData, $logDir) {
-        $dadataName = json_decode(static::clean('name', $inputRequestData['data'], $logDir));
-        $params['user']['email'] = $inputRequestData['email'];
-        if ($dadataName[0]->name){
-            $params['user']['addfields']['first_name'] = $dadataName[0]->name;
-            $params['user']['addfields']['Имя DADATA'] = $dadataName[0]->name;
+        if ($inputRequestData['email'] && $inputRequestData['data']){
+            $dadataName = json_decode(static::clean('name', $inputRequestData['data'], $logDir));
+            $params['user']['email'] = $inputRequestData['email'];
+            if ($dadataName[0]->name){
+                $params['user']['addfields']['first_name'] = $dadataName[0]->name;
+                $params['user']['addfields']['Имя DADATA'] = $dadataName[0]->name;
+            }
+            if ($dadataName[0]->surname){
+                $params['user']['addfields']['last_name'] = $dadataName[0]->surname;
+                $params['user']['addfields']['Фамилия DADATA'] = $dadataName[0]->surname;
+            }
+            if ($dadataName[0]->patronymic){
+                $params['user']['addfields']['Ваше Отчество'] = $dadataName[0]->patronymic;
+            }
+            if ($dadataName[0]->gender){
+                $params['user']['addfields']['Пол DADATA'] = $dadataName[0]->gender;
+            }
+            if ($dadataName[0]->qc){
+                $params['user']['addfields']['QC ФИО DADATA'] = $dadataName[0]->qc;
+            } else {
+                $params['user']['addfields']['QC ФИО DADATA'] = 0;
+            }
+            return GetCourse::addUser($params, $logDir);
         }
-        if ($dadataName[0]->surname){
-            $params['user']['addfields']['last_name'] = $dadataName[0]->surname;
-            $params['user']['addfields']['Фамилия DADATA'] = $dadataName[0]->surname;
-        }
-        if ($dadataName[0]->patronymic){
-            $params['user']['addfields']['Ваше Отчество'] = $dadataName[0]->patronymic;
-        }
-        if ($dadataName[0]->gender){
-            $params['user']['addfields']['Пол DADATA'] = $dadataName[0]->gender;
-        }
-        if ($dadataName[0]->qc){
-            $params['user']['addfields']['QC ФИО DADATA'] = $dadataName[0]->qc;
-        } else {
-            $params['user']['addfields']['QC ФИО DADATA'] = 0;
-        }
-        return GetCourse::userAdd($params, $logDir);
     }
 
     /**
@@ -63,24 +65,26 @@ class Dadata {
      * @return string
      */
     public static function cleanPhone($inputRequestData, $logDir) {
-        $dadataPhone = json_decode(static::clean('phone', $inputRequestData['data'], $logDir));
-        $params['user']['email'] = $inputRequestData['email'];
-        if ($dadataPhone[0]->phone){
-            $params['user']['addfields']['phone'] = $dadataPhone[0]->phone;
+        if ($inputRequestData['email'] && $inputRequestData['data']){
+            $dadataPhone = json_decode(static::clean('phone', $inputRequestData['data'], $logDir));
+            $params['user']['email'] = $inputRequestData['email'];
+            if ($dadataPhone[0]->phone){
+                $params['user']['addfields']['phone'] = $dadataPhone[0]->phone;
+            }
+            if ($dadataPhone[0]->country){
+                $params['user']['addfields']['Страна мобильного по DADATA'] = $dadataPhone[0]->country;
+            }
+            if ($dadataPhone[0]->region){
+                $params['user']['addfields']['Регион мобильного по DADATA'] = $dadataPhone[0]->region;
+            }
+            if ($dadataPhone[0]->provider){
+                $params['user']['addfields']['Моб оператор DADATA'] = $dadataPhone[0]->provider;
+            }
+            if ($dadataPhone[0]->timezone){
+                $params['user']['addfields']['UTC+'] = substr(preg_replace('/[^0-9]/', '', $dadataPhone[0]->provider), -2);
+            }
+            return GetCourse::addUser($params, $logDir);
         }
-        if ($dadataPhone[0]->country){
-            $params['user']['addfields']['Страна мобильного по DADATA'] = $dadataPhone[0]->country;
-        }
-        if ($dadataPhone[0]->region){
-            $params['user']['addfields']['Регион мобильного по DADATA'] = $dadataPhone[0]->region;
-        }
-        if ($dadataPhone[0]->provider){
-            $params['user']['addfields']['Моб оператор DADATA'] = $dadataPhone[0]->provider;
-        }
-        if ($dadataPhone[0]->timezone){
-            $params['user']['addfields']['UTC+'] = substr(preg_replace('/[^0-9]/', '', $dadataPhone[0]->provider), -2);
-        }
-        return GetCourse::userAdd($params, $logDir);
     }
 
     /**

@@ -57,7 +57,58 @@ class Wazzup24 {
      * @return boolean
      */
     public static function queue($login, $inputRequestData) {
-        DB::query("INSERT INTO send_to_wazzup24 (`to`, `text`, `content`, `login`) VALUES ('".$inputRequestData['to']."', '".$inputRequestData['text']."', '".$inputRequestData['content']."', '$login')");
-        return true;
+        if ($inputRequestData['to'] && ($inputRequestData['text'] || $inputRequestData['content'])){
+            $to = $inputRequestData['to'];
+            if ($inputRequestData['text']) {
+                $text = $inputRequestData['text'];
+            } else {
+                $text = '';
+            }
+            if ($inputRequestData['content']){
+                $content = $inputRequestData['content'];
+            } else {
+                $content = '';
+            }
+            DB::query("INSERT INTO send_to_wazzup24 (`to`, `text`, `content`, `login`) VALUES ('$to', '$text', '$content', '$login')");
+            
+            return true;
+        }    
+    }
+
+    public static function trap($inputRequestData, $logDir) {
+        if ($inputRequestData['messages'][0]['status']=="99") {
+            $phone = substr(preg_replace('/[^0-9]/', '', $inputRequestData['messages'][0]['phone']), -15);
+            $email = DB::query("SELECT email FROM gc_users WHERE phone='$phone'")->fetch_object()->email;
+            if (!$email){
+                preg_match("/\|.*\|/",$inputRequestData['messages'][0]['text'],$matches);
+                if ($matches){
+                    $item=explode("|", $matches[0]);
+                    if ($item[1]){
+                        $params['user']['group_name']= array($addFields->{$item[1]});
+                    }
+                    if ($item[2]){
+                        $params['user']['addfields']['d_utm_source']=$item[2];
+                    }
+                    if ($item[3]){
+                        $params['user']['addfields']['d_utm_medium']=$item[3];
+                    }
+                    if ($item[4]){
+                        $params['user']['addfields']['d_utm_content']=$item[4];
+                    }
+                    if ($item[5]){
+                        $params['user']['addfields']['d_utm_campaign']=$item[5];
+                    }
+                    if ($item[6]){
+                        $params['user']['addfields']['d_utm_term']=$item[6];
+                    }
+                }
+                $email = "$phone@facebook.com";
+                $params['user']['phone'] = $phone;
+                $params['user']['email'] = $email;
+                $params['user']['addfields']['whatsapp']=$phone;
+                GetCourse::addUser($params, $logDir);
+            }
+            GetCourse::sendContactForm($email, $inputRequestData['messages'][0]['text'].'\nОтправлено из WhatsApp', $logDir);
+        }
     }
 }

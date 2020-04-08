@@ -18,7 +18,7 @@
  */
 
 /**
- * Class for working with DB
+ * Class for MySQL DB
  *
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
@@ -28,7 +28,7 @@ class DB {
      * Execute request to DB and return result or error
      * 
      * @param string $query
-     * @return object(mysqli_result) or integer if error
+     * @return object(mysqli_result) or integer
      */
     public static function query($query){
 
@@ -47,31 +47,34 @@ class DB {
     }
 
     /**
-     * Add new user to MySQL database
+     * Add user to MySQL database
      * 
-     * @param string $email
-     * @param string $phone
-     * @param integer $id
+     * @param array $inputRequestData
      * @return integer
      */
-    public static function addGetcourseUser($email, $phone, $id){
-        $phoneNum = substr(preg_replace('/[^0-9]/', '', $phone), -15);
-
-        return static::query("INSERT INTO gc_users (`email`, `phone`, `id`) VALUES ('$email', '$phoneNum', '$id')");
+    public static function addUser($inputRequestData){
+        if ($inputRequestData['id'] && $inputRequestData['email'] && $inputRequestData['phone']){
+            $phoneNum = substr(preg_replace('/[^0-9]/', '', $inputRequestData['phone']), -15);
+            $email = $inputRequestData['email'];
+            $id = $inputRequestData['id'];
+            
+            return static::query("INSERT INTO gc_users (`email`, `phone`, `id`) VALUES ('$email', '$phoneNum', '$id')");
+        }
     }
 
     /**
-     * Update user in MySQL database
      * 
-     * @param string $email
-     * @param string $phone
-     * @param integer $id
+     * @param array $inputRequestData
      * @return integer
      */
-    public static function updateGetcourseUser($email, $phone, $id){
-        $phoneNum = substr(preg_replace('/[^0-9]/', '', $phone), -15);
-
-        return static::query("UPDATE gc_users SET email='$email', phone='$phoneNum' WHERE id='$id'");
+    public static function updateUser($inputRequestData){
+        if ($inputRequestData['id'] && $inputRequestData['email'] && $inputRequestData['phone']){
+            $phoneNum = substr(preg_replace('/[^0-9]/', '', $inputRequestData['phone']), -15);
+            $email = $inputRequestData['email'];
+            $id = $inputRequestData['id'];
+            
+            return static::query("UPDATE gc_users SET email='$email', phone='$phoneNum' WHERE id='$id'");
+        }
     }
 
     /**
@@ -80,15 +83,15 @@ class DB {
      * @param string $logDir
      * @return boolean
      */
-    public static function syncGetcourseUsers($logDir){
+    public static function syncUsers($logDir){
         $mysqli = static::query("SELECT last FROM request WHERE service='getcourse'");
         $result = $mysqli->fetch_object();
         $last = strtotime($result->last);
         if (time() - $last > 180){
-            $export_ids = static::runGetcourseExports($logDir);
+            $export_ids = static::runExports($logDir);
             static::query("TRUNCATE TABLE gc_users");
             for ($i=0; $i<count($export_ids); $i++) {
-                $json = static::getGetcourseExportData($export_ids[$i],$logDir);
+                $json = static::getExportData($export_ids[$i],$logDir);
                 for ($j=0; $j<count($json->info->items); $j++) {
                     $id = $json->info->items[$j][0];
                     $email = $json->info->items[$j][1];
@@ -97,9 +100,9 @@ class DB {
                 }
             }
             static::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='getcourse'");
-            return TRUE;
+            return true;
         } else {
-            return FALSE;
+            return false;
         }
     }
 
@@ -109,11 +112,9 @@ class DB {
      * @param string $logDir
      * @return array
      */
-    private function runGetcourseExports($logDir){
-//        $export_ids[] = static::getGetcourseExportId('in_base', $logDir);
-//        $export_ids[] = static::getGetcourseExportId('active', $logDir);
-        $export_ids[] = 302170;
-        $export_ids[] = 302172;
+    private function runExports($logDir){
+        $export_ids[] = static::getExportId('in_base', $logDir);
+        $export_ids[] = static::getExportId('active', $logDir);
 
         return $export_ids;
     }
@@ -125,7 +126,7 @@ class DB {
      * @param string $logDir
      * @return integer
      */
-    private function getGetcourseExportId($status, $logDir){
+    private function getExportId($status, $logDir){
         $post['key'] = GC_API_KEY;
         $url = "https://".GC_ACCOUNT.".getcourse.ru/pl/api/account/users?status=$status";
         do {
@@ -143,7 +144,7 @@ class DB {
      * @param string $logDir
      * @return json
      */
-    private function getGetcourseExportData($export_id, $logDir){
+    private function getExportData($export_id, $logDir){
         $url = "https://".GC_ACCOUNT.".getcourse.ru/pl/api/account/exports/$export_id";
         $post['key'] = GC_API_KEY;
         do {

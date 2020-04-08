@@ -69,7 +69,7 @@ class GetCourse {
      * @param string $logDir
      * @return string
      */
-    public static function userAdd($params, $logDir) {
+    public static function addUser($params, $logDir) {
 
         $url = 'https://'.GC_ACCOUNT.'.getcourse.ru/pl/api/users';
         $post['action'] = "add";

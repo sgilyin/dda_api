@@ -41,25 +41,19 @@ switch ($inputRequestMethod){
 }
 
 Logs::clear($logDir);
-Logs::add($logDir, basename(__FILE__,".php"), "$inputRemoteAddr | $inputRequestMethod | ".print_r($inputRequestData,TRUE));
+Logs::add($logDir, basename(__FILE__,".php"), "$inputRemoteAddr | $inputRequestMethod | ".serialize($inputRequestData));
 
 switch ($inputRequestData['cmd']) {
     case 'dadataCleanName':
-        if ($inputRequestData['email'] && $inputRequestData['data']){
-            Dadata::cleanName($inputRequestData, $logDir);
-        }
+        Dadata::cleanName($inputRequestData, $logDir);
         break;
 
     case 'dadataCleanPhone':
-        if ($inputRequestData['email'] && $inputRequestData['data']){
-            Dadata::cleanPhone($inputRequestData, $logDir);
-        }
+        Dadata::cleanPhone($inputRequestData, $logDir);
         break;
 
-    case 'sendWazzup24':
-        if ($inputRequestData['to'] && ($inputRequestData['text'] || $inputRequestData['content'])){
-            Wazzup24::queue($login, $inputRequestData);
-        }
+    case 'wazzup24Send':
+        Wazzup24::queue($login, $inputRequestData);
         break;
 
     case 'cron':
@@ -68,13 +62,19 @@ switch ($inputRequestData['cmd']) {
         SMSC::syncMessages($login, $logDir);
         break;
 
-    case 'test':
-        var_dump(Wazzup24::send($logDir));
+    case 'dbAddUser':
+        DB::addUser($inputRequestData);
         break;
 
+    case 'dbUpdateUser':
+        DB::updateUser($inputRequestData);
+        break;
+    
+    case 'dbSyncUsers':
+        DB::syncUsers($logDir);
+        break;
+    
     default:
+        Wazzup24::trap($inputRequestData, $logDir);
         break;
 }
-
-
-//var_dump(DB::syncGetcourseUsers($logDir));
