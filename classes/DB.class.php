@@ -87,12 +87,15 @@ class DB {
         $mysqli = static::query("SELECT last FROM request WHERE service='getcourse'");
         $result = $mysqli->fetch_object();
         $last = strtotime($result->last);
+        $allCount = 0;
         if (time() - $last > 180){
             $export_ids = static::runExports($logDir);
-            static::query("TRUNCATE TABLE gc_users");
+            //static::query("TRUNCATE TABLE gc_users");
             for ($i=0; $i<count($export_ids); $i++) {
                 $json = static::getExportData($export_ids[$i],$logDir);
+                //var_dump($json);
                 for ($j=0; $j<count($json->info->items); $j++) {
+                    $allCount++;
                     $id = $json->info->items[$j][0];
                     $email = $json->info->items[$j][1];
                     $phone = substr(preg_replace('/[^0-9]/', '', $json->info->items[$j][7]), -15);
@@ -100,7 +103,7 @@ class DB {
                 }
             }
             static::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='getcourse'");
-            return true;
+            return $allCount;
         } else {
             return false;
         }
@@ -113,8 +116,8 @@ class DB {
      * @return array
      */
     private function runExports($logDir){
-        $export_ids[] = static::getExportId('in_base', $logDir);
         $export_ids[] = static::getExportId('active', $logDir);
+        $export_ids[] = static::getExportId('in_base', $logDir);
 
         return $export_ids;
     }
@@ -130,7 +133,7 @@ class DB {
         $post['key'] = GC_API_KEY;
         $url = "https://".GC_ACCOUNT.".getcourse.ru/pl/api/account/users?status=$status";
         do {
-            $response = cURL::executeRequest($url, $post, false, $logDir);
+            $response = cURL::executeRequest($url, $post, false, false, $logDir);
             $json = json_decode($response);
             sleep(60);
         } while (!$json->success);
@@ -148,7 +151,7 @@ class DB {
         $url = "https://".GC_ACCOUNT.".getcourse.ru/pl/api/account/exports/$export_id";
         $post['key'] = GC_API_KEY;
         do {
-            $response = cURL::executeRequest($url, $post, false, $logDir);
+            $response = cURL::executeRequest($url, $post, false, false, $logDir);
             $json = json_decode($response);
             sleep(60);
         } while (!$json->success);

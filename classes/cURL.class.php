@@ -33,16 +33,19 @@ class cURL {
      * @param string $logDir
      * @return response
      */
-    public static function executeRequest($url,$post,$headers,$logDir) {
+    public static function executeRequest($url, $post, $headers, $userpwd, $logDir) {
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
-        if($post){
+        if ($post){
             curl_setopt($ch, CURLOPT_POST, TRUE);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
         }
-        if($headers){
+        if ($headers){
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        }
+        if ($userpwd){
+            curl_setopt($ch, CURLOPT_USERPWD, $userpwd);
         }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         $result = curl_exec($ch);

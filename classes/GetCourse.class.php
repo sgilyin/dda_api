@@ -23,7 +23,6 @@
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class GetCourse {
-
     /**
      * Send contact form to GetCourse
      * 
@@ -32,7 +31,6 @@ class GetCourse {
      * @return string
      */
     public static function sendContactForm($email, $text, $logDir){
-
         $url='https://'.GC_ACCOUNT.'.getcourse.ru/cms/system/contact';
         $page = file_get_contents($url);
         if ($page) {
@@ -59,7 +57,7 @@ class GetCourse {
             );
         }
 
-        return cURL::executeRequest($url, $post, $headers, $logDir);
+        return cURL::executeRequest($url, $post, $headers, false, $logDir);
     }
 
     /**
@@ -70,13 +68,34 @@ class GetCourse {
      * @return string
      */
     public static function addUser($params, $logDir) {
-
         $url = 'https://'.GC_ACCOUNT.'.getcourse.ru/pl/api/users';
         $post['action'] = "add";
         $post['key'] = GC_API_KEY;
         $params['system']['refresh_if_exists'] = 1;
         $post['params']=base64_encode(json_encode($params));
 
-        return cURL::executeRequest($url, $post, false, $logDir);
+        return cURL::executeRequest($url, $post, false, false, $logDir);
+    }
+
+    public static function addUserRequest($inputRequestData, $logDir) {
+        if ($inputRequestData['phone']){
+            $params['user']['phone'] = $inputRequestData['phone'];
+            $params['user']['email'] = $inputRequestData['phone'].'@facebook.com';
+        }
+        if ($inputRequestData['groups']){
+            $params['user']['group_name'] = static::getRequestGroups($inputRequestData['groups']);
+        }
+
+        return static::addUser($params, $logDir);
+    }
+
+    private function getRequestGroups($requestGroups) {
+        $groups = explode(',', $requestGroups);
+        global $addFields;
+        for ($i = 0; $i < count($groups); $i++) {
+            $result[] = $addFields->{$groups[$i]};
+        }
+
+        return $result;
     }
 }

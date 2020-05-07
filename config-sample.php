@@ -32,5 +32,9 @@ define('GC_ACCOUNT', '<Enter here>');
 define('GC_API_KEY', '<Enter here>');
 define('DADATA_API_KEY', '<Enter here>');
 define('DADATA_SECRET_KEY', '<Enter here>');
+define('TWILIO_SID', '<Enter here>');
+define('TWILIO_TOKEN', '<Enter here>');
+define('TWILIO_WA_NUMBER', '<Enter here>');
 
+//$addFields = new stdClass();
 //$addFields->{'123456'} = '<Enter here>';

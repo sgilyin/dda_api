@@ -30,24 +30,30 @@ class Wazzup24 {
      * @return string
      */
     public static function send($logDir) {
-        $last = strtotime(DB::query("SELECT last FROM request WHERE service='wazzup24'")->fetch_object()->last);
-        if (time() - $last > rand(7,15)){
-            if ($row = DB::query('SELECT * FROM send_to_wazzup24 WHERE success=0 LIMIT 1')->fetch_object()){
-                $url="https://".WA_URL_SUBDOMAIN.".wazzup24.com/api/v1.1/send_message";
-                $headers[]="Content-type:application/json";
-                $headers[]="Authorization:".WA_API_KEY;
-                $post['transport']='whatsapp';
-                $post['from']=WA_PHONE_FROM;
-                $post['to']=$row->to;
-                $post['text']=$row->text;
-                $post['content']=$row->content;
-                $post=json_encode($post);
-                $result = cURL::executeRequest($url,$post,$headers,$logDir);
-                DB::query("UPDATE send_to_wazzup24 SET success=1 WHERE id={$row->id}");
-                DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='wazzup24'");
-                return $result;
-            }
+        for($i = 0; $i < 2; $i++){
+            sleep(rand(15,25));
+            $last = strtotime(DB::query("SELECT last FROM request WHERE service='wazzup24'")->fetch_object()->last);
+//            if (time() - $last > 15){
+                if ($row = DB::query('SELECT * FROM send_to_wazzup24 WHERE success=0 LIMIT 1')->fetch_object()){
+                    $url="https://".WA_URL_SUBDOMAIN.".wazzup24.com/api/v1.1/send_message";
+                    $headers = array();
+                    $post = array();
+                    $headers[]="Content-type:application/json";
+                    $headers[]="Authorization:".WA_API_KEY;
+                    $post['transport']='whatsapp';
+                    $post['from']=WA_PHONE_FROM;
+                    $post['to']=$row->to;
+                    $post['text']=$row->text;
+                    $post['content']=$row->content;
+                    $post=json_encode($post);
+                    $result = cURL::executeRequest($url, $post, $headers, false, $logDir);
+                    DB::query("UPDATE send_to_wazzup24 SET success=1 WHERE id={$row->id}");
+                    DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='wazzup24'");
+                }
+//            }
         }
+
+        return true;
     }
 
     /**
@@ -76,9 +82,13 @@ class Wazzup24 {
     }
 
     public static function trap($inputRequestData, $logDir) {
-        if ($inputRequestData['messages'][0]['status']=="99") {
-            $phone = substr(preg_replace('/[^0-9]/', '', $inputRequestData['messages'][0]['phone']), -15);
-            $email = DB::query("SELECT email FROM gc_users WHERE phone='$phone'")->fetch_object()->email;
+            if ($inputRequestData['messages'][0]['status']=="99") {
+                $phone = substr(preg_replace('/[^0-9]/', '', $inputRequestData['messages'][0]['phone']), -15);
+                try {
+                    $email = DB::query("SELECT email FROM gc_users WHERE phone='$phone'")->fetch_object()->email;
+                } catch (Exception $exc) {
+                }
+    //            $email = DB::query("SELECT email FROM gc_users WHERE phone='$phone'")->fetch_object()->email;
             if (!$email){
                 preg_match("/\|.*\|/",$inputRequestData['messages'][0]['text'],$matches);
                 if ($matches){
@@ -108,7 +118,7 @@ class Wazzup24 {
                 $params['user']['addfields']['whatsapp']=$phone;
                 GetCourse::addUser($params, $logDir);
             }
-            GetCourse::sendContactForm($email, $inputRequestData['messages'][0]['text'].'\nОтправлено из WhatsApp', $logDir);
+            GetCourse::sendContactForm($email, $inputRequestData['messages'][0]['text'].PHP_EOL.'Отправлено из WhatsApp', $logDir);
         }
     }
 }

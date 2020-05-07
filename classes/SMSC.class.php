@@ -40,9 +40,9 @@ class SMSC {
             $post['fmt'] = 3;
             $post['charset'] = 'utf-8';
             $post['start'] = date('d.m.Y', strtotime('Now - 1 day'));
-            $post['cnt'] = 1000;
+            $post['cnt'] = 100;
             $post['get_messages'] = 1;
-            $result = cURL::executeRequest($url, $post, false, $logDir);
+            $result = cURL::executeRequest($url, $post, false, false, $logDir);
             $json=json_decode($result);
             for ($i=0; $i<count($json); $i++){
                 if ($json[$i]->id && $json[$i]->phone && $json[$i]->message){
@@ -59,7 +59,7 @@ class SMSC {
         //$success = false;
         $obj = DB::query("SELECT * FROM smsc_messages WHERE success=0");
         $messages = $obj->fetch_all();
-        for ($i = 0; $i <= count($messages); $i++) {
+        for ($i = 0; $i < count($messages); $i++) {
             $id = $messages[$i][0];
             if (preg_match("/Вам пишет .*:/",$messages[$i][2])){
                 $toWa24['to'] = $messages[$i][1];
