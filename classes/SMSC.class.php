@@ -40,7 +40,7 @@ class SMSC {
             $post['fmt'] = 3;
             $post['charset'] = 'utf-8';
             $post['start'] = date('d.m.Y', strtotime('Now - 1 day'));
-            $post['cnt'] = 100;
+            $post['cnt'] = 200;
             $post['get_messages'] = 1;
             $result = cURL::executeRequest($url, $post, false, false, $logDir);
             $json=json_decode($result);

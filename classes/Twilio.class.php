@@ -33,9 +33,12 @@ class Twilio {
     public static function send($inputRequestData, $logDir) {
         $url="https://api.twilio.com/2010-04-01/Accounts/".TWILIO_SID."/Messages.json";
         $userpwd=TWILIO_SID.':'.TWILIO_TOKEN;
-        $post['From']='whatsapp:'.TWILIO_WA_NUMBER;
-        $post['To']='whatsapp:'.$inputRequestData['To'];
-        $post['Body']=$inputRequestData['Body'];
+        $post['From'] = 'whatsapp:'.TWILIO_WA_NUMBER;
+        $post['To'] = 'whatsapp:'.$inputRequestData['To'];
+        $post['Body'] = $inputRequestData['Body'];
+        if ($inputRequestData['MediaUrl']){
+            $post['MediaUrl'] = $inputRequestData['MediaUrl'];
+        }
         $result = cURL::executeRequest($url, $post, false, $userpwd, $logDir);
         return true;
     }

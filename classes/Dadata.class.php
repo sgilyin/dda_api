@@ -81,7 +81,7 @@ class Dadata {
                 $params['user']['addfields']['Моб оператор DADATA'] = $dadataPhone[0]->provider;
             }
             if ($dadataPhone[0]->timezone){
-                $params['user']['addfields']['UTC+'] = substr(preg_replace('/[^0-9]/', '', $dadataPhone[0]->provider), -2);
+                $params['user']['addfields']['UTC+'] = substr(preg_replace('/[^0-9]/', '', $dadataPhone[0]->timezone), -2);
             }
             return GetCourse::addUser($params, $logDir);
         }

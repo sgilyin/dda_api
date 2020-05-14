@@ -94,6 +94,7 @@ class Wazzup24 {
                 if ($matches){
                     $item=explode("|", $matches[0]);
                     if ($item[1]){
+                        global $addFields;
                         $params['user']['group_name']= array($addFields->{$item[1]});
                     }
                     if ($item[2]){
