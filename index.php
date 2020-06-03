@@ -73,8 +73,24 @@ switch ($inputRequestMethod){
                 Twilio::send($inputRequestData, $logDir);
                 break;
 
+            case 'senlerAddSubscriber':
+                var_dump(Senler::addSubscriber($inputRequestData, $logDir));
+                break;
+
+            case 'senlerDelSubscriber':
+                var_dump(Senler::delSubscriber($inputRequestData, $logDir));
+                break;
+
+            case 'senlerAddSubscription':
+                var_dump(Senler::addSubscription($inputRequestData, $logDir));
+                break;
+
+            case 'showWa24Queue':
+                echo DB::showWa24Queue();
+                break;
+
             case 'test':
-                
+                echo 'I am alive!';
                 break;
         }
         break;

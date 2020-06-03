@@ -157,4 +157,8 @@ class DB {
         } while (!$json->success);
         return $json;
     }
+
+    public static function showWa24Queue() {
+        return static::query("SELECT COUNT(*) AS count FROM send_to_wazzup24 WHERE success=0")->fetch_object()->count;
+    }
 }

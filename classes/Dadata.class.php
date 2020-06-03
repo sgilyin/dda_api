@@ -69,7 +69,7 @@ class Dadata {
             $dadataPhone = json_decode(static::clean('phone', $inputRequestData['data'], $logDir));
             $params['user']['email'] = $inputRequestData['email'];
             if ($dadataPhone[0]->phone){
-                $params['user']['addfields']['phone'] = $dadataPhone[0]->phone;
+                $params['user']['phone'] = $dadataPhone[0]->phone;
             }
             if ($dadataPhone[0]->country){
                 $params['user']['addfields']['Страна мобильного по DADATA'] = $dadataPhone[0]->country;

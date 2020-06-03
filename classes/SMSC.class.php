@@ -40,7 +40,7 @@ class SMSC {
             $post['fmt'] = 3;
             $post['charset'] = 'utf-8';
             $post['start'] = date('d.m.Y', strtotime('Now - 1 day'));
-            $post['cnt'] = 200;
+            $post['cnt'] = 1000;
             $post['get_messages'] = 1;
             $result = cURL::executeRequest($url, $post, false, false, $logDir);
             $json=json_decode($result);
@@ -67,7 +67,7 @@ class SMSC {
                 Wazzup24::queue($messages[$i][3], $toWa24);
                 DB::query("UPDATE smsc_messages SET success=1 WHERE id=$id");
             }
-            if (preg_match("/\|\d*\|\S*@\S*\|http\S*\|/",$messages[$i][2])){
+            if (preg_match("/\|\d*\|\S*@\S*\|http.*\|/",$messages[$i][2])){
                 global $addFields;
                 $msg_part=explode("|", $messages[$i][2]);
                 $params['user']['email'] = $msg_part[2];
