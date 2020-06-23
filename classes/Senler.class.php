@@ -23,6 +23,14 @@
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class Senler {
+
+    /**
+     * Add subscriber in Senler
+     * 
+     * @param array $inputRequestData
+     * @param string $logDir
+     * @return string
+     */
     public static function addSubscriber($inputRequestData, $logDir) {
         if ($inputRequestData['vk_group_id'] && $inputRequestData['vk_user_id'] && $inputRequestData['subscription_id']){
             $params['vk_group_id'] = $inputRequestData['vk_group_id'];
@@ -36,6 +44,13 @@ class Senler {
         }
     }
 
+    /**
+     * Delete subscriber in Senler
+     * 
+     * @param array $inputRequestData
+     * @param string $logDir
+     * @return string
+     */
     public static function delSubscriber($inputRequestData, $logDir) {
         if ($inputRequestData['vk_group_id'] && $inputRequestData['vk_user_id'] && $inputRequestData['subscription_id']){
             $params['vk_group_id'] = $inputRequestData['vk_group_id'];
@@ -49,6 +64,13 @@ class Senler {
         }
     }
 
+    /**
+     * Add subscription in Senler
+     * 
+     * @param array $inputRequestData
+     * @param string $logDir
+     * @return string
+     */
     public static function addSubscription($inputRequestData, $logDir) {
         if($inputRequestData['vk_group_id'] && $inputRequestData['name']){
             $params['vk_group_id'] = $inputRequestData['vk_group_id'];
@@ -61,6 +83,13 @@ class Senler {
         }
     }
 
+    /**
+     * Create hash for Senler
+     * 
+     * @param array $params
+     * @param string $secret
+     * @return string
+     */
     private function getHash($params, $secret) {
         $values = "";
         foreach ($params as $value) {

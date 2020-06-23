@@ -1,0 +1,127 @@
+<?php
+
+/*
+ * Copyright (C) 2020 Sergey Ilyin <developer@ilyins.ru>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * Description of Vkontakte
+ *
+ * @author Sergey Ilyin <developer@ilyins.ru>
+ */
+class Vkontakte {
+
+    /**
+     * Execute VK request
+     * 
+     * @param string $method
+     * @param array $inputRequestData
+     * @param string $logDir
+     * @return string
+     */
+    private static function vkExecute($method, $inputRequestData, $logDir) {
+        $url = "https://api.vk.com/method/$method";
+        $data['v'] = '5.110';
+        $data['access_token'] = VK_TOKEN;
+        $data['account_id'] = $inputRequestData['account_id'] ?? false;
+        $data['client_id'] = $inputRequestData['client_id'] ?? false;
+        $data['target_group_id'] = $inputRequestData['target_group_id'] ?? false;
+        $data['contacts'] = $inputRequestData['contacts'] ?? false;
+        DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='vkontakte'");
+        return cURL::executeRequest($url, $data, false, false, $logDir);
+    }
+
+    /**
+     * Import target contacts to VK ads w/o queue
+     * 
+     * @param array $inputRequestData
+     * @param string $logDir
+     * @return string
+     */
+    public static function adsImportTargetContactsNow($inputRequestData, $logDir) {
+        $method = 'ads.importTargetContacts';
+        return static::vkExecute($method, $inputRequestData, $logDir);
+    }
+
+    /**
+     * Import target contacts to VK ads w queue
+     * 
+     * @param array $inputRequestData
+     * @param string $login
+     * @return string
+     */
+    public static function adsImportTargetContactsQueue($inputRequestData, $login) {
+        $method = 'ads.importTargetContacts';
+        return static::queue($method, $inputRequestData, $login);
+    }
+
+    /**
+     * Remove target contacts from VK ads w/o queue
+     * 
+     * @param array $inputRequestData
+     * @param string $logDir
+     * @return string
+     */
+    public static function adsRemoveTargetContactsNow($inputRequestData, $logDir) {
+        $method = 'ads.removeTargetContacts';
+        return static::vkExecute($method, $inputRequestData, $logDir);
+    }
+
+    /**
+     * Remove target contacts from VK ads w queue
+     * 
+     * @param array $inputRequestData
+     * @param string $login
+     * @return string
+     */
+    public static function adsRemoveTargetContactsQueue($inputRequestData, $login) {
+        $method = 'ads.removeTargetContacts';
+        return static::queue($method, $inputRequestData, $login);
+    }
+
+    /**
+     * Insert task to VK queue
+     * 
+     * @param string $method
+     * @param array $inputRequestData
+     * @param string $login
+     * @return boolean
+     */
+    private static function queue($method, $inputRequestData, $login) {
+        DB::query("INSERT INTO vk_api (`method`, `params`, `login`) VALUES ('$method', '" . serialize($inputRequestData) . "', '$login')");
+        return true;
+    }
+
+    /**
+     * Send params from queue to VK
+     * 
+     * @param string $logDir
+     * @return boolean
+     */
+    public static function send($logDir) {
+        for($i = 0; $i < 2; $i++){
+            sleep(rand(15,25));
+            if ($row = DB::query('SELECT * FROM vk_api WHERE success=0 LIMIT 1')->fetch_object()){
+                $method = $row->method;
+                $inputRequestData = unserialize($row->params);
+                static::vkExecute($method, $inputRequestData, $logDir);
+                DB::query("UPDATE vk_api SET success=1 WHERE id={$row->id}");
+                DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='vkontakte'");
+            }
+        }
+        return true;
+    }
+}

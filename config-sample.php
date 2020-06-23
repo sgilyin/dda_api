@@ -36,6 +36,8 @@ define('TWILIO_SID', '<Enter here>');
 define('TWILIO_TOKEN', '<Enter here>');
 define('TWILIO_WA_NUMBER', '<Enter here>');
 define('SENLER_CALLBACK_KEY', '<Enter here>');
+define('INSTAGRAM_FROM', '<Enter here>');
+define('VK_TOKEN', '<Enter here>');
 
 //$addFields = new stdClass();
 //$addFields->{'123456'} = '<Enter here>';

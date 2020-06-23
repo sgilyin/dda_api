@@ -25,6 +25,7 @@
 class MyTarget {
     public static function test($logDir) {
         $url = 'https://target-sandbox.my.com/api/v2/oauth2/token.json';
+//        $url = 'https://target-sandbox.my.com/api/v2/oauth2/token.json?grant_type=client_credentials&client_id=xkHURu59gG9mXWRw&client_secret=50JgIZ9FmBsvNKj92Dsfx9XaHva46XIms8oZ98O5gpjUerCBv7ZJIXF7oZXi­2Enzjn63KnhZhq5OJD0BlraP81IEzF27edzbP0I9LqfNPFt4UuTjQuZbRzkY­8Iqyh4PsmBJM5Bw7W8YZufT34mboHB6L9f4XCyxXbeZioo1dg418LHhmvJde­5VUJBR4PGdBzrvRddzMIf8sAYz6y7PmgmMBEwVLf79Nkj';
         $headers = array(
             'Content-Type: application/x-www-form-urlencoded',
         );
@@ -33,6 +34,6 @@ class MyTarget {
             'client_id' => 'xkHURu59gG9mXWRw',
             'client_secret' => '50JgIZ9FmBsvNKj92Dsfx9XaHva46XIms8oZ98O5gpjUerCBv7ZJIXF7oZXi­2Enzjn63KnhZhq5OJD0BlraP81IEzF27edzbP0I9LqfNPFt4UuTjQuZbRzkY­8Iqyh4PsmBJM5Bw7W8YZufT34mboHB6L9f4XCyxXbeZioo1dg418LHhmvJde­5VUJBR4PGdBzrvRddzMIf8sAYz6y7PmgmMBEwVLf79Nkj',
         );
-        return cURL::executeRequest($url, $post, $headers, false, $logDir);
+        return cURL::executeRequestTest('POST', $url, $post, $headers, false, $logDir);
     }
 }

@@ -25,62 +25,62 @@
 class Wazzup24 {
 
     /**
+     * Send params from queue to Wazzup24
      * 
      * @param string $logDir
      * @return string
      */
     public static function send($logDir) {
-        for($i = 0; $i < 2; $i++){
-            sleep(rand(15,25));
-            $last = strtotime(DB::query("SELECT last FROM request WHERE service='wazzup24'")->fetch_object()->last);
-//            if (time() - $last > 15){
-                if ($row = DB::query('SELECT * FROM send_to_wazzup24 WHERE success=0 LIMIT 1')->fetch_object()){
-                    $url="https://".WA_URL_SUBDOMAIN.".wazzup24.com/api/v1.1/send_message";
-                    $headers = array();
-                    $post = array();
-                    $headers[]="Content-type:application/json";
-                    $headers[]="Authorization:".WA_API_KEY;
-                    $post['transport']='whatsapp';
-                    $post['from']=WA_PHONE_FROM;
-                    $post['to']=$row->to;
-                    $post['text']=$row->text;
-                    $post['content']=$row->content;
-                    $post=json_encode($post);
-                    $result = cURL::executeRequest($url, $post, $headers, false, $logDir);
-                    DB::query("UPDATE send_to_wazzup24 SET success=1 WHERE id={$row->id}");
-                    DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='wazzup24'");
-                }
-//            }
+        for($i = 0; $i < 3; $i++){
+            sleep(rand(15,20));
+//            $last = strtotime(DB::query("SELECT last FROM request WHERE service='wazzup24'")->fetch_object()->last);
+            if ($row = DB::query('SELECT * FROM send_to_wazzup24 WHERE success=0 LIMIT 1')->fetch_object()){
+                $url = 'https://'.WA_URL_SUBDOMAIN.'.wazzup24.com/api/v1.1/send_message';
+                $headers = array();
+                $post = array();
+                $headers[] = "Content-type:application/json";
+                $headers[] = "Authorization:".WA_API_KEY;
+                $post['transport'] = $row->transport;
+                $post['from'] = ($row->transport == 'whatsapp') ? WA_PHONE_FROM : INSTAGRAM_FROM;
+                $post['to']=$row->to;
+                $post['text']=$row->text;
+                $post['content']=$row->content;
+                $post=json_encode($post);
+                $result = cURL::executeRequest($url, $post, $headers, false, $logDir);
+                DB::query("UPDATE send_to_wazzup24 SET success=1 WHERE id={$row->id}");
+                DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='wazzup24'");
+            }
         }
-
         return true;
     }
 
     /**
+     * Add params to queue for Wazzup24
      * 
      * @param string $login
      * @param array $inputRequestData
      * @return boolean
      */
     public static function queue($login, $inputRequestData) {
-        if ($inputRequestData['to'] && ($inputRequestData['text'] || $inputRequestData['content'])){
+        if ($inputRequestData['transport'] && $inputRequestData['to'] && ($inputRequestData['text'] || $inputRequestData['content'])){
             $to = $inputRequestData['to'];
-            if ($inputRequestData['text']) {
-                $text = $inputRequestData['text'];
-            } else {
-                $text = '';
-            }
-            if ($inputRequestData['content']){
-                $content = $inputRequestData['content'];
-            } else {
-                $content = '';
-            }
-            DB::query("INSERT INTO send_to_wazzup24 (`to`, `text`, `content`, `login`) VALUES ('$to', '$text', '$content', '$login')");
+            $text = $inputRequestData['text'] ?? '';
+            $content = $inputRequestData['content'] ?? '';
+            $transport = $inputRequestData['transport'] ?? '';
+
+            DB::query("INSERT INTO send_to_wazzup24 (`to`, `text`, `content`, `login`, `transport`) VALUES ('$to', '$text', '$content', '$login', '$transport')");
             
             return true;
-        }    
+        }
     }
 
+    /**
+     * Check input message, create user in GetCourse and send form from user to GetCourse
+     * 
+     * @global array $addFields
+     * @param array $inputRequestData
+     * @param string $logDir
+     */
     public static function trap($inputRequestData, $logDir) {
             if ($inputRequestData['messages'][0]['status']=="99") {
                 $phone = substr(preg_replace('/[^0-9]/', '', $inputRequestData['messages'][0]['phone']), -15);
@@ -111,6 +111,15 @@ class Wazzup24 {
                     }
                     if ($item[6]){
                         $params['user']['addfields']['d_utm_term']=$item[6];
+                    }
+                    if ($item[7]){
+                        $params['user']['addfields']['d_utm_rs']=$item[7];
+                    }
+                    if ($item[8]){
+                        $params['user']['addfields']['d_utm_acc']=$item[8];
+                    }
+                    if ($item[9]){
+                        $params['user']['addfields']['Возраст']=$item[9];
                     }
                 }
                 $email = "$phone@facebook.com";

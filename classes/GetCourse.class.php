@@ -23,6 +23,7 @@
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class GetCourse {
+
     /**
      * Send contact form to GetCourse
      * 
@@ -77,6 +78,13 @@ class GetCourse {
         return cURL::executeRequest($url, $post, false, false, $logDir);
     }
 
+    /**
+     * Request for add user to GetCourse
+     * 
+     * @param array $inputRequestData
+     * @param string $logDir
+     * @return integer
+     */
     public static function addUserRequest($inputRequestData, $logDir) {
         if ($inputRequestData['phone']){
             $params['user']['phone'] = $inputRequestData['phone'];
@@ -89,6 +97,13 @@ class GetCourse {
         return static::addUser($params, $logDir);
     }
 
+    /**
+     * Create array whith groups for GetCourse request
+     * 
+     * @global array $addFields
+     * @param array $requestGroups
+     * @return array
+     */
     private function getRequestGroups($requestGroups) {
         $groups = explode(',', $requestGroups);
         global $addFields;

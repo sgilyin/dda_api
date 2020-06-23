@@ -63,6 +63,7 @@ class DB {
     }
 
     /**
+     * Update user in MySQL database
      * 
      * @param array $inputRequestData
      * @return integer
@@ -158,6 +159,11 @@ class DB {
         return $json;
     }
 
+    /**
+     * Show send queue to Wazzup24
+     * 
+     * @return string
+     */
     public static function showWa24Queue() {
         return static::query("SELECT COUNT(*) AS count FROM send_to_wazzup24 WHERE success=0")->fetch_object()->count;
     }

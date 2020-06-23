@@ -51,6 +51,7 @@ switch ($inputRequestMethod){
                 SMSC::sendWaGc($logDir);
                 Wazzup24::send($logDir);
                 SMSC::syncMessages($login, $logDir);
+                Vkontakte::send($logDir);
                 break;
 
             case 'dbAddUser':
@@ -74,23 +75,40 @@ switch ($inputRequestMethod){
                 break;
 
             case 'senlerAddSubscriber':
-                var_dump(Senler::addSubscriber($inputRequestData, $logDir));
+                Senler::addSubscriber($inputRequestData, $logDir);
                 break;
 
             case 'senlerDelSubscriber':
-                var_dump(Senler::delSubscriber($inputRequestData, $logDir));
+                Senler::delSubscriber($inputRequestData, $logDir);
                 break;
 
             case 'senlerAddSubscription':
-                var_dump(Senler::addSubscription($inputRequestData, $logDir));
+                Senler::addSubscription($inputRequestData, $logDir);
                 break;
 
             case 'showWa24Queue':
                 echo DB::showWa24Queue();
                 break;
 
+            case 'vkAdsImportTargetContactsNow':
+                Vkontakte::adsImportTargetContactsNow($inputRequestData, $logDir);
+                break;
+
+            case 'vkAdsRemoveTargetContactsNow':
+                Vkontakte::adsRemoveTargetContactsNow($inputRequestData, $logDir);
+                break;
+
+            case 'vkAdsImportTargetContactsQueue':
+                Vkontakte::adsImportTargetContactsQueue($inputRequestData, $login);
+                break;
+
+            case 'vkAdsRemoveTargetContactsQueue':
+                Vkontakte::adsRemoveTargetContactsQueue($inputRequestData, $login);
+                break;
+
             case 'test':
-                echo 'I am alive!';
+//                $test = MyTarget::test($logDir);
+//                var_dump();
                 break;
         }
         break;

@@ -23,6 +23,7 @@
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class SMSC {
+
     /**
      * Synchronize messages from SMSC to MySQL database
      * 
@@ -55,6 +56,12 @@ class SMSC {
         return json_encode(array('success' => $success,));
     }
 
+    /**
+     * Send messages from GetCourse to Wazzup24
+     * 
+     * @global array $addFields
+     * @param string $logDir
+     */
     public static function sendWaGc($logDir){
         //$success = false;
         $obj = DB::query("SELECT * FROM smsc_messages WHERE success=0");
@@ -64,6 +71,7 @@ class SMSC {
             if (preg_match("/Вам пишет .*:/",$messages[$i][2])){
                 $toWa24['to'] = $messages[$i][1];
                 $toWa24['text'] = substr($messages[$i][2], stripos($messages[$i][2],':')+2);
+                $toWa24['transport'] = 'whatsapp';
                 Wazzup24::queue($messages[$i][3], $toWa24);
                 DB::query("UPDATE smsc_messages SET success=1 WHERE id=$id");
             }
