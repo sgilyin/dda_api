@@ -106,9 +106,20 @@ switch ($inputRequestMethod){
                 Vkontakte::adsRemoveTargetContactsQueue($inputRequestData, $login);
                 break;
 
+            case 'yaAddItemToAudience':
+                Yandex::addItemToAudience($inputRequestData, $login);
+                break;
+
+            case 'yaDelItemFromAudience':
+                Yandex::delItemFromAudience($inputRequestData, $logDir);
+                break;
+
+            case 'yaModifyAudience':
+                Yandex::modifyAudience($inputRequestData, $logDir);
+                break;
+
             case 'test':
 //                $test = MyTarget::test($logDir);
-//                var_dump();
                 break;
         }
         break;

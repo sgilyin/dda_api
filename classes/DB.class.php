@@ -39,6 +39,7 @@ class DB {
         $mysqli->close();
         switch (strtok($query," ")){
             case 'INSERT':
+            case 'DELETE':
             case 'UPDATE':
                 return $errNo;
             default:

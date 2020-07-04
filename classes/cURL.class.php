@@ -53,30 +53,4 @@ class cURL {
         if ($logDir){Logs::add($logDir,'cURL',"$url | ".serialize($post)." | ". serialize($result));}
         return $result;
     }
-
-    public static function executeRequestTest($customRequest, $url, $post, $headers, $userpwd, $logDir) {
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        if ($post){
-            curl_setopt($ch, CURLOPT_POST, TRUE);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-        }
-        if ($headers){
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        }
-        if ($userpwd){
-            curl_setopt($ch, CURLOPT_USERPWD, $userpwd);
-        }
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $customRequest);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($ch, CURLOPT_HEADER, TRUE);
-        curl_setopt($ch, CURLINFO_HEADER_OUT, TRUE);
-        
-        $result = curl_exec($ch);
-        $info = curl_getinfo($ch);
-        curl_close($ch);
-        if ($logDir){Logs::add($logDir,'cURL',"$url | " . serialize($post) . " | " . serialize($result) . " | " . serialize($info));}
-        return $result;
-    }
 }
