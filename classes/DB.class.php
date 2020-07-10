@@ -168,4 +168,22 @@ class DB {
     public static function showWa24Queue() {
         return static::query("SELECT COUNT(*) AS count FROM send_to_wazzup24 WHERE success=0")->fetch_object()->count;
     }
+
+    /**
+     * Clear queue to Wazzup24
+     * 
+     * @return string
+     */
+    public static function clearWa24Queue() {
+        static::query("TRUNCATE send_to_wazzup24");
+    }
+
+    /**
+     * Show send queue to Vkontakte
+     * 
+     * @return string
+     */
+    public static function showVkQueue() {
+        return static::query("SELECT COUNT(*) AS count FROM vk_api WHERE success=0")->fetch_object()->count;
+    }
 }

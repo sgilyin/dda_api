@@ -90,6 +90,11 @@ switch ($inputRequestMethod){
                 echo DB::showWa24Queue();
                 break;
 
+            case 'clearWa24Queue':
+                DB::clearWa24Queue();
+                echo 'Ok';
+                break;
+
             case 'vkAdsImportTargetContactsNow':
                 Vkontakte::adsImportTargetContactsNow($inputRequestData, $logDir);
                 break;
@@ -106,6 +111,10 @@ switch ($inputRequestMethod){
                 Vkontakte::adsRemoveTargetContactsQueue($inputRequestData, $login);
                 break;
 
+            case 'showVkQueue':
+                echo DB::showVkQueue();
+                break;
+
             case 'yaAddItemToAudience':
                 Yandex::addItemToAudience($inputRequestData, $login);
                 break;
@@ -119,7 +128,7 @@ switch ($inputRequestMethod){
                 break;
 
             case 'test':
-//                $test = MyTarget::test($logDir);
+                var_dump(MyTarget::test($logDir));
                 break;
         }
         break;
