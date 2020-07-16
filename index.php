@@ -71,7 +71,11 @@ switch ($inputRequestMethod){
                 break;
 
             case 'twilioSend':
-                Twilio::send($inputRequestData, $logDir);
+                var_dump(Twilio::send($inputRequestData, $logDir));
+                break;
+
+            case 'twilioCall':
+                var_dump(Twilio::call($inputRequestData, $logDir));
                 break;
 
             case 'senlerAddSubscriber':
@@ -128,7 +132,6 @@ switch ($inputRequestMethod){
                 break;
 
             case 'test':
-                var_dump(MyTarget::test($logDir));
                 break;
         }
         break;

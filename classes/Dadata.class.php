@@ -81,7 +81,15 @@ class Dadata {
                 $params['user']['addfields']['Моб оператор DADATA'] = $dadataPhone[0]->provider;
             }
             if ($dadataPhone[0]->timezone){
-                $params['user']['addfields']['UTC+'] = substr(preg_replace('/[^0-9]/', '', $dadataPhone[0]->timezone), -2);
+                preg_match_all('/UTC[-+]\d+/', $dadataPhone[0]->timezone, $matches);
+                $negative = false;
+                for ($i=0; $i<count($matches[0]); $i++){
+                    $arr[$i] = substr($matches[0][$i], 3);
+                    if (intval($arr[$i]) <= 0) {$negative = true;}
+                }
+                $timezone = ($negative) ? min($arr) : max($arr);
+                $timezone = $timezone ?? '0';
+                $params['user']['addfields']['UTC+'] = $timezone;
             }
             return GetCourse::addUser($params, $logDir);
         }

@@ -33,13 +33,31 @@ class Twilio {
     public static function send($inputRequestData, $logDir) {
         $url="https://api.twilio.com/2010-04-01/Accounts/".TWILIO_SID."/Messages.json";
         $userpwd=TWILIO_SID.':'.TWILIO_TOKEN;
-        $post['From'] = 'whatsapp:'.TWILIO_WA_NUMBER;
-        $post['To'] = 'whatsapp:'.$inputRequestData['To'];
+        switch ($inputRequestData['Transport']) {
+            case 'SMS':
+                $post['messagingServiceSid'] = TWILIO_SMS_NUMBER;
+                $post['From'] = TWILIO_SMS_NUMBER;
+                $post['To'] = $inputRequestData['To'];
+                break;
+
+            case 'Whatsapp':
+                $post['From'] = 'whatsapp:'.TWILIO_WA_NUMBER;
+                $post['To'] = 'whatsapp:'.$inputRequestData['To'];
+                break;
+        }
         $post['Body'] = $inputRequestData['Body'];
         if ($inputRequestData['MediaUrl']){
             $post['MediaUrl'] = $inputRequestData['MediaUrl'];
         }
-        $result = cURL::executeRequest($url, $post, false, $userpwd, $logDir);
-        return true;
+        return cURL::executeRequest($url, $post, false, $userpwd, $logDir);
+    }
+
+    public static function call($inputRequestData, $logDir) {
+        $url="https://api.twilio.com/2010-04-01/Accounts/".TWILIO_SID."/Calls.json";
+        $userpwd=TWILIO_SID.':'.TWILIO_TOKEN;
+        $post['From'] = TWILIO_CALL_NUMBER;
+        $post['To'] = $inputRequestData['To'];
+        $post['Twiml'] = '<Response><Play>' . $inputRequestData['File'] .'</Play></Response>';
+        return cURL::executeRequest($url, $post, false, $userpwd, $logDir);
     }
 }

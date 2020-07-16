@@ -35,6 +35,8 @@ define('DADATA_SECRET_KEY', '<Enter here>');
 define('TWILIO_SID', '<Enter here>');
 define('TWILIO_TOKEN', '<Enter here>');
 define('TWILIO_WA_NUMBER', '<Enter here>');
+define('TWILIO_SMS_NUMBER', '<Enter here>');
+define('TWILIO_CALL_NUMBER', '<Enter here>');
 define('SENLER_CALLBACK_KEY', '<Enter here>');
 define('INSTAGRAM_FROM', '<Enter here>');
 define('VK_TOKEN', '<Enter here>');

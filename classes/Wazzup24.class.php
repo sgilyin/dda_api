@@ -31,8 +31,8 @@ class Wazzup24 {
      * @return string
      */
     public static function send($logDir) {
-        for($i = 0; $i < 3; $i++){
-            sleep(rand(15,20));
+        for($i = 0; $i < 5; $i++){
+            sleep(rand(7,12));
 //            $last = strtotime(DB::query("SELECT last FROM request WHERE service='wazzup24'")->fetch_object()->last);
             if ($row = DB::query('SELECT * FROM send_to_wazzup24 WHERE success=0 LIMIT 1')->fetch_object()){
                 $url = 'https://'.WA_URL_SUBDOMAIN.'.wazzup24.com/api/v1.1/send_message';

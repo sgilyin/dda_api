@@ -111,7 +111,7 @@ class Vkontakte {
      * @param string $logDir
      * @return boolean
      */
-    public static function send($logDir) {
+    public static function sendOld($logDir) {
         for($i = 0; $i < 2; $i++){
             sleep(rand(15,25));
             if ($row = DB::query('SELECT * FROM vk_api WHERE success=0 LIMIT 1')->fetch_object()){
@@ -122,6 +122,36 @@ class Vkontakte {
                 DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='vkontakte'");
             }
         }
+        return true;
+    }
+
+    public static function send($login, $logDir) {
+        $mysqliObj = DB::query("SELECT id, method, params FROM vk_api WHERE login='$login' AND success=0 LIMIT 1000");
+        $idArray = array();
+        $vkArray = array();
+
+        for ($i=0; $i<$mysqliObj->num_rows; $i++) {
+            $rowObj = $mysqliObj->fetch_object();
+            $paramsArray = unserialize($rowObj->params);
+            array_push($idArray, $rowObj->id);
+            $vkArray[$rowObj->method][$paramsArray['account_id']][$paramsArray['client_id']][$paramsArray['target_group_id']]['contacts'][] = $paramsArray['contacts'];
+        }
+
+        foreach ($vkArray as $method => $methodValue) {
+            foreach ($methodValue as $account_id => $accountIdValue) {
+                foreach ($accountIdValue as $client_id => $clientIdValue) {
+                    foreach ($clientIdValue as $target_group_id => $targetGroupIdValue) {
+                        $data['account_id'] = $account_id;
+                        $data['client_id'] = $client_id;
+                        $data['target_group_id'] = $target_group_id;
+                        $data['contacts'] = implode(',', $vkArray[$method][$account_id][$client_id][$target_group_id]['contacts']);
+                        sleep(rand(15,25));
+                        static::vkExecute($method, $data, $logDir);
+                    }
+                }
+            }
+        }
+        DB::query('UPDATE vk_api SET success=1 WHERE id IN (' . implode(',', $idArray) . ')');
         return true;
     }
 }
