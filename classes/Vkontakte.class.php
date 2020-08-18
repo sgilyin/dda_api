@@ -33,15 +33,17 @@ class Vkontakte {
      * @return string
      */
     private static function vkExecute($method, $inputRequestData, $logDir) {
-        $url = "https://api.vk.com/method/$method";
-        $data['v'] = '5.110';
-        $data['access_token'] = VK_TOKEN;
-        $data['account_id'] = $inputRequestData['account_id'] ?? false;
-        $data['client_id'] = $inputRequestData['client_id'] ?? false;
-        $data['target_group_id'] = $inputRequestData['target_group_id'] ?? false;
-        $data['contacts'] = $inputRequestData['contacts'] ?? false;
-        DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='vkontakte'");
-        return cURL::executeRequest($url, $data, false, false, $logDir);
+        if (VK_TOKEN) {
+            $url = "https://api.vk.com/method/$method";
+            $data['v'] = '5.110';
+            $data['access_token'] = VK_TOKEN;
+            $data['account_id'] = $inputRequestData['account_id'] ?? false;
+            $data['client_id'] = $inputRequestData['client_id'] ?? false;
+            $data['target_group_id'] = $inputRequestData['target_group_id'] ?? false;
+            $data['contacts'] = $inputRequestData['contacts'] ?? false;
+            DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='vkontakte'");
+            return cURL::executeRequest($url, $data, false, false, $logDir);
+        }
     }
 
     /**

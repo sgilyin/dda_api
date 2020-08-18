@@ -23,17 +23,79 @@
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class MyTarget {
-    public static function test($logDir) {
-        $url = 'https://target-sandbox.my.com/api/v2/oauth2/token.json';
-//        $url = 'https://target-sandbox.my.com/api/v2/oauth2/token.json?grant_type=client_credentials&client_id=xkHURu59gG9mXWRw&client_secret=50JgIZ9FmBsvNKj92Dsfx9XaHva46XIms8oZ98O5gpjUerCBv7ZJIXF7oZXi­2Enzjn63KnhZhq5OJD0BlraP81IEzF27edzbP0I9LqfNPFt4UuTjQuZbRzkY­8Iqyh4PsmBJM5Bw7W8YZufT34mboHB6L9f4XCyxXbeZioo1dg418LHhmvJde­5VUJBR4PGdBzrvRddzMIf8sAYz6y7PmgmMBEwVLf79Nkj';
-        $headers = array(
-            'Content-Type: application/x-www-form-urlencoded',
-        );
-        $post = array(
-            'grant_type' => 'client_credentials',
-            'client_id' => 'pH41d3vuluevpss6',
-            'client_secret' => '50JgIZ9FmBsvNKj92Dsfx9XaHva46XIms8oZ98O5gpjUerCBv7ZJIXF7oZXi­2Enzjn63KnhZhq5OJD0BlraP81IEzF27edzbP0I9LqfNPFt4UuTjQuZbRzkY­8Iqyh4PsmBJM5Bw7W8YZufT34mboHB6L9f4XCyxXbeZioo1dg418LHhmvJde­5VUJBR4PGdBzrvRddzMIf8sAYz6y7PmgmMBEwVLf79Nkj',
-        );
-        return cURL::executeRequestTest('POST', $url, $post, $headers, false, $logDir);
+    public static function modifyAudience($inputRequestData, $logDir) {
+        if (MT_ACCESS_TOKEN) {
+            $segmentId = $inputRequestData['segmentId'] ?? false;
+            if ($segmentId){
+                $query = "SELECT * FROM my_target_audience WHERE segment='$segmentId'";
+                if ($result = DB::query($query)) {
+                    file_put_contents("$segmentId.csv", 'email,phone');
+                    $url = 'https://target-sandbox.my.com/api/v2/remarketing/users_lists.json';
+                    $headers[] = 'Authorization: Bearer ' . MT_ACCESS_TOKEN;
+                    $headers[] = 'Content-Type: multipart/form-data';
+                    while ($obj = $result->fetch_object()) {
+                        file_put_contents("$segmentId.csv", PHP_EOL . $obj->email . ',' . $obj->phone, FILE_APPEND);
+                    }
+                    $result->close();
+                    $post['file'] = new CurlFile(realpath("$segmentId.csv"));
+                    $post['data'] = '{"name": "Test", "type": "vk"}';
+                    return cURL::executeRequest($url, $post, $headers, false, $logDir);
+                }
+            } else {
+                return false;
+            }
+        }
+    }
+
+    public static function addItemToAudience($inputRequestData, $login) {
+        $email = $inputRequestData['email'] ?? false;
+        $phone = $inputRequestData['phone'] ?? false;
+        $segmentId = $inputRequestData['segmentId'] ?? false;
+        if ($segmentId && ($email || $phone)) {
+            $query = "INSERT INTO my_target_audience (`email`, `phone`, `login`, `segment`) VALUES ('$email', '$phone', '$login', '$segmentId')";
+            return DB::query($query);
+        } else {
+            return false;
+        }
+    }
+
+    public static function delItemFromAudience($inputRequestData, $login) {
+        $email = $inputRequestData['email'] ?? false;
+        $phone = $inputRequestData['phone'] ?? false;
+        $segmentId = $inputRequestData['segmentId'] ?? false;
+        if ($segmentId && ($email || $phone)) {
+            $query = "DELETE FROM my_target_audience WHERE login='$login' AND segment='$segmentId'";
+            if ($email){
+                $query = $query." AND email='$email'";
+            }
+            if ($phone){
+                $query = $query." AND phone='$phone'";
+            }
+        return DB::query($query);
+        } else {
+            return false;
+        }
+    }
+
+    public static function getAccessToken($logDir) {
+        if (MT_CLIENT_ID && MT_CLIENT_SECRET) {
+            $url = 'https://target-sandbox.my.com/api/v2/oauth2/token.json';
+            $headers = array(
+                'Content-Type: application/x-www-form-urlencoded',
+            );
+            $post = 'grant_type=client_credentials&client_id=' . MT_CLIENT_ID . '&client_secret=' . MT_CLIENT_SECRET . '&permanent=true';
+            return cURL::executeRequest($url, $post, $headers, false, $logDir);
+        }
+    }
+
+    public static function clearAccessTokens($logDir) {
+        if (MT_CLIENT_ID && MT_CLIENT_SECRET) {
+            $url = 'https://target-sandbox.my.com/api/v2/oauth2/token/delete.json';
+            $headers = array(
+                'Content-Type: application/x-www-form-urlencoded',
+            );
+            $post = 'client_id=' . MT_CLIENT_ID . '&client_secret=' . MT_CLIENT_SECRET;
+            return cURL::executeRequest($url, $post, $headers, false, $logDir);
+        }
     }
 }

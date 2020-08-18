@@ -71,9 +71,6 @@ class Dadata {
             if ($dadataPhone[0]->phone){
                 $params['user']['phone'] = $dadataPhone[0]->phone;
             }
-            if ($dadataPhone[0]->country){
-                $params['user']['addfields']['Страна мобильного по DADATA'] = $dadataPhone[0]->country;
-            }
             if ($dadataPhone[0]->region){
                 $params['user']['addfields']['Регион мобильного по DADATA'] = $dadataPhone[0]->region;
             }
@@ -91,6 +88,7 @@ class Dadata {
                 $timezone = $timezone ?? '0';
                 $params['user']['addfields']['UTC+'] = $timezone;
             }
+            $params['user']['addfields']['Страна мобильного по DADATA'] = $dadataPhone[0]->country ?? 'null';
             return GetCourse::addUser($params, $logDir);
         }
     }
@@ -104,14 +102,16 @@ class Dadata {
      * @return string
      */
     public static function clean($type, $value, $logDir) {
-        $url = "https://cleaner.dadata.ru/api/v1/clean/$type";
-        $headers = array(
-            "Content-Type: application/json",
-            "Accept: application/json",
-            "Authorization: Token " . DADATA_API_KEY,
-            "X-Secret: " . DADATA_SECRET_KEY,
-        );
-        $post = json_encode(array($value));
-        return cURL::executeRequest($url, $post, $headers, false, $logDir);
+        if (DADATA_API_KEY && DADATA_SECRET_KEY) {
+            $url = "https://cleaner.dadata.ru/api/v1/clean/$type";
+            $headers = array(
+                "Content-Type: application/json",
+                "Accept: application/json",
+                "Authorization: Token " . DADATA_API_KEY,
+                "X-Secret: " . DADATA_SECRET_KEY,
+            );
+            $post = json_encode(array($value));
+            return cURL::executeRequest($url, $post, $headers, false, $logDir);
+        }
     }
 }

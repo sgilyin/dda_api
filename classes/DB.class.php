@@ -31,19 +31,20 @@ class DB {
      * @return object(mysqli_result) or integer
      */
     public static function query($query){
-
-        $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
-        $mysqli->set_charset('utf8');
-        $errNo = $mysqli->errno;
-        $result = $mysqli->query($query);
-        $mysqli->close();
-        switch (strtok($query," ")){
-            case 'INSERT':
-            case 'DELETE':
-            case 'UPDATE':
-                return $errNo;
-            default:
-                return $result;
+        if (DB_HOST && DB_USER && DB_PASSWORD && DB_NAME) {
+            $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
+            $mysqli->set_charset('utf8');
+            $errNo = $mysqli->errno;
+            $result = $mysqli->query($query);
+            $mysqli->close();
+            switch (strtok($query," ")){
+                case 'INSERT':
+                case 'DELETE':
+                case 'UPDATE':
+                    return $errNo;
+                default:
+                    return $result;
+            }
         }
     }
 
@@ -132,14 +133,16 @@ class DB {
      * @return integer
      */
     private function getExportId($status, $logDir){
-        $post['key'] = GC_API_KEY;
-        $url = "https://".GC_ACCOUNT.".getcourse.ru/pl/api/account/users?status=$status";
-        do {
-            $response = cURL::executeRequest($url, $post, false, false, $logDir);
-            $json = json_decode($response);
-            sleep(60);
-        } while (!$json->success);
-        return $json->info->export_id;
+        if (GC_ACCOUNT && GC_API_KEY) {
+            $post['key'] = GC_API_KEY;
+            $url = "https://".GC_ACCOUNT.".getcourse.ru/pl/api/account/users?status=$status";
+            do {
+                $response = cURL::executeRequest($url, $post, false, false, $logDir);
+                $json = json_decode($response);
+                sleep(60);
+            } while (!$json->success);
+            return $json->info->export_id;
+        }
     }
 
     /**
@@ -150,14 +153,16 @@ class DB {
      * @return json
      */
     private function getExportData($export_id, $logDir){
-        $url = "https://".GC_ACCOUNT.".getcourse.ru/pl/api/account/exports/$export_id";
-        $post['key'] = GC_API_KEY;
-        do {
-            $response = cURL::executeRequest($url, $post, false, false, $logDir);
-            $json = json_decode($response);
-            sleep(60);
-        } while (!$json->success);
-        return $json;
+        if (GC_ACCOUNT && GC_API_KEY) {
+            $url = "https://".GC_ACCOUNT.".getcourse.ru/pl/api/account/exports/$export_id";
+            $post['key'] = GC_API_KEY;
+            do {
+                $response = cURL::executeRequest($url, $post, false, false, $logDir);
+                $json = json_decode($response);
+                sleep(60);
+            } while (!$json->success);
+            return $json;
+        }
     }
 
     /**

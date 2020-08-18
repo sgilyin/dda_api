@@ -32,23 +32,25 @@ class Yandex {
      * @return boolean
      */
     public static function modifyAudience($inputRequestData, $logDir) {
-        $segmentId = $inputRequestData['segmentId'] ?? false;
-        if ($segmentId){
-            $query = "SELECT * FROM yandex_audience WHERE segment='$segmentId'";
-            if ($result = DB::query($query)) {
-                file_put_contents("$segmentId.csv", 'email,phone');
-                $url = "https://api-audience.yandex.ru/v1/management/segment/$segmentId/modify_data?modification_type=replace";
-                $headers[] = 'Authorization: OAuth ' . YANDEX_TOKEN;
-                $headers[] = 'Content-Type: multipart/form-data';
-                while ($obj = $result->fetch_object()) {
-                    file_put_contents("$segmentId.csv", PHP_EOL . $obj->email . ',' . $obj->phone, FILE_APPEND);
+        if (YANDEX_TOKEN) {
+            $segmentId = $inputRequestData['segmentId'] ?? false;
+            if ($segmentId){
+                $query = "SELECT * FROM yandex_audience WHERE segment='$segmentId'";
+                if ($result = DB::query($query)) {
+                    file_put_contents("$segmentId.csv", 'email,phone');
+                    $url = "https://api-audience.yandex.ru/v1/management/segment/$segmentId/modify_data?modification_type=replace";
+                    $headers[] = 'Authorization: OAuth ' . YANDEX_TOKEN;
+                    $headers[] = 'Content-Type: multipart/form-data';
+                    while ($obj = $result->fetch_object()) {
+                        file_put_contents("$segmentId.csv", PHP_EOL . $obj->email . ',' . $obj->phone, FILE_APPEND);
+                    }
+                    $result->close();
+                    $post['file'] = new CurlFile(realpath("$segmentId.csv"));
+                    return cURL::executeRequest($url, $post, $headers, false, $logDir);
                 }
-                $result->close();
-                $post['file'] = new CurlFile(realpath("$segmentId.csv"));
-                return cURL::executeRequest($url, $post, $headers, false, $logDir);
+            } else {
+                return false;
             }
-        } else {
-            return false;
         }
     }
 

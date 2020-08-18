@@ -30,28 +30,30 @@ class Wazzup24 {
      * @param string $logDir
      * @return string
      */
-    public static function send($logDir) {
-        for($i = 0; $i < 5; $i++){
-            sleep(rand(7,12));
-//            $last = strtotime(DB::query("SELECT last FROM request WHERE service='wazzup24'")->fetch_object()->last);
-            if ($row = DB::query('SELECT * FROM send_to_wazzup24 WHERE success=0 LIMIT 1')->fetch_object()){
-                $url = 'https://'.WA_URL_SUBDOMAIN.'.wazzup24.com/api/v1.1/send_message';
-                $headers = array();
-                $post = array();
-                $headers[] = "Content-type:application/json";
-                $headers[] = "Authorization:".WA_API_KEY;
-                $post['transport'] = $row->transport;
-                $post['from'] = ($row->transport == 'whatsapp') ? WA_PHONE_FROM : INSTAGRAM_FROM;
-                $post['to']=$row->to;
-                $post['text']=$row->text;
-                $post['content']=$row->content;
-                $post=json_encode($post);
-                $result = cURL::executeRequest($url, $post, $headers, false, $logDir);
-                DB::query("UPDATE send_to_wazzup24 SET success=1 WHERE id={$row->id}");
-                DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='wazzup24'");
+    public static function send($login, $logDir) {
+        if (WA_URL_SUBDOMAIN && WA_API_KEY) {
+            for($i = 0; $i < 4; $i++){
+                sleep(rand(11,15));
+    //            $last = strtotime(DB::query("SELECT last FROM request WHERE service='wazzup24'")->fetch_object()->last);
+                if ($row = DB::query("SELECT * FROM send_to_wazzup24 WHERE success=0 AND login='$login' LIMIT 1")->fetch_object()){
+                    $url = 'https://'.WA_URL_SUBDOMAIN.'.wazzup24.com/api/v1.1/send_message';
+                    $headers = array();
+                    $post = array();
+                    $headers[] = "Content-type:application/json";
+                    $headers[] = "Authorization:".WA_API_KEY;
+                    $post['transport'] = $row->transport;
+                    $post['from'] = ($row->transport == 'whatsapp') ? WA_PHONE_FROM : INSTAGRAM_FROM;
+                    $post['to']=$row->to;
+                    $post['text']=$row->text;
+                    $post['content']=$row->content;
+                    $post=json_encode($post);
+                    $result = cURL::executeRequest($url, $post, $headers, false, $logDir);
+                    DB::query("UPDATE send_to_wazzup24 SET success=1 WHERE id={$row->id}");
+                    DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='wazzup24'");
+                }
             }
+            return true;
         }
-        return true;
     }
 
     /**

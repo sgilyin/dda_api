@@ -48,10 +48,10 @@ switch ($inputRequestMethod){
                 break;
 
             case 'cron':
-                SMSC::sendWaGc($logDir);
-                Wazzup24::send($logDir);
+                SMSC::sendWaGc($login, $logDir);
+                Wazzup24::send($login, $logDir);
                 SMSC::syncMessages($login, $logDir);
-                Vkontakte::send($logDir);
+                Vkontakte::send($login, $logDir);
                 break;
 
             case 'dbAddUser':
@@ -131,7 +131,28 @@ switch ($inputRequestMethod){
                 Yandex::modifyAudience($inputRequestData, $logDir);
                 break;
 
+            case 'mtGetAccessToken':
+                MyTarget::getAccessToken($logDir);
+                break;
+
+            case 'mtClearAccessTokens':
+                MyTarget::clearAccessTokens($logDir);
+                break;
+
+            case 'mtAddItemToAudience':
+                MyTarget::addItemToAudience($inputRequestData, $login);
+                break;
+
+            case 'mtDelItemFromAudience':
+                MyTarget::delItemFromAudience($inputRequestData, $login);
+                break;
+
+            case 'mtModifyAudience':
+                MyTarget::modifyAudience($inputRequestData, $logDir);
+                break;
+
             case 'test':
+                var_dump();
                 break;
         }
         break;

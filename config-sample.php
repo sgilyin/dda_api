@@ -17,30 +17,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//define('', '<Enter here>');
+//define('NAME', '<Enter here>');
 
-define('DB_HOST', '<Enter here>');
-define('DB_USER', '<Enter here>');
-define('DB_PASSWORD', '<Enter here>');
-define('DB_NAME', '<Enter here>');
-define('WA_API_KEY', '<Enter here>');
-define('WA_URL_SUBDOMAIN', '<Enter here>');
-define('WA_PHONE_FROM', '<Enter here>');
-define('SMSC_ACCOUNT', '<Enter here>');
-define('SMSC_PSW', '<Enter here>');
-define('GC_ACCOUNT', '<Enter here>');
-define('GC_API_KEY', '<Enter here>');
-define('DADATA_API_KEY', '<Enter here>');
-define('DADATA_SECRET_KEY', '<Enter here>');
-define('TWILIO_SID', '<Enter here>');
-define('TWILIO_TOKEN', '<Enter here>');
-define('TWILIO_WA_NUMBER', '<Enter here>');
-define('TWILIO_SMS_NUMBER', '<Enter here>');
-define('TWILIO_CALL_NUMBER', '<Enter here>');
-define('SENLER_CALLBACK_KEY', '<Enter here>');
-define('INSTAGRAM_FROM', '<Enter here>');
-define('VK_TOKEN', '<Enter here>');
-define('YANDEX_TOKEN', '<Enter here>');
+define('DB_HOST', '');
+define('DB_USER', '');
+define('DB_PASSWORD', '');
+define('DB_NAME', '');
+define('WA_API_KEY', '');
+define('WA_URL_SUBDOMAIN', '');
+define('WA_PHONE_FROM', '');
+define('SMSC_ACCOUNT', '');
+define('SMSC_PSW', '');
+define('GC_ACCOUNT', '');
+define('GC_API_KEY', '');
+define('DADATA_API_KEY', '');
+define('DADATA_SECRET_KEY', '');
+define('TWILIO_SID', '');
+define('TWILIO_TOKEN', '');
+define('TWILIO_WA_NUMBER', '');
+define('TWILIO_SMS_NUMBER', '');
+define('TWILIO_CALL_NUMBER', '');
+define('SENLER_CALLBACK_KEY', '');
+define('INSTAGRAM_FROM', '');
+define('VK_TOKEN', '');
+define('YANDEX_TOKEN', '');
+define('MT_CLIENT_ID', '');
+define('MT_CLIENT_SECRET', '');
+define('MT_ACCESS_TOKEN', '');
 
 //$addFields = new stdClass();
 //$addFields->{'123456'} = '<Enter here>';

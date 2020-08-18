@@ -32,28 +32,30 @@ class SMSC {
      * @return type
      */
     public static function syncMessages($login, $logDir){
-        $success = false;
-        $last = strtotime(DB::query("SELECT last FROM request WHERE service='smsc'")->fetch_object()->last);
-        if (time() - $last > 180){
-            $url="https://smsc.ru/sys/get.php";
-            $post['login'] = SMSC_ACCOUNT;
-            $post['psw'] = SMSC_PSW;
-            $post['fmt'] = 3;
-            $post['charset'] = 'utf-8';
-            $post['start'] = date('d.m.Y', strtotime('Now - 1 day'));
-            $post['cnt'] = 1000;
-            $post['get_messages'] = 1;
-            $result = cURL::executeRequest($url, $post, false, false, $logDir);
-            $json=json_decode($result);
-            for ($i=0; $i<count($json); $i++){
-                if ($json[$i]->id && $json[$i]->phone && $json[$i]->message){
-                   DB::query("INSERT INTO smsc_messages (`id`, `phone`, `message`, `login`) VALUES ('".$json[$i]->id."', '".$json[$i]->phone."', '".$json[$i]->message."', '$login')");
+        if (SMSC_ACCOUNT && SMSC_PSW) {
+            $success = false;
+            $last = strtotime(DB::query("SELECT last FROM request WHERE service='smsc'")->fetch_object()->last);
+            if (time() - $last > 180){
+                $url="https://smsc.ru/sys/get.php";
+                $post['login'] = SMSC_ACCOUNT;
+                $post['psw'] = SMSC_PSW;
+                $post['fmt'] = 3;
+                $post['charset'] = 'utf-8';
+                $post['start'] = date('d.m.Y', strtotime('Now - 1 day'));
+                $post['cnt'] = 1000;
+                $post['get_messages'] = 1;
+                $result = cURL::executeRequest($url, $post, false, false, $logDir);
+                $json=json_decode($result);
+                for ($i=0; $i<count($json); $i++){
+                    if ($json[$i]->id && $json[$i]->phone && $json[$i]->message){
+                       DB::query("INSERT INTO smsc_messages (`id`, `phone`, `message`, `login`) VALUES ('".$json[$i]->id."', '".$json[$i]->phone."', '".$json[$i]->message."', '$login')");
+                    }
                 }
+                DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='smsc'");
+                $success = true;
             }
-            DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='smsc'");
-            $success = true;
+            return json_encode(array('success' => $success,));
         }
-        return json_encode(array('success' => $success,));
     }
 
     /**
@@ -62,9 +64,9 @@ class SMSC {
      * @global array $addFields
      * @param string $logDir
      */
-    public static function sendWaGc($logDir){
+    public static function sendWaGc($login, $logDir){
         //$success = false;
-        $obj = DB::query("SELECT * FROM smsc_messages WHERE success=0");
+        $obj = DB::query("SELECT * FROM smsc_messages WHERE success=0 AND login='$login'");
         $messages = $obj->fetch_all();
         for ($i = 0; $i < count($messages); $i++) {
             $id = $messages[$i][0];

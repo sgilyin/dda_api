@@ -32,33 +32,35 @@ class GetCourse {
      * @return string
      */
     public static function sendContactForm($email, $text, $logDir){
-        $url='https://'.GC_ACCOUNT.'.getcourse.ru/cms/system/contact';
-        $page = file_get_contents($url);
-        if ($page) {
-            preg_match('/window\.requestTime.*(\d{10})/m', $page, $window_requestTime);
-            preg_match('/window\.requestSimpleSign.*([0-9a-z]{32})/m', $page, $window_requestSimpleSign);
-            preg_match('/<form.*data-xdget-id="([0-9]{5}(_\d*)*).*>/m', $page, $xdgetId);
-            sleep(rand(4, 11));
-            $params = array(
-                "action" => "processXdget",
-                "xdgetId" => $xdgetId[1],
-                "params[action]" => "form",
-                "params[url]" => $url,
-                "params[email]" => $email,
-                "params[full_name]" => "",
-                "params[text]" => $text,
-                "requestTime" => $window_requestTime[1],
-                "requestSimpleSign" => $window_requestSimpleSign[1]
-            );
-            $post = http_build_query($params);
-            $headers = array(
-                "Content-Type: application/x-www-form-urlencoded; charset=UTF-8",
-                "User-Agent: Mozilla/5.0 (compatible; Rigor/1.0.0; http://rigor.com)",
-                "Accept: */*",
-            );
-        }
+        if (GC_ACCOUNT) {
+            $url='https://'.GC_ACCOUNT.'.getcourse.ru/cms/system/contact';
+            $page = file_get_contents($url);
+            if ($page) {
+                preg_match('/window\.requestTime.*(\d{10})/m', $page, $window_requestTime);
+                preg_match('/window\.requestSimpleSign.*([0-9a-z]{32})/m', $page, $window_requestSimpleSign);
+                preg_match('/<form.*data-xdget-id="([0-9]{5}(_\d*)*).*>/m', $page, $xdgetId);
+                sleep(rand(4, 11));
+                $params = array(
+                    "action" => "processXdget",
+                    "xdgetId" => $xdgetId[1],
+                    "params[action]" => "form",
+                    "params[url]" => $url,
+                    "params[email]" => $email,
+                    "params[full_name]" => "",
+                    "params[text]" => $text,
+                    "requestTime" => $window_requestTime[1],
+                    "requestSimpleSign" => $window_requestSimpleSign[1]
+                );
+                $post = http_build_query($params);
+                $headers = array(
+                    "Content-Type: application/x-www-form-urlencoded; charset=UTF-8",
+                    "User-Agent: Mozilla/5.0 (compatible; Rigor/1.0.0; http://rigor.com)",
+                    "Accept: */*",
+                );
+            }
 
-        return cURL::executeRequest($url, $post, $headers, false, $logDir);
+            return cURL::executeRequest($url, $post, $headers, false, $logDir);
+        }
     }
 
     /**
@@ -69,15 +71,17 @@ class GetCourse {
      * @return string
      */
     public static function addUser($params, $logDir) {
-        $url = 'https://'.GC_ACCOUNT.'.getcourse.ru/pl/api/users';
-        $post['action'] = "add";
-        $post['key'] = GC_API_KEY;
-        $params['system']['refresh_if_exists'] = 1;
-        $post['params']=base64_encode(json_encode($params));
+        if (GC_ACCOUNT && GC_API_KEY) {
+            $url = 'https://'.GC_ACCOUNT.'.getcourse.ru/pl/api/users';
+            $post['action'] = "add";
+            $post['key'] = GC_API_KEY;
+            $params['system']['refresh_if_exists'] = 1;
+            $post['params']=base64_encode(json_encode($params));
 
-        return cURL::executeRequest($url, $post, false, false, $logDir);
+            return cURL::executeRequest($url, $post, false, false, $logDir);
+        }
     }
-
+    
     /**
      * Request for add user to GetCourse
      * 

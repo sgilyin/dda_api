@@ -32,15 +32,17 @@ class Senler {
      * @return string
      */
     public static function addSubscriber($inputRequestData, $logDir) {
-        if ($inputRequestData['vk_group_id'] && $inputRequestData['vk_user_id'] && $inputRequestData['subscription_id']){
-            $params['vk_group_id'] = $inputRequestData['vk_group_id'];
-            $params['vk_user_id'] = $inputRequestData['vk_user_id'];
-            $params['subscription_id'] = $inputRequestData['subscription_id'];
-            $params['v'] = '1.0';
-            $params['hash'] = static::getHash($params, SENLER_CALLBACK_KEY);
-            $url = 'https://senler.ru/api/subscribers/add';
+        if (SENLER_CALLBACK_KEY) {
+            if ($inputRequestData['vk_group_id'] && $inputRequestData['vk_user_id'] && $inputRequestData['subscription_id']){
+                $params['vk_group_id'] = $inputRequestData['vk_group_id'];
+                $params['vk_user_id'] = $inputRequestData['vk_user_id'];
+                $params['subscription_id'] = $inputRequestData['subscription_id'];
+                $params['v'] = '1.0';
+                $params['hash'] = static::getHash($params, SENLER_CALLBACK_KEY);
+                $url = 'https://senler.ru/api/subscribers/add';
 
-            return cURL::executeRequest($url, http_build_query($params), false, false, $logDir);
+                return cURL::executeRequest($url, http_build_query($params), false, false, $logDir);
+            }
         }
     }
 
@@ -52,15 +54,17 @@ class Senler {
      * @return string
      */
     public static function delSubscriber($inputRequestData, $logDir) {
-        if ($inputRequestData['vk_group_id'] && $inputRequestData['vk_user_id'] && $inputRequestData['subscription_id']){
-            $params['vk_group_id'] = $inputRequestData['vk_group_id'];
-            $params['vk_user_id'] = $inputRequestData['vk_user_id'];
-            $params['subscription_id'] = $inputRequestData['subscription_id'];
-            $params['v'] = '1.0';
-            $params['hash'] = static::getHash($params, SENLER_CALLBACK_KEY);
-            $url = 'https://senler.ru/api/subscribers/del';
+        if (SENLER_CALLBACK_KEY) {
+            if ($inputRequestData['vk_group_id'] && $inputRequestData['vk_user_id'] && $inputRequestData['subscription_id']){
+                $params['vk_group_id'] = $inputRequestData['vk_group_id'];
+                $params['vk_user_id'] = $inputRequestData['vk_user_id'];
+                $params['subscription_id'] = $inputRequestData['subscription_id'];
+                $params['v'] = '1.0';
+                $params['hash'] = static::getHash($params, SENLER_CALLBACK_KEY);
+                $url = 'https://senler.ru/api/subscribers/del';
 
-            return cURL::executeRequest($url, http_build_query($params), false, false, $logDir);
+                return cURL::executeRequest($url, http_build_query($params), false, false, $logDir);
+            }
         }
     }
 
@@ -72,14 +76,16 @@ class Senler {
      * @return string
      */
     public static function addSubscription($inputRequestData, $logDir) {
-        if($inputRequestData['vk_group_id'] && $inputRequestData['name']){
-            $params['vk_group_id'] = $inputRequestData['vk_group_id'];
-            $params['name'] = $inputRequestData['name'];
-            $params['v'] = '1.0';
-            $params['hash'] = static::getHash($params, SENLER_CALLBACK_KEY);
-            $url = 'https://senler.ru/api/subscriptions/add';
+        if (SENLER_CALLBACK_KEY) {
+            if($inputRequestData['vk_group_id'] && $inputRequestData['name']){
+                $params['vk_group_id'] = $inputRequestData['vk_group_id'];
+                $params['name'] = $inputRequestData['name'];
+                $params['v'] = '1.0';
+                $params['hash'] = static::getHash($params, SENLER_CALLBACK_KEY);
+                $url = 'https://senler.ru/api/subscriptions/add';
 
-            return cURL::executeRequest($url, http_build_query($params), false, false, $logDir);
+                return cURL::executeRequest($url, http_build_query($params), false, false, $logDir);
+            }
         }
     }
 
