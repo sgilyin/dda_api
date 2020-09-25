@@ -31,6 +31,33 @@ class Wazzup24 {
      * @return string
      */
     public static function send($login, $logDir) {
+        if (WA_API_KEY_20) {
+            for($i = 0; $i < 4; $i++){
+                sleep(rand(11,15));
+    //            $last = strtotime(DB::query("SELECT last FROM request WHERE service='wazzup24'")->fetch_object()->last);
+                if ($row = DB::query("SELECT * FROM send_to_wazzup24 WHERE success=0 AND login='$login' LIMIT 1")->fetch_object()){
+                    $url = 'https://api.wazzup24.com/v2/send_message';
+                    $headers = array();
+                    $post = array();
+                    $headers[] = "Content-type:application/json";
+                    $headers[] = "Authorization: Basic ".WA_API_KEY_20;
+                    $post['chatType'] = $row->transport;
+                    $post['channelId'] = ($row->transport == 'whatsapp') ? WA_CID_WA : WA_CID_IG;
+                    //$post['chatId']=$row->to;
+                    $post['chatId'] = ($row->transport == 'whatsapp') ? preg_replace('/[^0-9]/', '', $row->to) : $row->to;
+                    $post['text'] = $row->text ?? $row->content;
+ //                   $post['content'] = $row->content ?? false;
+                    $post=json_encode($post);
+                    $result = cURL::executeRequest($url, $post, $headers, false, $logDir);
+                    DB::query("UPDATE send_to_wazzup24 SET success=1 WHERE id={$row->id}");
+                    DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='wazzup24'");
+                }
+            }
+            return true;
+        }
+    }
+
+    public static function old_send($login, $logDir) {
         if (WA_URL_SUBDOMAIN && WA_API_KEY) {
             for($i = 0; $i < 4; $i++){
                 sleep(rand(11,15));

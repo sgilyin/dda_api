@@ -152,7 +152,7 @@ switch ($inputRequestMethod){
                 break;
 
             case 'test':
-                var_dump();
+                var_dump(Facebook::test($logDir));
                 break;
         }
         break;

@@ -52,7 +52,7 @@ class MyTarget {
         $phone = $inputRequestData['phone'] ?? false;
         $segmentId = $inputRequestData['segmentId'] ?? false;
         if ($segmentId && ($email || $phone)) {
-            $query = "INSERT INTO my_target_audience (`email`, `phone`, `login`, `segment`) VALUES ('$email', '$phone', '$login', '$segmentId')";
+            $query = "INSERT INTO my_target_audience (`email`, `phone`, `login`, `segment`, `direction`, `success`) VALUES ('$email', '$phone', '$login', '$segmentId', 'add', '0')";
             return DB::query($query);
         } else {
             return false;
@@ -64,14 +64,8 @@ class MyTarget {
         $phone = $inputRequestData['phone'] ?? false;
         $segmentId = $inputRequestData['segmentId'] ?? false;
         if ($segmentId && ($email || $phone)) {
-            $query = "DELETE FROM my_target_audience WHERE login='$login' AND segment='$segmentId'";
-            if ($email){
-                $query = $query." AND email='$email'";
-            }
-            if ($phone){
-                $query = $query." AND phone='$phone'";
-            }
-        return DB::query($query);
+            $query = "INSERT INTO my_target_audience (`email`, `phone`, `login`, `segment`, `direction`, `success`) VALUES ('$email', '$phone', '$login', '$segmentId', 'del', '0')";
+            return DB::query($query);
         } else {
             return false;
         }

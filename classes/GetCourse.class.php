@@ -91,8 +91,12 @@ class GetCourse {
      */
     public static function addUserRequest($inputRequestData, $logDir) {
         if ($inputRequestData['phone']){
-            $params['user']['phone'] = $inputRequestData['phone'];
-            $params['user']['email'] = $inputRequestData['phone'].'@facebook.com';
+            //preg_replace('/[^0-9]/', '', $inputRequestData['phone'])
+            //$params['user']['phone'] = $inputRequestData['phone'];
+            //$params['user']['email'] = $inputRequestData['phone'].'@facebook.com';
+            $phoneNum = preg_replace('/[^0-9]/', '', $inputRequestData['phone']);
+            $params['user']['phone'] = $phoneNum;
+            $params['user']['email'] = $phoneNum . '@facebook.com';
         }
         if ($inputRequestData['groups']){
             $params['user']['group_name'] = static::getRequestGroups($inputRequestData['groups']);
