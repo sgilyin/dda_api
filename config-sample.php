@@ -48,6 +48,9 @@ define('MT_CLIENT_ID', '');
 define('MT_CLIENT_SECRET', '');
 define('MT_ACCESS_TOKEN', '');
 define('FB_ACCESS_TOKEN', '');
+define('SBRF_CREDIT_USER', '');
+define('SBRF_CREDIT_PASSWORD', '');
+define('SBRF_CREDIT_RETURNURL', '');
 
 //$addFields = new stdClass();
 //$addFields->{'123456'} = '<Enter here>';

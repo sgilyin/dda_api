@@ -151,8 +151,8 @@ switch ($inputRequestMethod){
                 MyTarget::modifyAudience($inputRequestData, $logDir);
                 break;
 
-            case 'test':
-                var_dump(Facebook::test($logDir));
+            case 'sbCreditRegister':
+                echo Sberbank::register($inputRequestData, $logDir);
                 break;
         }
         break;
@@ -163,6 +163,10 @@ switch ($inputRequestMethod){
         }
         Wazzup24::trap($inputRequestData, $logDir);
         break;
+}
+
+if ($login == '' && $inputRemoteAddr == '195.191.78.178') {
+    //echo '[true]';
 }
 
 Logs::clear($logDir);
