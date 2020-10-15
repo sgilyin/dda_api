@@ -26,7 +26,7 @@ class Sberbank {
     public static function register($inputRequestData, $logDir) {
         if ($inputRequestData['email'] && $inputRequestData['orderNumber'] && $inputRequestData['itemPrice']) {
             $itemPrice = intval($inputRequestData['itemPrice'])*100;
-            $url = 'https://3dsec.sberbank.ru/sbercredit/'.__FUNCTION__.'.do';
+            $url = 'https://securepayments.sberbank.ru/sbercredit/'.__FUNCTION__.'.do';
             $post['userName'] = SBRF_CREDIT_USER;
             $post['password'] = SBRF_CREDIT_PASSWORD;
             $post['orderNumber'] = $inputRequestData['orderNumber'];
