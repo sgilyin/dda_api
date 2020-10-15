@@ -24,34 +24,41 @@
  */
 class Sberbank {
     public static function register($inputRequestData, $logDir) {
-        $url = 'https://3dsec.sberbank.ru/sbercredit/'.__FUNCTION__.'.do';
-        $post['userName'] = SBRF_CREDIT_USER;
-        $post['password'] = SBRF_CREDIT_PASSWORD;
-        $post['orderNumber'] = $inputRequestData['orderNumber'];
-        $post['amount'] = $inputRequestData['itemPrice'];
-        $post['currency'] = 643;
-        $post['returnUrl'] = SBRF_CREDIT_RETURNURL;
-        $jsonParams->phone = $inputRequestData['phone'];
-        $post['jsonParams'] = json_encode($jsonParams);
-        $installments->productType = 'INSTALLMENT';
-        $installments->productID = 10;
-        $quantity->value = 1;
-        $quantity->measure = 'pc';
-        $arr = array(
-            array(
-                "positionId" => 1,
-                "name" => 'Order_'.$inputRequestData['orderNumber'],
-                "quantity" => $quantity,
-                "itemAmount" => $inputRequestData['itemPrice'],
-                "itemCode" => $inputRequestData['orderNumber'],
-                "itemPrice" => $inputRequestData['itemPrice']
-            )
-        );
-        $orderBundle->cartItems->items = $arr;
-        $orderBundle->installments = $installments;
-        $post['orderBundle'] = json_encode($orderBundle);
-        $result = json_decode(cURL::executeRequest($url, $post, false, false, $logDir));
+        if ($inputRequestData['email'] && $inputRequestData['orderNumber'] && $inputRequestData['itemPrice']) {
+            $itemPrice = intval($inputRequestData['itemPrice'])*100;
+            $url = 'https://3dsec.sberbank.ru/sbercredit/'.__FUNCTION__.'.do';
+            $post['userName'] = SBRF_CREDIT_USER;
+            $post['password'] = SBRF_CREDIT_PASSWORD;
+            $post['orderNumber'] = $inputRequestData['orderNumber'];
+            $post['amount'] = $itemPrice;
+            $post['currency'] = 643;
+            $post['returnUrl'] = SBRF_CREDIT_RETURNURL;
+            $jsonParams->email = $inputRequestData['email'];
+            $post['jsonParams'] = json_encode($jsonParams);
+            $installments->productType = 'INSTALLMENT';
+            $installments->productID = 10;
+            $quantity->value = 1;
+            $quantity->measure = 'pc';
+            $arr = array(
+                array(
+                    "positionId" => 1,
+                    "name" => 'Order_'.$inputRequestData['orderNumber'],
+                    "quantity" => $quantity,
+                    "itemAmount" => $itemPrice,
+                    "itemCode" => $inputRequestData['orderNumber'],
+                    "itemPrice" => $itemPrice
+                )
+            );
+            $orderBundle->cartItems->items = $arr;
+            $orderBundle->installments = $installments;
+            $post['orderBundle'] = json_encode($orderBundle);
+            $result = json_decode(cURL::executeRequest($url, $post, false, false, $logDir));
 
-        return $result->formUrl;
+            if ($result->formUrl) {
+                $params['user']['email'] = $inputRequestData['email'];
+                $params['user']['addfields']['Sber'] = $result->formUrl;
+                return GetCourse::addUser($params, $logDir);
+            } else {var_dump($result);}
+        }
     }
 }
