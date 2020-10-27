@@ -110,11 +110,11 @@ class Wazzup24 {
      * @param array $inputRequestData
      * @param string $logDir
      */
-    public static function trap($inputRequestData, $logDir) {
+    public static function trap($login, $inputRequestData, $logDir) {
             if ($inputRequestData['messages'][0]['status']=="99") {
                 $phone = substr(preg_replace('/[^0-9]/', '', $inputRequestData['messages'][0]['phone']), -15);
                 try {
-                    $email = DB::query("SELECT email FROM gc_users WHERE phone='$phone'")->fetch_object()->email;
+                    $email = DB::query("SELECT email FROM gc_users WHERE phone='$phone' AND login='$login'")->fetch_object()->email;
                 } catch (Exception $exc) {
                 }
     //            $email = DB::query("SELECT email FROM gc_users WHERE phone='$phone'")->fetch_object()->email;

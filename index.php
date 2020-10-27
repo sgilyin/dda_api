@@ -17,9 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-include_once 'config.php';
-
 ini_set('max_execution_time', '300');
+// ini_set('memory_limit', '-1'); //Для загрузки всех пользователей из ГК
 set_time_limit(300);
 
 spl_autoload_register(function ($class) {
@@ -30,6 +29,13 @@ $inputRemoteAddr = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
 $inputRequestMethod = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
 $logDir = __DIR__.dirname(filter_input(INPUT_SERVER, 'PHP_SELF'));
 $login = substr(dirname(filter_input(INPUT_SERVER, 'PHP_SELF')),1);
+
+if ($login == '' && $inputRemoteAddr == '195.191.78.178') {
+    echo 'ok';
+    die();
+}
+
+include_once 'config.php';
 
 switch ($inputRequestMethod){
     case 'GET':
@@ -55,15 +61,15 @@ switch ($inputRequestMethod){
                 break;
 
             case 'dbAddUser':
-                DB::addUser($inputRequestData);
+                DB::addUser($login, $inputRequestData);
                 break;
 
             case 'dbUpdateUser':
-                DB::updateUser($inputRequestData);
+                DB::updateUser($login, $inputRequestData);
                 break;
 
             case 'dbSyncUsers':
-                var_dump(DB::syncUsers($logDir));
+                var_dump(DB::syncUsers($login, $logDir));
                 break;
 
             case 'gcAddUserRequest':
@@ -161,12 +167,8 @@ switch ($inputRequestMethod){
         if (!$inputRequestData){
             $inputRequestData = json_decode(file_get_contents("php://input"), true);
         }
-        Wazzup24::trap($inputRequestData, $logDir);
+        Wazzup24::trap($login, $inputRequestData, $logDir);
         break;
-}
-
-if ($login == '' && $inputRemoteAddr == '195.191.78.178') {
-    //echo '[true]';
 }
 
 Logs::clear($logDir);

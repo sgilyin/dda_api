@@ -54,13 +54,13 @@ class DB {
      * @param array $inputRequestData
      * @return integer
      */
-    public static function addUser($inputRequestData){
-        if ($inputRequestData['id'] && $inputRequestData['email'] && $inputRequestData['phone']){
-            $phoneNum = substr(preg_replace('/[^0-9]/', '', $inputRequestData['phone']), -15);
+    public static function addUser($login, $inputRequestData){
+        if ($inputRequestData['id'] && $inputRequestData['email']){
+            $phoneNum = (empty($inputRequestData['phone'])) ? '' : substr(preg_replace('/[^0-9]/', '', $inputRequestData['phone']), -15);
             $email = $inputRequestData['email'];
             $id = $inputRequestData['id'];
             
-            return static::query("INSERT INTO gc_users (`email`, `phone`, `id`) VALUES ('$email', '$phoneNum', '$id')");
+            return static::query("INSERT INTO gc_users (`email`, `phone`, `id`, `login`) VALUES ('$email', '$phoneNum', '$id', '$login')");
         }
     }
 
@@ -70,13 +70,13 @@ class DB {
      * @param array $inputRequestData
      * @return integer
      */
-    public static function updateUser($inputRequestData){
+    public static function updateUser($login, $inputRequestData){
         if ($inputRequestData['id'] && $inputRequestData['email'] && $inputRequestData['phone']){
             $phoneNum = substr(preg_replace('/[^0-9]/', '', $inputRequestData['phone']), -15);
             $email = $inputRequestData['email'];
             $id = $inputRequestData['id'];
             
-            return static::query("UPDATE gc_users SET email='$email', phone='$phoneNum' WHERE id='$id'");
+            return static::query("UPDATE gc_users SET email='$email', phone='$phoneNum' WHERE id='$id' AND login='$login'");
         }
     }
 
@@ -86,7 +86,7 @@ class DB {
      * @param string $logDir
      * @return boolean
      */
-    public static function syncUsers($logDir){
+    public static function syncUsers($login, $logDir){
         $mysqli = static::query("SELECT last FROM request WHERE service='getcourse'");
         $result = $mysqli->fetch_object();
         $last = strtotime($result->last);
@@ -102,7 +102,7 @@ class DB {
                     $id = $json->info->items[$j][0];
                     $email = $json->info->items[$j][1];
                     $phone = substr(preg_replace('/[^0-9]/', '', $json->info->items[$j][7]), -15);
-                    static::query("INSERT INTO gc_users (`id`, `email`, `phone`) VALUES ('$id', '$email', '$phone')");
+                    static::query("INSERT INTO gc_users (`id`, `email`, `phone`, `login`) VALUES ('$id', '$email', '$phone', '$login')");
                 }
             }
             static::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='getcourse'");
