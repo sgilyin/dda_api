@@ -34,8 +34,8 @@ class SMSC {
     public static function syncMessages($login, $logDir){
         if (SMSC_ACCOUNT && SMSC_PSW) {
             $success = false;
-            $last = strtotime(DB::query("SELECT last FROM request WHERE service='smsc'")->fetch_object()->last);
-            if (time() - $last > 180){
+            $last = strtotime(DB::query("SELECT last FROM request WHERE service='smsc' AND login='$login'")->fetch_object()->last);
+            if (time() - $last > 150){
                 $url="https://smsc.ru/sys/get.php";
                 $post['login'] = SMSC_ACCOUNT;
                 $post['psw'] = SMSC_PSW;
@@ -51,7 +51,7 @@ class SMSC {
                        DB::query("INSERT INTO smsc_messages (`id`, `phone`, `message`, `login`) VALUES ('".$json[$i]->id."', '".$json[$i]->phone."', '".$json[$i]->message."', '$login')");
                     }
                 }
-                DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='smsc'");
+                DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='smsc' AND login='$login'");
                 $success = true;
             }
             return json_encode(array('success' => $success,));

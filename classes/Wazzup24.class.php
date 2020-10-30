@@ -50,7 +50,7 @@ class Wazzup24 {
                     $post=json_encode($post);
                     $result = cURL::executeRequest($url, $post, $headers, false, $logDir);
                     DB::query("UPDATE send_to_wazzup24 SET success=1 WHERE id={$row->id}");
-                    DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='wazzup24'");
+                    DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='wazzup24' AND login='$login'");
                 }
             }
             return true;

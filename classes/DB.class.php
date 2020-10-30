@@ -87,7 +87,7 @@ class DB {
      * @return boolean
      */
     public static function syncUsers($login, $logDir){
-        $mysqli = static::query("SELECT last FROM request WHERE service='getcourse'");
+        $mysqli = static::query("SELECT last FROM request WHERE service='getcourse' AND login='$login'");
         $result = $mysqli->fetch_object();
         $last = strtotime($result->last);
         $allCount = 0;
@@ -105,7 +105,7 @@ class DB {
                     static::query("INSERT INTO gc_users (`id`, `email`, `phone`, `login`) VALUES ('$id', '$email', '$phone', '$login')");
                 }
             }
-            static::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='getcourse'");
+            static::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='getcourse' AND login='$login'");
             return $allCount;
         } else {
             return false;

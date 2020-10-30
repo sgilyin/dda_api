@@ -160,6 +160,11 @@ switch ($inputRequestMethod){
             case 'sbCreditRegister':
                 echo Sberbank::register($inputRequestData, $logDir);
                 break;
+
+            case 'test':
+            //    var_dump(Facebook::test($logDir));
+            var_dump(SMSC::syncMessages($login, $logDir));
+                break;
         }
         break;
     case 'POST':
