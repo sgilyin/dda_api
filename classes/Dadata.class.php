@@ -88,7 +88,7 @@ class Dadata {
                 $timezone = $timezone ?? '0';
                 $params['user']['addfields']['UTC+'] = $timezone;
             }
-            $params['user']['addfields']['Страна мобильного по DADATA'] = $dadataPhone[0]->country ?? 'null';
+            $params['user']['addfields']['Страна_мобильного_по_DADATA'] = $dadataPhone[0]->country ?? 'null';
             return GetCourse::addUser($params, $logDir);
         }
     }

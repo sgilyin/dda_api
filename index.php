@@ -162,8 +162,7 @@ switch ($inputRequestMethod){
                 break;
 
             case 'test':
-            //    var_dump(Facebook::test($logDir));
-            var_dump(SMSC::syncMessages($login, $logDir));
+                var_dump(Facebook::test($logDir));
                 break;
         }
         break;

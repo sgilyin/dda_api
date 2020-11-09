@@ -150,8 +150,11 @@ class Wazzup24 {
                     if ($item[9]){
                         $params['user']['addfields']['Возраст']=$item[9];
                     }
+                    if ($item[10]){
+                        $emailInMessage=$item[10];
+                    }
                 }
-                $email = "$phone@facebook.com";
+                $email = $emailInMessage ?? "$phone@facebook.com";
                 $params['user']['phone'] = $phone;
                 $params['user']['email'] = $email;
                 $params['user']['addfields']['whatsapp']=$phone;
