@@ -24,6 +24,27 @@
  */
 class Dadata {
 
+    public static function cleanNameFromWhatsapp($nameFromWhatsapp, $logDir) {
+        $dadataName = json_decode(static::clean('name', $nameFromWhatsapp, $logDir));
+        $result['user']['addfields']['QC имя из ватсапа'] = $dadataName[0]->qc;
+        switch ($dadataName[0]->qc) {
+            case 0:
+                $result['user']['first_name'] = ($dadataName[0]->patronymic) ? $dadataName[0]->name.' '.$dadataName[0]->patronymic : $dadataName[0]->name;
+                if ($dadataName[0]->surname) {
+                    $result['user']['last_name'] = $dadataName[0]->surname;
+                }
+                $result['user']['addfields']['Имя из ватсапа'] = $dadataName[0]->source;
+                break;
+            case 1:
+                $result['user']['addfields']['Имя из ватсапа'] = $dadataName[0]->source;
+                break;
+
+            default:
+                break;
+        }
+        return $result;
+    }
+
     /**
      * Standardizes Name in Dadata
      * @param array $inputRequestData

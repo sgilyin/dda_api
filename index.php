@@ -162,7 +162,11 @@ switch ($inputRequestMethod){
                 break;
 
             case 'test':
-                var_dump(Facebook::test($logDir));
+                $params['user']['addfields']['d_utm_source']='var1';
+                $params['user']['addfields']['Возраст']='var2';
+                $result['user']['addfields']['Имя из ватсапа'] = 'var3';
+                var_dump(array_merge($params,$result));
+                
                 break;
         }
         break;

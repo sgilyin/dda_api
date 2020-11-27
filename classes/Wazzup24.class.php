@@ -119,6 +119,11 @@ class Wazzup24 {
                 }
     //            $email = DB::query("SELECT email FROM gc_users WHERE phone='$phone'")->fetch_object()->email;
             if (!$email){
+                try {
+                    $nameFromWhatsapp = $inputRequestData['messages'][0]['authorName'] ?? $inputRequestData['messages'][0]['nameInMessenger'];
+                    $params = Dadata::cleanNameFromWhatsapp($nameFromWhatsapp, $logDir);
+                } catch (Exception $exc) {
+                }
                 preg_match("/\|.*\|/",$inputRequestData['messages'][0]['text'],$matches);
                 if ($matches){
                     $item=explode("|", $matches[0]);
