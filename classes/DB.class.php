@@ -80,6 +80,14 @@ class DB {
         }
     }
 
+    public static function deleteUser($login, $inputRequestData){
+        if ($inputRequestData['phone']){
+            $phoneNum = substr(preg_replace('/[^0-9]/', '', $inputRequestData['phone']), -15);
+            
+            return static::query("DELETE FROM gc_users WHERE login='$login' AND phone='$phoneNum'");
+        }
+    }
+
     /**
      * Synchronizes GetCourse users with MySQL database
      * 
