@@ -81,10 +81,16 @@ class DB {
     }
 
     public static function deleteUser($login, $inputRequestData){
-        if ($inputRequestData['phone']){
-            $phoneNum = substr(preg_replace('/[^0-9]/', '', $inputRequestData['phone']), -15);
-            
-            return static::query("DELETE FROM gc_users WHERE login='$login' AND phone='$phoneNum'");
+        if ($inputRequestData['conditions']){
+            if ($inputRequestData['conditions']['phone']) {
+                $inputRequestData['conditions']['phone'] = substr(preg_replace('/[^0-9]/', '', $inputRequestData['conditions']['phone']), -15);    
+            }
+            foreach ($inputRequestData['conditions'] as $key => $value) {
+                $conditions[] = $key . "='" . $value . "'";
+            }
+            $conditionsString = implode(" AND ", $conditions);
+
+            return static::query("DELETE FROM gc_users WHERE $conditionsString AND login='$login' LIMIT 1");
         }
     }
 
