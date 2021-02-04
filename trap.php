@@ -40,6 +40,9 @@ switch ($inputRequestMethod){
         break;
     case 'POST':
         $inputRequestData = filter_input_array(INPUT_POST);
+        if (!$inputRequestData){
+            $inputRequestData = json_decode(file_get_contents("php://input"), true);
+        }
         break;
 }
 

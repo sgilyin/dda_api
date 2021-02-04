@@ -36,6 +36,12 @@ class Logs {
                 unlink($file);
             }
         }
+
+        foreach (glob(implode('/', array_filter(array(filter_input(INPUT_SERVER, 'DOCUMENT_ROOT'), substr(dirname(filter_input(INPUT_SERVER, 'PHP_SELF')),1), 'logs', '*.log')))) as $file) {
+            if(time() - filectime($file) > 604800){
+                unlink($file);
+            }
+        }
     }
 
     /**
@@ -48,5 +54,21 @@ class Logs {
     public static function add($logDir,$file,$text){
 
         file_put_contents("$logDir/log/{$file}_".date('Ymd').'.log',PHP_EOL.date('Y-m-d H:i:s')." | $text", FILE_APPEND);
+    }
+
+    public static function error($logMessage) {
+        static::test(__FUNCTION__, $logMessage);
+    }
+
+    public static function access($logMessage) {
+        static::test(__FUNCTION__, $logMessage);
+    }
+
+    public static function handler($logMessage) {
+        static::test(__FUNCTION__, $logMessage);
+    }
+
+    private function test($logType, $logMessage) {
+        error_log(PHP_EOL.PHP_EOL.date('Y-m-d H:i:s')." | $logMessage", 3, implode('/', array_filter(array(filter_input(INPUT_SERVER, 'DOCUMENT_ROOT'), substr(dirname(filter_input(INPUT_SERVER, 'PHP_SELF')),1), 'logs', date('Ymd').".$logType.log"))));
     }
 }

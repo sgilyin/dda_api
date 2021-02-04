@@ -76,6 +76,10 @@ switch ($inputRequestMethod){
                 var_dump(DB::syncUsers($login, $logDir));
                 break;
 
+            case 'dbShowUsers':
+                DB::showUsers($login, $inputRequestData['conditions']);
+                break;
+
             case 'gcAddUserRequest':
                 GetCourse::addUserRequest($inputRequestData, $logDir);
                 break;
@@ -165,11 +169,21 @@ switch ($inputRequestMethod){
                 echo Sberbank::register($inputRequestData, $logDir);
                 break;
 
+            case 'semySMSTrap':
+                
+                break;
+
+            case 'exportDublicatePhonesToExcel':
+                DB::exportDublicatePhonesToExcel($login);
+                break;
+
             case 'test':
-                $params['user']['addfields']['d_utm_source']='var1';
-                $params['user']['addfields']['Возраст']='var2';
-                $result['user']['addfields']['Имя из ватсапа'] = 'var3';
-                var_dump(array_merge($params,$result));
+                #$params['user']['addfields']['d_utm_source']='var1';
+                #$params['user']['addfields']['Возраст']='var2';
+                #$result['user']['addfields']['Имя из ватсапа'] = 'var3';
+                #var_dump(array_merge($params,$result));
+                var_dump(DB::query('SELECT * FROM vk_api WHERE success=0 LIMIT 1')->fetch_object());
+                #var_dump(implode('/', array_filter(array(filter_input(INPUT_SERVER, 'DOCUMENT_ROOT'), substr(dirname(filter_input(INPUT_SERVER, 'PHP_SELF')),1), 'logs', '*.log'))));
                 
                 break;
         }
@@ -179,9 +193,22 @@ switch ($inputRequestMethod){
         if (!$inputRequestData){
             $inputRequestData = json_decode(file_get_contents("php://input"), true);
         }
-        Wazzup24::trap($login, $inputRequestData, $logDir);
+        switch ($inputRemoteAddr) {
+            case '95.211.243.70':
+                SemySMS::trap($login, $inputRequestData, $logDir);
+                break;
+
+            case '136.243.44.89':
+                Senler::trap($inputRequestData, $logDir);
+                break;
+
+            default:
+                Wazzup24::trap($login, $inputRequestData, $logDir);
+                break;
+        }
         break;
 }
 
 Logs::clear($logDir);
 Logs::add($logDir, basename(__FILE__,".php"), "$inputRemoteAddr | $inputRequestMethod | ".serialize($inputRequestData));
+Logs::access("$inputRemoteAddr | $inputRequestMethod | ".serialize($inputRequestData));

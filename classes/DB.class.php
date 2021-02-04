@@ -33,9 +33,18 @@ class DB {
     public static function query($query){
         if (DB_HOST && DB_USER && DB_PASSWORD && DB_NAME) {
             $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
+            if ($mysqli->connect_errno) {
+                Logs::handler(__CLASS__.' | '.__FUNCTION__.' | No DB connection: '.$mysqli->connect_error);
+                Logs::error(__CLASS__.' | '.__FUNCTION__.' | No DB connection: '.$mysqli->connect_error);
+                exit();
+            }
             $mysqli->set_charset('utf8');
             $errNo = $mysqli->errno;
             $result = $mysqli->query($query);
+            if (!$result) {
+                Logs::handler(__CLASS__.' | '.__FUNCTION__.' | Query error: '.$mysqli->error);
+                Logs::error(__CLASS__.' | '.__FUNCTION__.' | Query error: '.$mysqli->error);
+            }
             $mysqli->close();
             switch (strtok($query," ")){
                 case 'INSERT':
@@ -59,6 +68,7 @@ class DB {
             $phoneNum = (empty($inputRequestData['phone'])) ? '' : substr(preg_replace('/[^0-9]/', '', $inputRequestData['phone']), -15);
             $email = $inputRequestData['email'];
             $id = $inputRequestData['id'];
+            Logs::handler(__CLASS__.' | '.__FUNCTION__." | $login | $id | $email | $phoneNum");
             
             return static::query("INSERT INTO gc_users (`email`, `phone`, `id`, `login`) VALUES ('$email', '$phoneNum', '$id', '$login')");
         }
@@ -75,6 +85,7 @@ class DB {
             $phoneNum = substr(preg_replace('/[^0-9]/', '', $inputRequestData['phone']), -15);
             $email = $inputRequestData['email'];
             $id = $inputRequestData['id'];
+            Logs::handler(__CLASS__.' | '.__FUNCTION__." | $login | $id | $email | $phoneNum");
             
             return static::query("UPDATE gc_users SET email='$email', phone='$phoneNum' WHERE id='$id' AND login='$login'");
         }
@@ -82,15 +93,16 @@ class DB {
 
     public static function deleteUser($login, $inputRequestData){
         if ($inputRequestData['conditions']){
-            if ($inputRequestData['conditions']['phone']) {
+            if (isset($inputRequestData['conditions']['phone'])) {
                 $inputRequestData['conditions']['phone'] = substr(preg_replace('/[^0-9]/', '', $inputRequestData['conditions']['phone']), -15);    
             }
             foreach ($inputRequestData['conditions'] as $key => $value) {
                 $conditions[] = $key . "='" . $value . "'";
             }
             $conditionsString = implode(" AND ", $conditions);
+            Logs::handler(__CLASS__.' | '.__FUNCTION__." | $login | $conditionsString");
 
-            return static::query("DELETE FROM gc_users WHERE $conditionsString AND login='$login' LIMIT 1");
+            return static::query("DELETE FROM gc_users WHERE login='$login' $conditionsString LIMIT 1");
         }
     }
 
@@ -204,5 +216,38 @@ class DB {
      */
     public static function showVkQueue() {
         return static::query("SELECT COUNT(*) AS count FROM vk_api WHERE success=0")->fetch_object()->count;
+    }
+
+    public static function exportDublicatePhonesToExcel($login) {
+        if ($dublicates = static::query("SELECT * FROM gc_users WHERE login='$login' AND phone IN (SELECT phone FROM gc_users WHERE login='$login' AND NOT phone IS NULL AND NOT phone='' GROUP BY phone HAVING count(*) > 1);")) {
+            header( "Content-Type: application/vnd.ms-excel" );
+            header( "Content-disposition: attachment; filename=$login-".date('Y-m-d').".xls" );
+            printf ("%s\t%s\t%s\t%s\t%s\n", 'id', 'login', 'email', 'phone', 'instagram');
+            while ($dublicate = mysqli_fetch_object($dublicates)) {
+                printf ("%s\t%s\t%s\t%s\t%s\n", $dublicate->id, $dublicate->login, $dublicate->email, $dublicate->phone, $dublicate->instagram);
+            }
+        }        
+    }
+
+    public static function showUsers($login, $conditions){
+        if ($conditions){
+            if ($conditions['phone']) {
+                $conditions['phone'] = substr(preg_replace('/[^0-9]/', '', $conditions['phone']), -15);    
+            }
+            foreach ($conditions as $key => $value) {
+                $conditionsForString[] = "$key='$value'";
+            }
+            $conditionsString = implode(" AND ", $conditionsForString);
+
+            Logs::handler(__CLASS__.' | '.__FUNCTION__." | $login | $conditionsString");
+
+            if ($users = static::query("SELECT * FROM gc_users WHERE login='$login' AND $conditionsString")){
+                print_r('<table><tr><td>id</td><td>login</td><td>email</td><td>phone</td><td>instagram</td></tr>');
+                while ($obj = $users->fetch_object()) {
+                    printf ("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>", $obj->id, $obj->login, $obj->email, $obj->phone, $obj->instagram);
+                }
+                print_r("</table>");
+            }
+        }
     }
 }

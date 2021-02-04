@@ -67,7 +67,7 @@ class Dadata {
                 $params['user']['addfields']['Ваше Отчество'] = $dadataName[0]->patronymic;
             }
             if ($dadataName[0]->gender){
-                $params['user']['addfields']['Пол DADATA'] = $dadataName[0]->gender;
+                $params['user']['addfields']['Пол_DADATA'] = $dadataName[0]->gender;
             }
             if ($dadataName[0]->qc){
                 $params['user']['addfields']['QC ФИО DADATA'] = $dadataName[0]->qc;
@@ -93,10 +93,10 @@ class Dadata {
                 $params['user']['phone'] = $dadataPhone[0]->phone;
             }
             if ($dadataPhone[0]->region){
-                $params['user']['addfields']['Регион мобильного по DADATA'] = $dadataPhone[0]->region;
+                $params['user']['addfields']['Регион_мобильного_по_DADATA'] = $dadataPhone[0]->region;
             }
             if ($dadataPhone[0]->provider){
-                $params['user']['addfields']['Моб оператор DADATA'] = $dadataPhone[0]->provider;
+                $params['user']['addfields']['Моб_оператор_DADATA'] = $dadataPhone[0]->provider;
             }
             if ($dadataPhone[0]->timezone){
                 preg_match_all('/UTC[-+]\d+/', $dadataPhone[0]->timezone, $matches);

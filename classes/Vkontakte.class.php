@@ -113,20 +113,6 @@ class Vkontakte {
      * @param string $logDir
      * @return boolean
      */
-    public static function sendOld($logDir) {
-        for($i = 0; $i < 2; $i++){
-            sleep(rand(15,25));
-            if ($row = DB::query('SELECT * FROM vk_api WHERE success=0 LIMIT 1')->fetch_object()){
-                $method = $row->method;
-                $inputRequestData = unserialize($row->params);
-                static::vkExecute($method, $inputRequestData, $logDir);
-                DB::query("UPDATE vk_api SET success=1 WHERE id={$row->id}");
-                DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='vkontakte'");
-            }
-        }
-        return true;
-    }
-
     public static function send($login, $logDir) {
         $mysqliObj = DB::query("SELECT id, method, params FROM vk_api WHERE login='$login' AND success=0 LIMIT 1000");
         $idArray = array();
@@ -153,7 +139,12 @@ class Vkontakte {
                 }
             }
         }
-        DB::query('UPDATE vk_api SET success=1 WHERE id IN (' . implode(',', $idArray) . ')');
-        return true;
+        if ($idArray){
+            DB::query('UPDATE vk_api SET success=1 WHERE id IN (' . implode(',', $idArray) . ')');
+            DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='vkontakte'");
+            return true;
+        } else {
+            return false;
+        }
     }
 }

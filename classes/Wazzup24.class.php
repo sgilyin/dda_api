@@ -111,8 +111,9 @@ class Wazzup24 {
      * @param string $logDir
      */
     public static function trap($login, $inputRequestData, $logDir) {
+        if (isset($inputRequestData['messages'])) {
             if ($inputRequestData['messages'][0]['status']=="99") {
-                $phone = substr(preg_replace('/[^0-9]/', '', $inputRequestData['messages'][0]['phone']), -15);
+                $phone = substr(preg_replace('/[^0-9]/', '', $inputRequestData['messages'][0]['chatId']), -15);
                 try {
                     $email = DB::query("SELECT email FROM gc_users WHERE phone='$phone' AND login='$login'")->fetch_object()->email;
                 } catch (Exception $exc) {
@@ -160,12 +161,13 @@ class Wazzup24 {
                     }
                 }
                 $email = $emailInMessage ?? "$phone@facebook.com";
-                $params['user']['phone'] = $phone;
-                $params['user']['email'] = $email;
-                $params['user']['addfields']['whatsapp']=$phone;
-                GetCourse::addUser($params, $logDir);
             }
+            $params['user']['phone'] = $phone;
+            $params['user']['email'] = $email;
+            $params['user']['addfields']['whatsapp']=$phone;
+            GetCourse::addUser($params, $logDir);
             GetCourse::sendContactForm($email, $inputRequestData['messages'][0]['text'].PHP_EOL.'Отправлено из WhatsApp', $logDir);
+            }
         }
     }
 }

@@ -24,6 +24,20 @@
  */
 class Senler {
 
+    public static function trap($inputRequestData, $logDir) {
+        if ($inputRequestData['type']=='subscribe'){
+            $params['user']['email'] = 'id'.$inputRequestData['vk_user_id'].'@vk.com';
+            $params['user']['addfields']['vk_uid'] = $inputRequestData['vk_user_id'] ?? '';
+            $params['user']['addfields']['d_utm_source'] = $inputRequestData['utm_source'] ?? '';
+            $params['user']['addfields']['d_utm_medium'] = $inputRequestData['utm_medium'] ?? '';
+            $params['user']['addfields']['d_utm_campaign'] = $inputRequestData['utm_campaign'] ?? '';
+            $params['user']['addfields']['d_utm_content'] = $inputRequestData['utm_content'] ?? '';
+            $params['user']['addfields']['d_utm_term'] = $inputRequestData['utm_term'] ?? '';
+
+            return GetCourse::addUser($params, $logDir);
+        }
+    }
+
     /**
      * Add subscriber in Senler
      * 
