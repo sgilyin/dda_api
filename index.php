@@ -138,7 +138,7 @@ switch ($inputRequestMethod){
                 break;
 
             case 'yaDelItemFromAudience':
-                Yandex::delItemFromAudience($inputRequestData, $logDir);
+                var_dump(Yandex::delItemFromAudience($inputRequestData, $login));
                 break;
 
             case 'yaModifyAudience':

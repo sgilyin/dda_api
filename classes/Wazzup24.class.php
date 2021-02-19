@@ -45,8 +45,10 @@ class Wazzup24 {
                     $post['channelId'] = ($row->transport == 'whatsapp') ? WA_CID_WA : WA_CID_IG;
                     //$post['chatId']=$row->to;
                     $post['chatId'] = ($row->transport == 'whatsapp') ? preg_replace('/[^0-9]/', '', $row->to) : $row->to;
-                    $post['text'] = $row->text ?? $row->content;
- //                   $post['content'] = $row->content ?? false;
+                    if (!$row->text == '') {$post['text'] = $row->text;}
+                    #$post['text'] = $row->text ?? false;
+                    if (!$row->content == '') {$post['content'] = $row->content;}
+                    #$post['content'] = $row->content ?? false;
                     $post=json_encode($post);
                     $result = cURL::executeRequest($url, $post, $headers, false, $logDir);
                     DB::query("UPDATE send_to_wazzup24 SET success=1 WHERE id={$row->id}");
