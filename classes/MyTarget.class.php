@@ -23,48 +23,40 @@
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class MyTarget {
-    public static function modifyAudience($inputRequestData, $logDir) {
-        if (MT_ACCESS_TOKEN) {
-            $segmentId = $inputRequestData['segmentId'] ?? false;
-            if ($segmentId){
-                $query = "SELECT * FROM my_target_audience WHERE segment='$segmentId'";
-                if ($result = DB::query($query)) {
-                    file_put_contents("$segmentId.csv", 'email,phone');
-                    $url = 'https://target-sandbox.my.com/api/v2/remarketing/users_lists.json';
-                    $headers[] = 'Authorization: Bearer ' . MT_ACCESS_TOKEN;
-                    $headers[] = 'Content-Type: multipart/form-data';
-                    while ($obj = $result->fetch_object()) {
-                        file_put_contents("$segmentId.csv", PHP_EOL . $obj->email . ',' . $obj->phone, FILE_APPEND);
-                    }
-                    $result->close();
-                    $post['file'] = new CurlFile(realpath("$segmentId.csv"));
-                    $post['data'] = '{"name": "Test", "type": "vk"}';
-                    return cURL::executeRequest($url, $post, $headers, false, $logDir);
+    public function modifyAudience($inputRequestData, $login, $logDir) {
+        if (MT_ACCESS_TOKEN && $inputRequestData['operation'] && $inputRequestData['segment'] && $inputRequestData['name']) {
+            $query = "SELECT * FROM my_target_audience WHERE login='$login' AND segment={$inputRequestData['segment']} AND operation='{$inputRequestData['operation']}' AND success=0";
+            if ($result = DB::query($query)) {
+                $file = "MT_{$inputRequestData['segment']}.txt";
+                file_put_contents($file, '');
+                $url = 'https://target-sandbox.my.com/api/v2/remarketing/users_lists.json';
+                $headers[] = 'Authorization: Bearer ' . MT_ACCESS_TOKEN;
+                $headers[] = 'Content-Type: multipart/form-data';
+                while ($obj = $result->fetch_object()) {
+                    $ids[] = $obj->id;
+                    $type = $obj->type;
+                    file_put_contents($file, PHP_EOL . $obj->value, FILE_APPEND);
+                    
                 }
-            } else {
-                return false;
+                $result->close();
+                $prefix = ($inputRequestData['operation'] == 'del') ? '-' : '';
+                $post['data'] = '{"base": ' . $prefix . $inputRequestData['segment'] . ', "name": "' . $inputRequestData['name'] . '", "type": "' . $type . '"}';
+                $post['file'] = new CurlFile(realpath("MT_{$inputRequestData['segment']}.txt"));
+                $json = json_decode(cURL::executeRequest($url, $post, $headers, false, $logDir));
+                if ($json->id) {
+                    $stringIds = implode(',', $ids);
+                    $query = "UPDATE my_target_audience SET success=1 WHERE id IN ($stringIds)";
+                    DB::query($query);
+                    unlink($file);
+                }
+                return $json;
             }
         }
     }
 
-    public static function addItemToAudience($inputRequestData, $login) {
-        $email = $inputRequestData['email'] ?? false;
-        $phone = $inputRequestData['phone'] ?? false;
-        $segmentId = $inputRequestData['segmentId'] ?? false;
-        if ($segmentId && ($email || $phone)) {
-            $query = "INSERT INTO my_target_audience (`email`, `phone`, `login`, `segment`, `direction`, `success`) VALUES ('$email', '$phone', '$login', '$segmentId', 'add', '0')";
-            return DB::query($query);
-        } else {
-            return false;
-        }
-    }
-
-    public static function delItemFromAudience($inputRequestData, $login) {
-        $email = $inputRequestData['email'] ?? false;
-        $phone = $inputRequestData['phone'] ?? false;
-        $segmentId = $inputRequestData['segmentId'] ?? false;
-        if ($segmentId && ($email || $phone)) {
-            $query = "INSERT INTO my_target_audience (`email`, `phone`, `login`, `segment`, `direction`, `success`) VALUES ('$email', '$phone', '$login', '$segmentId', 'del', '0')";
+    public function modifyItem($inputRequestData, $login) {
+        if ($inputRequestData['operation'] && $inputRequestData['segment'] && $inputRequestData['type'] && $inputRequestData['value']) {
+            $query = "INSERT INTO my_target_audience (`login`, `operation`, `segment`, `type`, `value`) VALUES ('$login', '{$inputRequestData['operation']}' ,'{$inputRequestData['segment']}', '{$inputRequestData['type']}', '{$inputRequestData['value']}')";
             return DB::query($query);
         } else {
             return false;

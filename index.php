@@ -161,8 +161,12 @@ switch ($inputRequestMethod){
                 MyTarget::delItemFromAudience($inputRequestData, $login);
                 break;
 
+            case 'mtModifyItem':
+                var_dump(MyTarget::modifyItem($inputRequestData['_'], $login));
+                break;
+
             case 'mtModifyAudience':
-                MyTarget::modifyAudience($inputRequestData, $logDir);
+                var_dump(MyTarget::modifyAudience($inputRequestData['_'], $login, $logDir));
                 break;
 
             case 'sbCreditRegister':
