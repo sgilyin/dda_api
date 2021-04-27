@@ -61,11 +61,19 @@ switch ($inputRequestMethod){
                 break;
 
             case 'dbAddUser':
-                DB::addUser($login, $inputRequestData);
+                DB::addUser($login, $inputRequestData);#depricated
+                break;
+
+            case 'dbUserAdd':
+                DB::userAdd($login, $inputRequestData['_']);
+                break;
+
+            case 'dbUserUpdate':
+                DB::userUpdate($login, $inputRequestData['_']);
                 break;
 
             case 'dbUpdateUser':
-                DB::updateUser($login, $inputRequestData);
+                DB::updateUser($login, $inputRequestData);#depricated
                 break;
 
             case 'dbDeleteUser':
@@ -182,11 +190,13 @@ switch ($inputRequestMethod){
                 break;
 
             case 'test':
+                $nameFromWhatsapp = 'Anton';
+                var_dump(Dadata::cleanNameFromWhatsapp($nameFromWhatsapp, $logDir));
                 #$params['user']['addfields']['d_utm_source']='var1';
                 #$params['user']['addfields']['Возраст']='var2';
                 #$result['user']['addfields']['Имя из ватсапа'] = 'var3';
                 #var_dump(array_merge($params,$result));
-                var_dump(DB::query('SELECT * FROM vk_api WHERE success=0 LIMIT 1')->fetch_object());
+                #var_dump(DB::query('SELECT * FROM vk_api WHERE success=0 LIMIT 1')->fetch_object());
                 #var_dump(implode('/', array_filter(array(filter_input(INPUT_SERVER, 'DOCUMENT_ROOT'), substr(dirname(filter_input(INPUT_SERVER, 'PHP_SELF')),1), 'logs', '*.log'))));
                 
                 break;
@@ -213,6 +223,6 @@ switch ($inputRequestMethod){
         break;
 }
 
-Logs::clear($logDir);
-Logs::add($logDir, basename(__FILE__,".php"), "$inputRemoteAddr | $inputRequestMethod | ".serialize($inputRequestData));
+#Logs::clear($logDir);
+#Logs::add($logDir, basename(__FILE__,".php"), "$inputRemoteAddr | $inputRequestMethod | ".serialize($inputRequestData));
 Logs::access("$inputRemoteAddr | $inputRequestMethod | ".serialize($inputRequestData));

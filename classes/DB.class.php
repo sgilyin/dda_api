@@ -39,8 +39,8 @@ class DB {
                 exit();
             }
             $mysqli->set_charset('utf8');
-            $errNo = $mysqli->errno;
             $result = $mysqli->query($query);
+            $errNo = $mysqli->errno;
             if (!$result) {
                 Logs::handler(__CLASS__.' | '.__FUNCTION__.' | Query error: '.$mysqli->error);
                 Logs::error(__CLASS__.' | '.__FUNCTION__.' | Query error: '.$mysqli->error);
@@ -57,6 +57,33 @@ class DB {
         }
     }
 
+    public static function userAdd($login, $inputRequestData) {
+        if ($inputRequestData['id'] && $inputRequestData['email']){
+            $columns = implode("`, `",array_keys($inputRequestData));
+            $values  = implode("', '", preg_replace('/^[+]?([0-9]{0,4})'
+                    . '\(?([0-9]{3})\)?([ .-]?)([0-9]{3})([ .-]?)([0-9]{2,5})'
+                    . '([ .-]?)([0-9]{2,5})$/', '$1$2$4$6$8', $inputRequestData));
+            $query = "INSERT INTO gc_users (`login`, `$columns`) VALUES ('$login', '$values')";
+            $result = static::query($query);
+            Logs::handler(__CLASS__.' | '.__FUNCTION__." | '$login', '$values' | $result");
+            return $result;
+        }
+    }
+
+    public static function userUpdate($login, $inputRequestData){
+        if ($inputRequestData['id'] && $inputRequestData['email'] && $inputRequestData['phone']) {
+            $conditions = preg_replace('/^[+]?([0-9]{0,4})\(?([0-9]{3})\)?([ .-]?)([0-9]{3})([ .-]?)([0-9]{2,5})([ .-]?)([0-9]{2,5})$/', '$1$2$4$6$8', $inputRequestData['_']);
+            foreach ($conditions as $key => $val) {
+                $setArr[] = "$key='$val'";
+            }
+            $setStr = implode(", ", $setArr);
+#            $sql = "UPDATE gc_users SET $setStr WHERE login=$login AND id='{$inputRequestData['_']['id']}'";
+            Logs::handler(__CLASS__.' | '.__FUNCTION__." | $login | $setStr");
+
+            return static::query("UPDATE gc_users SET $setStr WHERE login=$login AND id='{$inputRequestData['_']['id']}'");
+        }
+    }
+
     /**
      * Add user to MySQL database
      * 
@@ -68,9 +95,10 @@ class DB {
             $phoneNum = (empty($inputRequestData['phone'])) ? '' : substr(preg_replace('/[^0-9]/', '', $inputRequestData['phone']), -15);
             $email = $inputRequestData['email'];
             $id = $inputRequestData['id'];
-            Logs::handler(__CLASS__.' | '.__FUNCTION__." | $login | $id | $email | $phoneNum");
-            
-            return static::query("INSERT INTO gc_users (`email`, `phone`, `id`, `login`) VALUES ('$email', '$phoneNum', '$id', '$login')");
+            $firstName = $inputRequestData['name'] ?? '';
+            Logs::handler(__CLASS__.' | '.__FUNCTION__." | $login | $id | $email | $phoneNum | $firstName");
+
+            return static::query("INSERT INTO gc_users (`email`, `phone`, `id`, `login`, `firstName`) VALUES ('$email', '$phoneNum', '$id', '$login', '$firstName')");
         }
     }
 
@@ -85,9 +113,10 @@ class DB {
             $phoneNum = substr(preg_replace('/[^0-9]/', '', $inputRequestData['phone']), -15);
             $email = $inputRequestData['email'];
             $id = $inputRequestData['id'];
-            Logs::handler(__CLASS__.' | '.__FUNCTION__." | $login | $id | $email | $phoneNum");
-            
-            return static::query("UPDATE gc_users SET email='$email', phone='$phoneNum' WHERE id='$id' AND login='$login'");
+            $firstName = $inputRequestData['name'] ?? '';
+            Logs::handler(__CLASS__.' | '.__FUNCTION__." | $login | $id | $email | $phoneNum | $firstName");
+
+            return static::query("UPDATE gc_users SET email='$email', phone='$phoneNum', firstName='$firstName' WHERE id='$id' AND login='$login'");
         }
     }
 

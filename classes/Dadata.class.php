@@ -132,7 +132,8 @@ class Dadata {
                 "X-Secret: " . DADATA_SECRET_KEY,
             );
             $post = json_encode(array($value));
-            return cURL::executeRequest($url, $post, $headers, false, $logDir);
+#            return cURL::executeRequest($url, $post, $headers, false, $logDir);
+            return cURL::executeRequestTest('POST', $url, $post, $headers, false, $logDir);
         }
     }
 }

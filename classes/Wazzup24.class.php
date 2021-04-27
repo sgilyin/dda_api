@@ -117,15 +117,20 @@ class Wazzup24 {
             if ($inputRequestData['messages'][0]['status']=="99") {
                 $phone = substr(preg_replace('/[^0-9]/', '', $inputRequestData['messages'][0]['chatId']), -15);
                 try {
-                    $email = DB::query("SELECT email FROM gc_users WHERE phone='$phone' AND login='$login'")->fetch_object()->email;
+                    $user = DB::query("SELECT email, instagram, firstName FROM gc_users WHERE phone='$phone' AND login='$login'")->fetch_object();
+                    $email = $user->email ?? null;
+                    $firstName = $user->firstName ?? null;
+                    $instagram = $user->instagram ?? null;
                 } catch (Exception $exc) {
+                    Logs::error(__CLASS__ . '::' . __FUNCTION__ . " | var user | $exc");
                 }
     //            $email = DB::query("SELECT email FROM gc_users WHERE phone='$phone'")->fetch_object()->email;
-            if (!$email){
+            if (empty($email)){
                 try {
                     $nameFromWhatsapp = $inputRequestData['messages'][0]['authorName'] ?? $inputRequestData['messages'][0]['nameInMessenger'];
                     $params = Dadata::cleanNameFromWhatsapp($nameFromWhatsapp, $logDir);
                 } catch (Exception $exc) {
+                    Logs::error(__CLASS__ . '::' . __FUNCTION__ . " | dadata cleanName | $exc");
                 }
                 preg_match("/\|.*\|/",$inputRequestData['messages'][0]['text'],$matches);
                 if ($matches){
@@ -163,6 +168,14 @@ class Wazzup24 {
                     }
                 }
                 $email = $emailInMessage ?? "$phone@facebook.com";
+            }
+            if (empty($firstName)) {
+                try {
+                    $nameFromWhatsapp = $inputRequestData['messages'][0]['authorName'] ?? $inputRequestData['messages'][0]['nameInMessenger'];
+                    $params = Dadata::cleanNameFromWhatsapp($nameFromWhatsapp, $logDir);
+                } catch (Exception $exc) {
+                    Logs::error(__CLASS__ . '::' . __FUNCTION__ . " | dadata nameFromWa | $exc");
+                }
             }
             $params['user']['phone'] = $phone;
             $params['user']['email'] = $email;
