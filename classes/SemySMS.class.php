@@ -71,5 +71,12 @@ class SemySMS {
             GetCourse::addUser($params, $logDir);
             GetCourse::sendContactForm($email, $inputRequestData['msg'].PHP_EOL.'Отправлено из WhatsApp', $logDir);
         }
+        if ($inputRequestData['type']=='0' && $inputRequestData['dir']=='in') {
+            $whatsapp['to'] = '79602833085';
+            $whatsapp['transport'] = 'whatsapp';
+            $whatsapp['text'] = $inputRequestData['phone'] . PHP_EOL .
+                $inputRequestData['msg'] . PHP_EOL . $inputRequestData['date'];
+            Wazzup24::queue($login, $whatsapp);
+        }
     }
 }
