@@ -50,7 +50,7 @@ class cURL {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         $result = curl_exec($ch);
         curl_close($ch);
-        if ($logDir){Logs::add($logDir,'cURL',"$url | ".serialize($post)." | ". serialize($result));}
+#        if ($logDir){Logs::add($logDir,'cURL',"$url | ".serialize($post)." | ". serialize($result));}
         Logs::handler(__CLASS__." | ".__FUNCTION__." | $url | ".serialize($post)." | ". serialize($result));
         return $result;
     }
@@ -77,7 +77,7 @@ class cURL {
         $result = curl_exec($ch);
         $info = curl_getinfo($ch);
         curl_close($ch);
-        if ($logDir){Logs::add($logDir,'cURL',"$url | " . serialize($post) . " | " . serialize($result) . " | " . serialize($info));}
+#        if ($logDir){Logs::add($logDir,'cURL',"$url | " . serialize($post) . " | " . serialize($result) . " | " . serialize($info));}
         Logs::handler(__CLASS__." | ".__FUNCTION__." | $url | ".serialize($post)." | ". serialize($result)." | ". serialize($info));
         return $result;
     }

@@ -26,6 +26,7 @@ spl_autoload_register(function ($class) {
 });
 
 $inputRemoteAddr = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
+$inputRemoteHost = filter_input(INPUT_SERVER, 'REMOTE_HOST');
 $inputRequestMethod = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
 $logDir = __DIR__.dirname(filter_input(INPUT_SERVER, 'PHP_SELF'));
 $login = substr(dirname(filter_input(INPUT_SERVER, 'PHP_SELF')),1);
@@ -53,9 +54,14 @@ switch ($inputRequestMethod){
                 Wazzup24::queue($login, $inputRequestData);
                 break;
 
+            case 'chatApiSend':
+                ChatApi::queue($login, $inputRequestData);
+                break;
+
             case 'cron':
                 SMSC::sendWaGc($login, $logDir);
                 Wazzup24::send($login, $logDir);
+                ChatApi::send($login, $logDir);
                 SMSC::syncMessages($login, $logDir);
                 Vkontakte::send($login, $logDir);
                 break;
@@ -190,8 +196,9 @@ switch ($inputRequestMethod){
                 break;
 
             case 'test':
-                $nameFromWhatsapp = 'Anton';
-                var_dump(Dadata::cleanNameFromWhatsapp($nameFromWhatsapp, $logDir));
+                var_dump(Wazzup24::send($login, $logDir));
+                #$nameFromWhatsapp = 'Anton';
+                #var_dump(Dadata::cleanNameFromWhatsapp($nameFromWhatsapp, $logDir));
                 #$params['user']['addfields']['d_utm_source']='var1';
                 #$params['user']['addfields']['Возраст']='var2';
                 #$result['user']['addfields']['Имя из ватсапа'] = 'var3';
@@ -199,6 +206,10 @@ switch ($inputRequestMethod){
                 #var_dump(DB::query('SELECT * FROM vk_api WHERE success=0 LIMIT 1')->fetch_object());
                 #var_dump(implode('/', array_filter(array(filter_input(INPUT_SERVER, 'DOCUMENT_ROOT'), substr(dirname(filter_input(INPUT_SERVER, 'PHP_SELF')),1), 'logs', '*.log'))));
                 
+                break;
+
+            default:
+                echo 'Silent is golden';
                 break;
         }
         break;
@@ -209,6 +220,7 @@ switch ($inputRequestMethod){
         }
         switch ($inputRemoteAddr) {
             case '95.211.243.70':
+            case '193.42.110.5':
                 SemySMS::trap($login, $inputRequestData, $logDir);
                 break;
 
@@ -216,13 +228,36 @@ switch ($inputRequestMethod){
                 Senler::trap($inputRequestData, $logDir);
                 break;
 
+#            case '159.69.73.62':
+#            case '35.228.37.107':
+#                ChatApi::trap($login, $inputRequestData, $logDir);
+#                break;
+
+#            case '148.251.13.26':
+#            case '144.76.56.26':
+#                Wazzup24::trap($login, $inputRequestData, $logDir);
+#                break;
+
             default:
+#                ChatApi::trap($login, $inputRequestData, $logDir);
                 Wazzup24::trap($login, $inputRequestData, $logDir);
                 break;
         }
         break;
 }
 
+switch ($inputRemoteAddr) {
+    case '185.151.241.45':
+    case '87.251.80.4':
+#    case '195.191.78.178':
+        $inputRequestData['class']['method']($login, $inputRequestData['args']);
+        break;
+
+    default:
+        Auth::logIn($login, $inputRequestData);
+#        echo 'Silent is golden';
+        break;
+}
 #Logs::clear($logDir);
 #Logs::add($logDir, basename(__FILE__,".php"), "$inputRemoteAddr | $inputRequestMethod | ".serialize($inputRequestData));
-Logs::access("$inputRemoteAddr | $inputRequestMethod | ".serialize($inputRequestData));
+Logs::access("$inputRemoteAddr | $inputRemoteHost | $inputRequestMethod | ".serialize($inputRequestData));

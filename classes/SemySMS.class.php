@@ -1,15 +1,9 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /**
  * Description of SemySMS
  *
- * @author sgilyin
+ * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class SemySMS {
     public static function trap($login, $inputRequestData, $logDir) {
@@ -72,11 +66,15 @@ class SemySMS {
             GetCourse::sendContactForm($email, $inputRequestData['msg'].PHP_EOL.'Отправлено из WhatsApp', $logDir);
         }
         if ($inputRequestData['type']=='0' && $inputRequestData['dir']=='in') {
-            $whatsapp['to'] = '79602833085';
-            $whatsapp['transport'] = 'whatsapp';
-            $whatsapp['text'] = $inputRequestData['phone'] . PHP_EOL .
+#            $whatsapp['to'] = WA_SEMYSMS_NOTIFY;
+#            $whatsapp['transport'] = 'whatsapp';
+#            $whatsapp['text'] = $inputRequestData['phone'] . PHP_EOL .
+#                $inputRequestData['msg'] . PHP_EOL . $inputRequestData['date'];
+#            Wazzup24::queue($login, $whatsapp);
+            $toChatApi['phone'] = WA_SEMYSMS_NOTIFY;
+            $toChatApi['body'] = $inputRequestData['phone'] . PHP_EOL .
                 $inputRequestData['msg'] . PHP_EOL . $inputRequestData['date'];
-            Wazzup24::queue($login, $whatsapp);
+#            ChatApi::queue($login, $toChatApi);
         }
     }
 }

@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//define('NAME', '<Enter here>');
+#define('NAME', '<Enter here>');
 
 define('DB_HOST', '');
 define('DB_USER', '');
@@ -51,6 +51,14 @@ define('FB_ACCESS_TOKEN', '');
 define('SBRF_CREDIT_USER', '');
 define('SBRF_CREDIT_PASSWORD', '');
 define('SBRF_CREDIT_RETURNURL', '');
+define('WA_SEMYSMS_NOTIFY', '');
+define('CHAT_API_TOKEN', '');
 
-//$addFields = new stdClass();
-//$addFields->{'123456'} = '<Enter here>';
+#GC Fields
+#$addFields = new stdClass();
+#$addFields->{'123456'} = '<Enter here>';
+
+#GC Managers
+#$managersGC = array();
+#$managersGC['ManagerGC1']['user'] = 'user';
+#$managersGC['ManagerGC1']['password'] = 'password';

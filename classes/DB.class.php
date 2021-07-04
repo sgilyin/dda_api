@@ -84,6 +84,57 @@ class DB {
         }
     }
 
+    public static function dealUpdate($login, $args) {
+#        Logs::handler(__CLASS__.' | '.__FUNCTION__." | $login | ".serialize($args));
+        if ($args['id'] && $args['number']) {
+            foreach ($args as $key => $val) {
+                $setArr[] = "$key='$val'";
+            }
+            $setStr = implode(", ", $setArr);
+            $query = "UPDATE gc_deals SET $setStr WHERE login='$login' AND id='{$args['id']}'";
+            $deal = static::query($query);
+            if ($deal == 0) {
+                $query = "INSERT INTO gc_deals SET $setStr, login='$login'";
+                static::query($query);
+            }
+        }
+    }
+
+    public static function getManagersDeals($login, $manager) {
+        $query = "SELECT * FROM gc_deals WHERE login='$login' AND manager='$manager'";
+        $deals = static::query($query);
+        while ($deal = $deals->fetch_object()) {
+            $rows .= "
+                <tr>
+                    <td><a target=_blank href='https://dubrovskaya-interior.ru/sales/control/deal/update/id/$deal->id'>$deal->id</a></td>
+                    <td>$deal->number</td>
+                    <td>$deal->created_at</td>
+                    <td>$deal->status</td>
+                    <td>$deal->positions</td>
+                    <td>$deal->cost_money_value</td>
+                    <td><a target=_blank href='https://dubrovskaya-interior.ru/user/control/user/update/id/$deal->client_id'>$deal->first_name</a></td>
+                    <td><a href='tel:$deal->phone'>$deal->phone</a></td>
+                </tr>";
+ #           var_dump($deal);
+        }
+        echo <<<HTML
+        <table>
+            <tr>
+                <td>ID заказа</td>
+                <td>Номер заказа</td>
+                <td>Дата заказа</td>
+                <td>Статус заказа</td>
+                <td>Состав заказа</td>
+                <td>Сумма заказа</td>
+                <td>Имя клиента</td>
+                <td>Телефон клиента</td>
+            </tr>
+            $rows
+        </table>
+        HTML;
+#        $managerDeals = 
+    }
+
     /**
      * Add user to MySQL database
      * 

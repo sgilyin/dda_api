@@ -35,27 +35,29 @@ class Wazzup24 {
             for($i = 0; $i < 4; $i++){
                 sleep(rand(11,15));
     //            $last = strtotime(DB::query("SELECT last FROM request WHERE service='wazzup24'")->fetch_object()->last);
-                if ($row = DB::query("SELECT * FROM send_to_wazzup24 WHERE success=0 AND login='$login' LIMIT 1")->fetch_object()){
+                if ($row = DB::query("SELECT * FROM send_to_wazzup24 WHERE sendTime=0 AND login='$login' LIMIT 1")->fetch_object()){
                     $url = 'https://api.wazzup24.com/v2/send_message';
                     $headers = array();
                     $post = array();
                     $headers[] = "Content-type:application/json";
                     $headers[] = "Authorization: Basic ".WA_API_KEY_20;
-                    $post['chatType'] = $row->transport;
-                    $post['channelId'] = ($row->transport == 'whatsapp') ? WA_CID_WA : WA_CID_IG;
-                    //$post['chatId']=$row->to;
-                    $post['chatId'] = ($row->transport == 'whatsapp') ? preg_replace('/[^0-9]/', '', $row->to) : $row->to;
-                    if (!$row->text == '') {$post['text'] = $row->text;}
-                    #$post['text'] = $row->text ?? false;
-                    if (!$row->content == '') {$post['content'] = $row->content;}
-                    #$post['content'] = $row->content ?? false;
+                    $post['chatType'] = $row->chatType;
+                    $post['channelId'] = $row->channelId;
+                    $post['chatId'] = $row->chatId;
+                    if (!$row->text == '') {
+                        $post['text'] = $row->text;
+                    }
+                    if (!$row->content == '') {
+                        $post['content'] = $row->content;
+                    }
                     $post=json_encode($post);
-                    $result = cURL::executeRequest($url, $post, $headers, false, $logDir);
-                    DB::query("UPDATE send_to_wazzup24 SET success=1 WHERE id={$row->id}");
+                    $result = json_decode(cURL::executeRequest($url, $post, $headers, false, $logDir));
                     DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='wazzup24' AND login='$login'");
+                    if ($result->messageId) {
+                        DB::query("UPDATE send_to_wazzup24 SET sendTime=CURRENT_TIMESTAMP() WHERE id={$row->id}");
+                    }
                 }
             }
-            return true;
         }
     }
 
@@ -92,17 +94,26 @@ class Wazzup24 {
      * @param array $inputRequestData
      * @return boolean
      */
-    public static function queue($login, $inputRequestData) {
-        if ($inputRequestData['transport'] && $inputRequestData['to'] && ($inputRequestData['text'] || $inputRequestData['content'])){
-            $to = $inputRequestData['to'];
-            $text = $inputRequestData['text'] ?? '';
-            $content = $inputRequestData['content'] ?? '';
-            $transport = $inputRequestData['transport'] ?? '';
-
-            DB::query("INSERT INTO send_to_wazzup24 (`to`, `text`, `content`, `login`, `transport`) VALUES ('$to', '$text', '$content', '$login', '$transport')");
-            
-            return true;
+    public static function queue($login, $args) {
+        if ($args['chatId'] && ($args['text'] || $args['content'])) {
+            $args['channelId'] = $args['channelId'] ?? WA_CID_WA;
+            $args['chatType'] = $args['chatType'] ?? 'whatsapp';
+            foreach ($args as $key => $val) {
+                $setArr[] = "$key='$val'";        
+            }
+            $setStr = implode(", ", $setArr);
+            $query = "INSERT INTO send_to_wazzup24 SET $setStr, login='$login'";
+            DB::query($query);
         }
+#        if ($inputRequestData['transport'] && $inputRequestData['to'] && ($inputRequestData['text'] || $inputRequestData['content'])){
+#            $to = $inputRequestData['to'];
+#            $text = $inputRequestData['text'] ?? '';
+#            $content = $inputRequestData['content'] ?? '';
+#            $transport = $inputRequestData['transport'] ?? '';
+#
+#            DB::query("INSERT INTO send_to_wazzup24 (`to`, `text`, `content`, `login`, `transport`) VALUES ('$to', '$text', '$content', '$login', '$transport')");
+#            
+#            return true;
     }
 
     /**
