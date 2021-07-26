@@ -19,39 +19,67 @@
 
 #define('NAME', '<Enter here>');
 
+# DB Settings
 define('DB_HOST', '');
 define('DB_USER', '');
 define('DB_PASSWORD', '');
 define('DB_NAME', '');
-define('WA_API_KEY', '');
-define('WA_API_KEY_20', '');
-define('WA_URL_SUBDOMAIN', '');
-define('WA_PHONE_FROM', '');
-define('WA_CID_WA', '');
-define('WA_CID_IG', '');
+
+# WA24 Settings
+define('WA24_ENABLED', false);
+define('WA24_API_KEY', '');
+define('WA24_CID_WA', '');
+define('WA24_CID_IG', '');
+
+#SMSC Settings
 define('SMSC_ACCOUNT', '');
 define('SMSC_PSW', '');
+
+#GC Settings
 define('GC_ACCOUNT', '');
 define('GC_API_KEY', '');
+
+#Dadata Settings
 define('DADATA_API_KEY', '');
 define('DADATA_SECRET_KEY', '');
+
+#Twilio Settings
 define('TWILIO_SID', '');
 define('TWILIO_TOKEN', '');
 define('TWILIO_WA_NUMBER', '');
 define('TWILIO_SMS_NUMBER', '');
 define('TWILIO_CALL_NUMBER', '');
+
+#Senler Settings
 define('SENLER_CALLBACK_KEY', '');
+
 define('INSTAGRAM_FROM', '');
+
+#VK Settings
 define('VK_TOKEN', '');
+
+#Yandex Settings
 define('YANDEX_TOKEN', '');
+
+#MT Settings
 define('MT_CLIENT_ID', '');
 define('MT_CLIENT_SECRET', '');
 define('MT_ACCESS_TOKEN', '');
+
+#FB Settings
 define('FB_ACCESS_TOKEN', '');
+
+#SBRF Settings
 define('SBRF_CREDIT_USER', '');
 define('SBRF_CREDIT_PASSWORD', '');
 define('SBRF_CREDIT_RETURNURL', '');
+
+#SemySMS Settings
+define('SEMYSMS_ENABLED', false);
 define('WA_SEMYSMS_NOTIFY', '');
+
+#ChatApi Settings
+define('CHAT_API_ENABLED', false);
 define('CHAT_API_TOKEN', '');
 
 #GC Fields

@@ -101,7 +101,7 @@ class DB {
     }
 
     public static function getManagersDeals($login, $manager) {
-        $query = "SELECT * FROM gc_deals WHERE login='$login' AND manager='$manager'";
+        $query = "SELECT * FROM gc_deals WHERE login='$login' AND manager='$manager' AND status NOT IN ('Отменен')";
         $deals = static::query($query);
         while ($deal = $deals->fetch_object()) {
             $rows .= "

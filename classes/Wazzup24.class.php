@@ -31,7 +31,7 @@ class Wazzup24 {
      * @return string
      */
     public static function send($login, $logDir) {
-        if (WA_API_KEY_20) {
+        if (WA24_ENABLED && WA24_API_KEY != '') {
             for($i = 0; $i < 4; $i++){
                 sleep(rand(11,15));
     //            $last = strtotime(DB::query("SELECT last FROM request WHERE service='wazzup24'")->fetch_object()->last);
@@ -40,7 +40,7 @@ class Wazzup24 {
                     $headers = array();
                     $post = array();
                     $headers[] = "Content-type:application/json";
-                    $headers[] = "Authorization: Basic ".WA_API_KEY_20;
+                    $headers[] = "Authorization: Basic ".WA24_API_KEY;
                     $post['chatType'] = $row->chatType;
                     $post['channelId'] = $row->channelId;
                     $post['chatId'] = $row->chatId;
@@ -58,32 +58,9 @@ class Wazzup24 {
                     }
                 }
             }
-        }
-    }
-
-    public static function old_send($login, $logDir) {
-        if (WA_URL_SUBDOMAIN && WA_API_KEY) {
-            for($i = 0; $i < 4; $i++){
-                sleep(rand(11,15));
-    //            $last = strtotime(DB::query("SELECT last FROM request WHERE service='wazzup24'")->fetch_object()->last);
-                if ($row = DB::query("SELECT * FROM send_to_wazzup24 WHERE success=0 AND login='$login' LIMIT 1")->fetch_object()){
-                    $url = 'https://'.WA_URL_SUBDOMAIN.'.wazzup24.com/api/v1.1/send_message';
-                    $headers = array();
-                    $post = array();
-                    $headers[] = "Content-type:application/json";
-                    $headers[] = "Authorization:".WA_API_KEY;
-                    $post['transport'] = $row->transport;
-                    $post['from'] = ($row->transport == 'whatsapp') ? WA_PHONE_FROM : INSTAGRAM_FROM;
-                    $post['to']=$row->to;
-                    $post['text']=$row->text;
-                    $post['content']=$row->content;
-                    $post=json_encode($post);
-                    $result = cURL::executeRequest($url, $post, $headers, false, $logDir);
-                    DB::query("UPDATE send_to_wazzup24 SET success=1 WHERE id={$row->id}");
-                    DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='wazzup24'");
-                }
-            }
             return true;
+        } else {
+            return false;
         }
     }
 
@@ -95,25 +72,21 @@ class Wazzup24 {
      * @return boolean
      */
     public static function queue($login, $args) {
-        if ($args['chatId'] && ($args['text'] || $args['content'])) {
-            $args['channelId'] = $args['channelId'] ?? WA_CID_WA;
-            $args['chatType'] = $args['chatType'] ?? 'whatsapp';
-            foreach ($args as $key => $val) {
-                $setArr[] = "$key='$val'";        
+        if (WA24_ENABLED && WA24_API_KEY != '' && WA24_CID_WA != '') {
+            if ($args['chatId'] && ($args['text'] || $args['content'])) {
+                $args['channelId'] = $args['channelId'] ?? WA24_CID_WA;
+                $args['chatType'] = $args['chatType'] ?? 'whatsapp';
+                foreach ($args as $key => $val) {
+                    $setArr[] = "$key='$val'";        
+                }
+                $setStr = implode(", ", $setArr);
+                $query = "INSERT INTO send_to_wazzup24 SET $setStr, login='$login'";
+                DB::query($query);
             }
-            $setStr = implode(", ", $setArr);
-            $query = "INSERT INTO send_to_wazzup24 SET $setStr, login='$login'";
-            DB::query($query);
+            return true;
+        } else {
+            return false;
         }
-#        if ($inputRequestData['transport'] && $inputRequestData['to'] && ($inputRequestData['text'] || $inputRequestData['content'])){
-#            $to = $inputRequestData['to'];
-#            $text = $inputRequestData['text'] ?? '';
-#            $content = $inputRequestData['content'] ?? '';
-#            $transport = $inputRequestData['transport'] ?? '';
-#
-#            DB::query("INSERT INTO send_to_wazzup24 (`to`, `text`, `content`, `login`, `transport`) VALUES ('$to', '$text', '$content', '$login', '$transport')");
-#            
-#            return true;
     }
 
     /**
@@ -124,76 +97,89 @@ class Wazzup24 {
      * @param string $logDir
      */
     public static function trap($login, $inputRequestData, $logDir) {
-        if (isset($inputRequestData['messages'])) {
-            if ($inputRequestData['messages'][0]['status']=="99") {
-                $phone = substr(preg_replace('/[^0-9]/', '', $inputRequestData['messages'][0]['chatId']), -15);
-                try {
-                    $user = DB::query("SELECT email, instagram, firstName FROM gc_users WHERE phone='$phone' AND login='$login'")->fetch_object();
-                    $email = $user->email ?? null;
-                    $firstName = $user->firstName ?? null;
-                    $instagram = $user->instagram ?? null;
-                } catch (Exception $exc) {
-                    Logs::error(__CLASS__ . '::' . __FUNCTION__ . " | var user | $exc");
+        if (WA24_ENABLED && WA24_API_KEY != '') {
+            if (isset($inputRequestData['messages'])) {
+                if ($inputRequestData['messages'][0]['status']=="99") {
+                    if (time() * 1000 - $inputRequestData['messages'][0]['dateTime'] > 3600000) {
+                        Logs::handler(__CLASS__ . '::' . __FUNCTION__ . 
+                            ' | SKP(1H) | ' . $inputRequestData['messages'][0]['chatId'] . 
+                            ' | ' . $inputRequestData['messages'][0]['text']);
+                    } else {
+                        Logs::handler(__CLASS__ . '::' . __FUNCTION__ . 
+                            ' | RCVD | ' . $inputRequestData['messages'][0]['chatId'] . 
+                            ' | ' . $inputRequestData['messages'][0]['text']);
+                        $phone = substr(preg_replace('/[^0-9]/', '', $inputRequestData['messages'][0]['chatId']), -15);
+                        try {
+                            $user = DB::query("SELECT email, instagram, firstName FROM gc_users WHERE phone='$phone' AND login='$login'")->fetch_object();
+                            $email = $user->email ?? null;
+                            $firstName = $user->firstName ?? null;
+                            $instagram = $user->instagram ?? null;
+                        } catch (Exception $exc) {
+                            Logs::error(__CLASS__ . '::' . __FUNCTION__ . " | var user | $exc");
+                        }
+                        if (empty($email)) {
+                            try {
+                                $nameFromWhatsapp = $inputRequestData['messages'][0]['authorName'] ?? $inputRequestData['messages'][0]['nameInMessenger'];
+                                $params = Dadata::cleanNameFromWhatsapp($nameFromWhatsapp, $logDir);
+                            } catch (Exception $exc) {
+                                Logs::error(__CLASS__ . '::' . __FUNCTION__ . " | dadata cleanName | $exc");
+                            }
+                            preg_match("/\|.*\|/",$inputRequestData['messages'][0]['text'],$matches);
+                            if ($matches) {
+                                $item=explode("|", $matches[0]);
+                                if ($item[1]) {
+                                    global $addFields;
+                                    $params['user']['group_name']= array($addFields->{$item[1]});
+                                }
+                                if ($item[2]) {
+                                    $params['user']['addfields']['d_utm_source']=$item[2];
+                                }
+                                if ($item[3]) {
+                                    $params['user']['addfields']['d_utm_medium']=$item[3];
+                                }
+                                if ($item[4]) {
+                                    $params['user']['addfields']['d_utm_content']=$item[4];
+                                }
+                                if ($item[5]) {
+                                    $params['user']['addfields']['d_utm_campaign']=$item[5];
+                                }
+                                if ($item[6]) {
+                                    $params['user']['addfields']['d_utm_term']=$item[6];
+                                }
+                                if ($item[7]) {
+                                    $params['user']['addfields']['d_utm_rs']=$item[7];
+                                }
+                                if ($item[8]) {
+                                    $params['user']['addfields']['d_utm_acc']=$item[8];
+                                }
+                                if ($item[9]) {
+                                    $params['user']['addfields']['Возраст']=$item[9];
+                                }
+                                if ($item[10]) {
+                                    $emailInMessage=$item[10];
+                                }
+                            }
+                            $email = $emailInMessage ?? "$phone@facebook.com";
+                        }
+                        if (empty($firstName)) {
+                            try {
+                                $nameFromWhatsapp = $inputRequestData['messages'][0]['authorName'] ?? $inputRequestData['messages'][0]['nameInMessenger'];
+                                $params = Dadata::cleanNameFromWhatsapp($nameFromWhatsapp, $logDir);
+                            } catch (Exception $exc) {
+                                Logs::error(__CLASS__ . '::' . __FUNCTION__ . " | dadata nameFromWa | $exc");
+                            }
+                        }
+                        $params['user']['phone'] = $phone;
+                        $params['user']['email'] = $email;
+                        $params['user']['addfields']['whatsapp']=$phone;
+                        GetCourse::addUser($params, $logDir);
+                        GetCourse::sendContactForm($email, $inputRequestData['messages'][0]['text'].PHP_EOL.'Отправлено из WhatsApp', $logDir);
+                        return true;
+                    }
                 }
-    //            $email = DB::query("SELECT email FROM gc_users WHERE phone='$phone'")->fetch_object()->email;
-            if (empty($email)){
-                try {
-                    $nameFromWhatsapp = $inputRequestData['messages'][0]['authorName'] ?? $inputRequestData['messages'][0]['nameInMessenger'];
-                    $params = Dadata::cleanNameFromWhatsapp($nameFromWhatsapp, $logDir);
-                } catch (Exception $exc) {
-                    Logs::error(__CLASS__ . '::' . __FUNCTION__ . " | dadata cleanName | $exc");
-                }
-                preg_match("/\|.*\|/",$inputRequestData['messages'][0]['text'],$matches);
-                if ($matches){
-                    $item=explode("|", $matches[0]);
-                    if ($item[1]){
-                        global $addFields;
-                        $params['user']['group_name']= array($addFields->{$item[1]});
-                    }
-                    if ($item[2]){
-                        $params['user']['addfields']['d_utm_source']=$item[2];
-                    }
-                    if ($item[3]){
-                        $params['user']['addfields']['d_utm_medium']=$item[3];
-                    }
-                    if ($item[4]){
-                        $params['user']['addfields']['d_utm_content']=$item[4];
-                    }
-                    if ($item[5]){
-                        $params['user']['addfields']['d_utm_campaign']=$item[5];
-                    }
-                    if ($item[6]){
-                        $params['user']['addfields']['d_utm_term']=$item[6];
-                    }
-                    if ($item[7]){
-                        $params['user']['addfields']['d_utm_rs']=$item[7];
-                    }
-                    if ($item[8]){
-                        $params['user']['addfields']['d_utm_acc']=$item[8];
-                    }
-                    if ($item[9]){
-                        $params['user']['addfields']['Возраст']=$item[9];
-                    }
-                    if ($item[10]){
-                        $emailInMessage=$item[10];
-                    }
-                }
-                $email = $emailInMessage ?? "$phone@facebook.com";
             }
-            if (empty($firstName)) {
-                try {
-                    $nameFromWhatsapp = $inputRequestData['messages'][0]['authorName'] ?? $inputRequestData['messages'][0]['nameInMessenger'];
-                    $params = Dadata::cleanNameFromWhatsapp($nameFromWhatsapp, $logDir);
-                } catch (Exception $exc) {
-                    Logs::error(__CLASS__ . '::' . __FUNCTION__ . " | dadata nameFromWa | $exc");
-                }
-            }
-            $params['user']['phone'] = $phone;
-            $params['user']['email'] = $email;
-            $params['user']['addfields']['whatsapp']=$phone;
-            GetCourse::addUser($params, $logDir);
-            GetCourse::sendContactForm($email, $inputRequestData['messages'][0]['text'].PHP_EOL.'Отправлено из WhatsApp', $logDir);
-            }
+        } else {
+            return false;
         }
     }
 }

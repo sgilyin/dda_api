@@ -249,12 +249,20 @@ switch ($inputRequestMethod){
 switch ($inputRemoteAddr) {
     case '185.151.241.45':
     case '87.251.80.4':
+    case '217.66.154.84':
+    case '149.154.161.20':
 #    case '195.191.78.178':
-        $inputRequestData['class']['method']($login, $inputRequestData['args']);
+        if (isset($inputRequestData['class']['method'])) {
+            $inputRequestData['class']['method']($login, $inputRequestData['args']);
+        }
         break;
 
     default:
-        Auth::logIn($login, $inputRequestData);
+        if (isset($inputRequestData['class']['method'])) {
+            $inputRequestData['class']['method']($login, $inputRequestData['args']);
+        } else {
+            Auth::logIn($login, $inputRequestData);
+        }
 #        echo 'Silent is golden';
         break;
 }
