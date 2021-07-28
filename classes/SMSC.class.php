@@ -23,16 +23,9 @@
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class SMSC {
-
-    /**
-     * Synchronize messages from SMSC to MySQL database
-     * 
-     * @param type $login
-     * @param type $logDir
-     * @return type
-     */
-    public static function syncMessages($login, $logDir){
-        if (SMSC_ACCOUNT && SMSC_PSW) {
+    public static function syncMessages($login){
+        if (SMSC_ENABLED && SMSC_ACCOUNT != '' && SMSC_PSW != '') {
+            Logs::handler(__CLASS__."::".__FUNCTION__." | $login");
             $success = false;
             $last = strtotime(DB::query("SELECT last FROM request WHERE service='smsc' AND login='$login'")->fetch_object()->last);
             if (time() - $last > 150){
@@ -44,11 +37,17 @@ class SMSC {
                 $post['start'] = date('d.m.Y', strtotime('Now - 1 day'));
                 $post['cnt'] = 1000;
                 $post['get_messages'] = 1;
-                $result = cURL::executeRequest($url, $post, false, false, $logDir);
+                $result = cURL::executeRequest($url, $post, false, false);
                 $json=json_decode($result);
                 for ($i=0; $i<count($json); $i++){
                     if ($json[$i]->id && $json[$i]->phone && $json[$i]->message){
-                       DB::query("INSERT INTO smsc_messages (`id`, `phone`, `message`, `login`) VALUES ('".$json[$i]->id."', '".$json[$i]->phone."', '".$json[$i]->message."', '$login')");
+                        $query = "SELECT id FROM smsc_messages WHERE login='$login' AND id='{$json[$i]->id}'";
+                        $result = DB::query($query);
+                        if ($result->num_rows == 0) {
+                            $query = "INSERT INTO smsc_messages (`id`, `phone`, `message`, `login`) VALUES ('{$json[$i]->id}', '{$json[$i]->phone}', '{$json[$i]->message}', '$login')";
+                            Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | {$json[$i]->id}");
+                            DB::query($query);
+                        }
                     }
                 }
                 DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='smsc' AND login='$login'");
@@ -58,13 +57,8 @@ class SMSC {
         }
     }
 
-    /**
-     * Send messages from GetCourse to Wazzup24
-     * 
-     * @global array $addFields
-     * @param string $logDir
-     */
-    public static function sendWaGc($login, $logDir){
+    public static function sendWaGc($login){
+        Logs::handler(__CLASS__."::".__FUNCTION__." | $login");
         //$success = false;
         $obj = DB::query("SELECT * FROM smsc_messages WHERE success=0 AND login='$login'");
         $messages = $obj->fetch_all();
@@ -74,9 +68,9 @@ class SMSC {
                 $args['chatId'] = $messages[$i][1];
                 $args['text'] = substr($messages[$i][2], stripos($messages[$i][2],':')+2);
                 Wazzup24::queue($login, $args);
-#                $toChatApi['phone'] = $messages[$i][1];
-#                $toChatApi['body'] = substr($messages[$i][2], stripos($messages[$i][2],':')+2);
-#                ChatApi::queue($messages[$i][3], $toChatApi);
+                $toChatApi['phone'] = $messages[$i][1];
+                $toChatApi['body'] = substr($messages[$i][2], stripos($messages[$i][2],':')+2);
+                ChatApi::queue($messages[$i][3], $toChatApi);
                 DB::query("UPDATE smsc_messages SET success=1 WHERE id=$id");
             }
             if (preg_match("/\|\d*\|\S*@\S*\|http.*\|/",$messages[$i][2])){
@@ -86,7 +80,7 @@ class SMSC {
                 $params['user']['addfields'] = array(
                     $addFields->{$msg_part[1]} => $msg_part[3],
                     );
-                GetCourse::addUser($params, $logDir);
+                GetCourse::addUser($params);
                 DB::query("UPDATE smsc_messages SET success=1 WHERE id=$id");
             }
         }

@@ -24,7 +24,7 @@
  */
 class Senler {
 
-    public static function trap($inputRequestData, $logDir) {
+    public static function trap($inputRequestData) {
         if ($inputRequestData['type']=='subscribe'){
             $params['user']['email'] = 'id'.$inputRequestData['vk_user_id'].'@vk.com';
             $params['user']['addfields']['vk_uid'] = $inputRequestData['vk_user_id'] ?? '';
@@ -34,7 +34,7 @@ class Senler {
             $params['user']['addfields']['d_utm_content'] = $inputRequestData['utm_content'] ?? '';
             $params['user']['addfields']['d_utm_term'] = $inputRequestData['utm_term'] ?? '';
 
-            return GetCourse::addUser($params, $logDir);
+            return GetCourse::addUser($params);
         }
     }
 
@@ -42,10 +42,9 @@ class Senler {
      * Add subscriber in Senler
      * 
      * @param array $inputRequestData
-     * @param string $logDir
      * @return string
      */
-    public static function addSubscriber($inputRequestData, $logDir) {
+    public static function addSubscriber($inputRequestData) {
         if (SENLER_CALLBACK_KEY) {
             if ($inputRequestData['vk_group_id'] && $inputRequestData['vk_user_id'] && $inputRequestData['subscription_id']){
                 $params['vk_group_id'] = $inputRequestData['vk_group_id'];
@@ -55,7 +54,7 @@ class Senler {
                 $params['hash'] = static::getHash($params, SENLER_CALLBACK_KEY);
                 $url = 'https://senler.ru/api/subscribers/add';
 
-                return cURL::executeRequest($url, http_build_query($params), false, false, $logDir);
+                return cURL::executeRequest($url, http_build_query($params), false, false);
             }
         }
     }
@@ -64,10 +63,10 @@ class Senler {
      * Delete subscriber in Senler
      * 
      * @param array $inputRequestData
-     * @param string $logDir
+     * @param string 
      * @return string
      */
-    public static function delSubscriber($inputRequestData, $logDir) {
+    public static function delSubscriber($inputRequestData) {
         if (SENLER_CALLBACK_KEY) {
             if ($inputRequestData['vk_group_id'] && $inputRequestData['vk_user_id'] && $inputRequestData['subscription_id']){
                 $params['vk_group_id'] = $inputRequestData['vk_group_id'];
@@ -77,7 +76,7 @@ class Senler {
                 $params['hash'] = static::getHash($params, SENLER_CALLBACK_KEY);
                 $url = 'https://senler.ru/api/subscribers/del';
 
-                return cURL::executeRequest($url, http_build_query($params), false, false, $logDir);
+                return cURL::executeRequest($url, http_build_query($params), false, false);
             }
         }
     }
@@ -86,10 +85,9 @@ class Senler {
      * Add subscription in Senler
      * 
      * @param array $inputRequestData
-     * @param string $logDir
      * @return string
      */
-    public static function addSubscription($inputRequestData, $logDir) {
+    public static function addSubscription($inputRequestData) {
         if (SENLER_CALLBACK_KEY) {
             if($inputRequestData['vk_group_id'] && $inputRequestData['name']){
                 $params['vk_group_id'] = $inputRequestData['vk_group_id'];
@@ -98,7 +96,7 @@ class Senler {
                 $params['hash'] = static::getHash($params, SENLER_CALLBACK_KEY);
                 $url = 'https://senler.ru/api/subscriptions/add';
 
-                return cURL::executeRequest($url, http_build_query($params), false, false, $logDir);
+                return cURL::executeRequest($url, http_build_query($params), false, false);
             }
         }
     }

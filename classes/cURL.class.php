@@ -23,18 +23,7 @@
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class cURL {
-
-    /**
-     * Execute request to some server
-     * 
-     * @param string $url
-     * @param array $post
-     * @param array $headers
-     * @param string $logDir
-     * @return response
-     */
-    public static function executeRequest($url, $post, $headers, $userpwd, $logDir) {
-
+    public static function executeRequest($url, $post, $headers, $userpwd) {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         if ($post){
@@ -50,13 +39,11 @@ class cURL {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         $result = curl_exec($ch);
         curl_close($ch);
-#        if ($logDir){Logs::add($logDir,'cURL',"$url | ".serialize($post)." | ". serialize($result));}
-        Logs::handler(__CLASS__." | ".__FUNCTION__." | $url | ".serialize($post)." | ". serialize($result));
+        Logs::handler(__CLASS__."::".__FUNCTION__." | $url | ".serialize($post)." | ". serialize($result));
         return $result;
     }
 
-    public static function executeRequestTest($customRequest, $url, $post, $headers, $userpwd, $logDir) {
-
+    public static function executeRequestTest($customRequest, $url, $post, $headers, $userpwd) {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         if ($post){
@@ -71,14 +58,12 @@ class cURL {
         }
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $customRequest);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-#        curl_setopt($ch, CURLOPT_HEADER, TRUE);
+        #curl_setopt($ch, CURLOPT_HEADER, TRUE);
         curl_setopt($ch, CURLINFO_HEADER_OUT, TRUE);
-        
         $result = curl_exec($ch);
         $info = curl_getinfo($ch);
         curl_close($ch);
-#        if ($logDir){Logs::add($logDir,'cURL',"$url | " . serialize($post) . " | " . serialize($result) . " | " . serialize($info));}
-        Logs::handler(__CLASS__." | ".__FUNCTION__." | $url | ".serialize($post)." | ". serialize($result)." | ". serialize($info));
+        Logs::handler(__CLASS__."::".__FUNCTION__." | $url | ".serialize($post)." | ". serialize($result)." | ". serialize($info));
         return $result;
     }
 }

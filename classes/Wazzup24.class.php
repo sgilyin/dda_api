@@ -23,15 +23,9 @@
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class Wazzup24 {
-
-    /**
-     * Send params from queue to Wazzup24
-     * 
-     * @param string $logDir
-     * @return string
-     */
-    public static function send($login, $logDir) {
+    public static function send($login) {
         if (WA24_ENABLED && WA24_API_KEY != '') {
+            Logs::handler(__CLASS__."::".__FUNCTION__." | $login");
             for($i = 0; $i < 4; $i++){
                 sleep(rand(11,15));
     //            $last = strtotime(DB::query("SELECT last FROM request WHERE service='wazzup24'")->fetch_object()->last);
@@ -51,7 +45,7 @@ class Wazzup24 {
                         $post['content'] = $row->content;
                     }
                     $post=json_encode($post);
-                    $result = json_decode(cURL::executeRequest($url, $post, $headers, false, $logDir));
+                    $result = json_decode(cURL::executeRequest($url, $post, $headers, false));
                     DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='wazzup24' AND login='$login'");
                     if ($result->messageId) {
                         DB::query("UPDATE send_to_wazzup24 SET sendTime=CURRENT_TIMESTAMP() WHERE id={$row->id}");
@@ -89,17 +83,11 @@ class Wazzup24 {
         }
     }
 
-    /**
-     * Check input message, create user in GetCourse and send form from user to GetCourse
-     * 
-     * @global array $addFields
-     * @param array $inputRequestData
-     * @param string $logDir
-     */
-    public static function trap($login, $inputRequestData, $logDir) {
+    public static function trap($login, $inputRequestData) {
         if (WA24_ENABLED && WA24_API_KEY != '') {
             if (isset($inputRequestData['messages'])) {
                 if ($inputRequestData['messages'][0]['status']=="99") {
+                    Logs::handler(__CLASS__."::".__FUNCTION__." | $login");
                     if (time() * 1000 - $inputRequestData['messages'][0]['dateTime'] > 3600000) {
                         Logs::handler(__CLASS__ . '::' . __FUNCTION__ . 
                             ' | SKP(1H) | ' . $inputRequestData['messages'][0]['chatId'] . 
@@ -120,7 +108,7 @@ class Wazzup24 {
                         if (empty($email)) {
                             try {
                                 $nameFromWhatsapp = $inputRequestData['messages'][0]['authorName'] ?? $inputRequestData['messages'][0]['nameInMessenger'];
-                                $params = Dadata::cleanNameFromWhatsapp($nameFromWhatsapp, $logDir);
+                                $params = Dadata::cleanNameFromWhatsapp($nameFromWhatsapp);
                             } catch (Exception $exc) {
                                 Logs::error(__CLASS__ . '::' . __FUNCTION__ . " | dadata cleanName | $exc");
                             }
@@ -164,7 +152,7 @@ class Wazzup24 {
                         if (empty($firstName)) {
                             try {
                                 $nameFromWhatsapp = $inputRequestData['messages'][0]['authorName'] ?? $inputRequestData['messages'][0]['nameInMessenger'];
-                                $params = Dadata::cleanNameFromWhatsapp($nameFromWhatsapp, $logDir);
+                                $params = Dadata::cleanNameFromWhatsapp($nameFromWhatsapp);
                             } catch (Exception $exc) {
                                 Logs::error(__CLASS__ . '::' . __FUNCTION__ . " | dadata nameFromWa | $exc");
                             }
@@ -172,8 +160,8 @@ class Wazzup24 {
                         $params['user']['phone'] = $phone;
                         $params['user']['email'] = $email;
                         $params['user']['addfields']['whatsapp']=$phone;
-                        GetCourse::addUser($params, $logDir);
-                        GetCourse::sendContactForm($email, $inputRequestData['messages'][0]['text'].PHP_EOL.'Отправлено из WhatsApp', $logDir);
+                        GetCourse::addUser($params);
+                        GetCourse::sendContactForm($email, $inputRequestData['messages'][0]['text'].PHP_EOL.'Отправлено из WhatsApp');
                         return true;
                     }
                 }

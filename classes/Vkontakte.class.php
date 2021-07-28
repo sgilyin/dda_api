@@ -29,10 +29,9 @@ class Vkontakte {
      * 
      * @param string $method
      * @param array $inputRequestData
-     * @param string $logDir
      * @return string
      */
-    private static function vkExecute($method, $inputRequestData, $logDir) {
+    private static function vkExecute($method, $inputRequestData) {
         if (VK_TOKEN) {
             $url = "https://api.vk.com/method/$method";
             $data['v'] = '5.110';
@@ -42,7 +41,7 @@ class Vkontakte {
             $data['target_group_id'] = $inputRequestData['target_group_id'] ?? false;
             $data['contacts'] = $inputRequestData['contacts'] ?? false;
             DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='vkontakte'");
-            return cURL::executeRequest($url, $data, false, false, $logDir);
+            return cURL::executeRequest($url, $data, false, false);
         }
     }
 
@@ -50,12 +49,11 @@ class Vkontakte {
      * Import target contacts to VK ads w/o queue
      * 
      * @param array $inputRequestData
-     * @param string $logDir
      * @return string
      */
-    public static function adsImportTargetContactsNow($inputRequestData, $logDir) {
+    public static function adsImportTargetContactsNow($inputRequestData) {
         $method = 'ads.importTargetContacts';
-        return static::vkExecute($method, $inputRequestData, $logDir);
+        return static::vkExecute($method, $inputRequestData);
     }
 
     /**
@@ -74,12 +72,11 @@ class Vkontakte {
      * Remove target contacts from VK ads w/o queue
      * 
      * @param array $inputRequestData
-     * @param string $logDir
      * @return string
      */
-    public static function adsRemoveTargetContactsNow($inputRequestData, $logDir) {
+    public static function adsRemoveTargetContactsNow($inputRequestData) {
         $method = 'ads.removeTargetContacts';
-        return static::vkExecute($method, $inputRequestData, $logDir);
+        return static::vkExecute($method, $inputRequestData);
     }
 
     /**
@@ -110,10 +107,9 @@ class Vkontakte {
     /**
      * Send params from queue to VK
      * 
-     * @param string $logDir
      * @return boolean
      */
-    public static function send($login, $logDir) {
+    public static function send($login) {
         $mysqliObj = DB::query("SELECT id, method, params FROM vk_api WHERE login='$login' AND success=0 LIMIT 1000");
         $idArray = array();
         $vkArray = array();
@@ -134,7 +130,7 @@ class Vkontakte {
                         $data['target_group_id'] = $target_group_id;
                         $data['contacts'] = implode(',', $vkArray[$method][$account_id][$client_id][$target_group_id]['contacts']);
                         sleep(rand(15,25));
-                        static::vkExecute($method, $data, $logDir);
+                        static::vkExecute($method, $data);
                     }
                 }
             }

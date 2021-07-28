@@ -27,13 +27,13 @@ class Facebook {
         
     }
     
-    public static function test($logDir) {
+    public static function test() {
         $url = 'https://graph.facebook.com/v8.0/act_2772558393070366/customaudiences';
         $post['name'] = 'Test from API';
         $post['subtype'] = 'CUSTOM';
         $post['description'] = 'Test';
         $post['customer_file_source'] = 'USER_PROVIDED_ONLY';
         $post['access_token'] = FB_ACCESS_TOKEN;
-        return cURL::executeRequest($url, $post, false, false, $logDir);
+        return cURL::executeRequest($url, $post, false, false);
     }
 }

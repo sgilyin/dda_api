@@ -23,28 +23,21 @@
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class DB {
-
-    /**
-     * Execute request to DB and return result or error
-     * 
-     * @param string $query
-     * @return object(mysqli_result) or integer
-     */
     public static function query($query){
-        if (DB_HOST && DB_USER && DB_PASSWORD && DB_NAME) {
+        if (DB_HOST != '' && DB_USER != '' && DB_PASSWORD != '' && DB_NAME != '') {
             $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
             if ($mysqli->connect_errno) {
-                Logs::handler(__CLASS__.' | '.__FUNCTION__.' | No DB connection: '.$mysqli->connect_error);
-                Logs::error(__CLASS__.' | '.__FUNCTION__.' | No DB connection: '.$mysqli->connect_error);
+                Logs::handler(__CLASS__.'::'.__FUNCTION__.' | No DB connection: '.$mysqli->connect_error);
+                Logs::error(__CLASS__.'::'.__FUNCTION__.' | No DB connection: '.$mysqli->connect_error);
                 exit();
             }
             $mysqli->set_charset('utf8');
             $result = $mysqli->query($query);
             $errNo = $mysqli->errno;
             if (!$result) {
-                Logs::handler(__CLASS__.' | '.__FUNCTION__.' | Query error: '.$mysqli->error);
-                Logs::error(__CLASS__.' | '.__FUNCTION__.' | Query error: '.$mysqli->error);
+                Logs::error(__CLASS__.'::'.__FUNCTION__." | $query | {$mysqli->errno} | {$mysqli->error}");
             }
+            Logs::handler(__CLASS__.'::'.__FUNCTION__." | $query | {$mysqli->errno} | {$mysqli->error}");
             $mysqli->close();
             switch (strtok($query," ")){
                 case 'INSERT':
@@ -65,7 +58,7 @@ class DB {
                     . '([ .-]?)([0-9]{2,5})$/', '$1$2$4$6$8', $inputRequestData));
             $query = "INSERT INTO gc_users (`login`, `$columns`) VALUES ('$login', '$values')";
             $result = static::query($query);
-            Logs::handler(__CLASS__.' | '.__FUNCTION__." | '$login', '$values' | $result");
+            Logs::handler(__CLASS__.'::'.__FUNCTION__." | '$login', '$values' | $result");
             return $result;
         }
     }
@@ -77,31 +70,32 @@ class DB {
                 $setArr[] = "$key='$val'";
             }
             $setStr = implode(", ", $setArr);
-#            $sql = "UPDATE gc_users SET $setStr WHERE login=$login AND id='{$inputRequestData['_']['id']}'";
-            Logs::handler(__CLASS__.' | '.__FUNCTION__." | $login | $setStr");
-
+            Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | $setStr");
             return static::query("UPDATE gc_users SET $setStr WHERE login=$login AND id='{$inputRequestData['_']['id']}'");
         }
     }
 
     public static function dealUpdate($login, $args) {
-#        Logs::handler(__CLASS__.' | '.__FUNCTION__." | $login | ".serialize($args));
         if ($args['id'] && $args['number']) {
+            Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | {$args['id']}");
             foreach ($args as $key => $val) {
                 $setArr[] = "$key='$val'";
             }
             $setStr = implode(", ", $setArr);
-            $query = "UPDATE gc_deals SET $setStr WHERE login='$login' AND id='{$args['id']}'";
-            $deal = static::query($query);
-            if ($deal == 0) {
+            $query = "SELECT id FROM gc_deals WHERE login='$login' AND id='{$args['id']}'";
+            $result = static::query($query);
+            if ($result->num_rows > 0) {
+                $query = "UPDATE gc_deals SET $setStr WHERE login='$login' AND id='{$args['id']}'";
+            } else {
                 $query = "INSERT INTO gc_deals SET $setStr, login='$login'";
-                static::query($query);
             }
+            static::query($query);
         }
     }
 
     public static function getManagersDeals($login, $manager) {
         $query = "SELECT * FROM gc_deals WHERE login='$login' AND manager='$manager' AND status NOT IN ('Отменен')";
+        Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | $manager");
         $deals = static::query($query);
         while ($deal = $deals->fetch_object()) {
             $rows .= "
@@ -115,7 +109,6 @@ class DB {
                     <td><a target=_blank href='https://dubrovskaya-interior.ru/user/control/user/update/id/$deal->client_id'>$deal->first_name</a></td>
                     <td><a href='tel:$deal->phone'>$deal->phone</a></td>
                 </tr>";
- #           var_dump($deal);
         }
         echo <<<HTML
         <table>
@@ -132,7 +125,6 @@ class DB {
             $rows
         </table>
         HTML;
-#        $managerDeals = 
     }
 
     /**
@@ -147,7 +139,7 @@ class DB {
             $email = $inputRequestData['email'];
             $id = $inputRequestData['id'];
             $firstName = $inputRequestData['name'] ?? '';
-            Logs::handler(__CLASS__.' | '.__FUNCTION__." | $login | $id | $email | $phoneNum | $firstName");
+            Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | $id");
 
             return static::query("INSERT INTO gc_users (`email`, `phone`, `id`, `login`, `firstName`) VALUES ('$email', '$phoneNum', '$id', '$login', '$firstName')");
         }
@@ -165,8 +157,7 @@ class DB {
             $email = $inputRequestData['email'];
             $id = $inputRequestData['id'];
             $firstName = $inputRequestData['name'] ?? '';
-            Logs::handler(__CLASS__.' | '.__FUNCTION__." | $login | $id | $email | $phoneNum | $firstName");
-
+            Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | $id");
             return static::query("UPDATE gc_users SET email='$email', phone='$phoneNum', firstName='$firstName' WHERE id='$id' AND login='$login'");
         }
     }
@@ -186,22 +177,16 @@ class DB {
         }
     }
 
-    /**
-     * Synchronizes GetCourse users with MySQL database
-     * 
-     * @param string $logDir
-     * @return boolean
-     */
-    public static function syncUsers($login, $logDir){
+    public static function syncUsers($login){
         $mysqli = static::query("SELECT last FROM request WHERE service='getcourse' AND login='$login'");
         $result = $mysqli->fetch_object();
         $last = strtotime($result->last);
         $allCount = 0;
         if (time() - $last > 180){
-            $export_ids = static::runExports($logDir);
+            $export_ids = static::runExports();
             //static::query("TRUNCATE TABLE gc_users");
             for ($i=0; $i<count($export_ids); $i++) {
-                $json = static::getExportData($export_ids[$i],$logDir);
+                $json = static::getExportData($export_ids[$i]);
                 //var_dump($json);
                 for ($j=0; $j<count($json->info->items); $j++) {
                     $allCount++;
@@ -218,32 +203,19 @@ class DB {
         }
     }
 
-    /**
-     * Run export users from GetCourse
-     * 
-     * @param string $logDir
-     * @return array
-     */
-    private function runExports($logDir){
-        $export_ids[] = static::getExportId('active', $logDir);
-        $export_ids[] = static::getExportId('in_base', $logDir);
+    private function runExports(){
+        $export_ids[] = static::getExportId('active');
+        $export_ids[] = static::getExportId('in_base');
 
         return $export_ids;
     }
 
-    /**
-     * Get export id
-     * 
-     * @param string $status
-     * @param string $logDir
-     * @return integer
-     */
-    private function getExportId($status, $logDir){
+    private function getExportId($status){
         if (GC_ACCOUNT && GC_API_KEY) {
             $post['key'] = GC_API_KEY;
             $url = "https://".GC_ACCOUNT.".getcourse.ru/pl/api/account/users?status=$status";
             do {
-                $response = cURL::executeRequest($url, $post, false, false, $logDir);
+                $response = cURL::executeRequest($url, $post, false, false);
                 $json = json_decode($response);
                 sleep(60);
             } while (!$json->success);
@@ -251,19 +223,12 @@ class DB {
         }
     }
 
-    /**
-     * Get export data
-     * 
-     * @param integer $export_id
-     * @param string $logDir
-     * @return json
-     */
-    private function getExportData($export_id, $logDir){
+    private function getExportData($export_id){
         if (GC_ACCOUNT && GC_API_KEY) {
             $url = "https://".GC_ACCOUNT.".getcourse.ru/pl/api/account/exports/$export_id";
             $post['key'] = GC_API_KEY;
             do {
-                $response = cURL::executeRequest($url, $post, false, false, $logDir);
+                $response = cURL::executeRequest($url, $post, false, false);
                 $json = json_decode($response);
                 sleep(60);
             } while (!$json->success);

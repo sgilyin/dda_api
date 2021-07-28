@@ -27,10 +27,9 @@ class Twilio {
     /**
      * 
      * @param array $inputRequestData
-     * @param string $logDir
      * @return boolean
      */
-    public static function send($inputRequestData, $logDir) {
+    public static function send($inputRequestData) {
         if (TWILIO_SID && TWILIO_TOKEN) {
             $url="https://api.twilio.com/2010-04-01/Accounts/".TWILIO_SID."/Messages.json";
             $userpwd=TWILIO_SID.':'.TWILIO_TOKEN;
@@ -50,18 +49,18 @@ class Twilio {
             if ($inputRequestData['MediaUrl']){
                 $post['MediaUrl'] = $inputRequestData['MediaUrl'];
             }
-            return cURL::executeRequest($url, $post, false, $userpwd, $logDir);
+            return cURL::executeRequest($url, $post, false, $userpwd);
         }
     }
 
-    public static function call($inputRequestData, $logDir) {
+    public static function call($inputRequestData) {
         if (TWILIO_SID && TWILIO_TOKEN && TWILIO_CALL_NUMBER) {
             $url="https://api.twilio.com/2010-04-01/Accounts/".TWILIO_SID."/Calls.json";
             $userpwd=TWILIO_SID.':'.TWILIO_TOKEN;
             $post['From'] = TWILIO_CALL_NUMBER;
             $post['To'] = $inputRequestData['To'];
             $post['Twiml'] = '<Response><Play>' . $inputRequestData['File'] .'</Play></Response>';
-            return cURL::executeRequest($url, $post, false, $userpwd, $logDir);
+            return cURL::executeRequest($url, $post, false, $userpwd);
         }
     }
 }

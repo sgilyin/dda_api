@@ -6,7 +6,7 @@
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class SemySMS {
-    public static function trap($login, $inputRequestData, $logDir) {
+    public static function trap($login, $inputRequestData) {
         if (SEMYSMS_ENABLED) {
             if ($inputRequestData['type']=='2' && $inputRequestData['dir']=='in') {
                 Logs::handler(__CLASS__ . '::' . __FUNCTION__ . 
@@ -59,8 +59,8 @@ class SemySMS {
                 $params['user']['phone'] = $phone;
                 $params['user']['email'] = $email;
                 $params['user']['addfields']['whatsapp']=$phone;
-                GetCourse::addUser($params, $logDir);
-                GetCourse::sendContactForm($email, $inputRequestData['msg'].PHP_EOL.'Отправлено из WhatsApp', $logDir);
+                GetCourse::addUser($params);
+                GetCourse::sendContactForm($email, $inputRequestData['msg'].PHP_EOL.'Отправлено из WhatsApp');
             }
             if ($inputRequestData['type']=='0' && $inputRequestData['dir']=='in') {
                 $whatsapp['to'] = WA_SEMYSMS_NOTIFY;

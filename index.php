@@ -28,7 +28,6 @@ spl_autoload_register(function ($class) {
 $inputRemoteAddr = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
 $inputRemoteHost = filter_input(INPUT_SERVER, 'REMOTE_HOST');
 $inputRequestMethod = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
-$logDir = __DIR__.dirname(filter_input(INPUT_SERVER, 'PHP_SELF'));
 $login = substr(dirname(filter_input(INPUT_SERVER, 'PHP_SELF')),1);
 
 if ($login == '' && $inputRemoteAddr == '195.191.78.178') {
@@ -41,176 +40,178 @@ include_once 'config.php';
 switch ($inputRequestMethod){
     case 'GET':
         $inputRequestData = filter_input_array(INPUT_GET);
-        switch ($inputRequestData['cmd']) {
-            case 'dadataCleanName':
-                Dadata::cleanName($inputRequestData, $logDir);
-                break;
+        if (isset($inputRequestData['cmd'])) {
+            switch ($inputRequestData['cmd']) {
+                case 'dadataCleanName':
+                    Dadata::cleanName($inputRequestData);
+                    break;
 
-            case 'dadataCleanPhone':
-                Dadata::cleanPhone($inputRequestData, $logDir);
-                break;
+                case 'dadataCleanPhone':
+                    Dadata::cleanPhone($inputRequestData);
+                    break;
 
-            case 'wazzup24Send':
-                Wazzup24::queue($login, $inputRequestData);
-                break;
+                case 'wazzup24Send':
+                    Wazzup24::queue($login, $inputRequestData);
+                    break;
 
-            case 'chatApiSend':
-                ChatApi::queue($login, $inputRequestData);
-                break;
+                case 'chatApiSend':
+                    ChatApi::queue($login, $inputRequestData);
+                    break;
 
-            case 'cron':
-                SMSC::sendWaGc($login, $logDir);
-                Wazzup24::send($login, $logDir);
-                ChatApi::send($login, $logDir);
-                SMSC::syncMessages($login, $logDir);
-                Vkontakte::send($login, $logDir);
-                break;
+                case 'cron':
+                    SMSC::sendWaGc($login);
+                    Wazzup24::send($login);
+                    ChatApi::send($login);
+                    SMSC::syncMessages($login);
+                    Vkontakte::send($login);
+                    break;
 
-            case 'dbAddUser':
-                DB::addUser($login, $inputRequestData);#depricated
-                break;
+                case 'dbAddUser':
+                    DB::addUser($login, $inputRequestData);#depricated
+                    break;
 
-            case 'dbUserAdd':
-                DB::userAdd($login, $inputRequestData['_']);
-                break;
+                case 'dbUserAdd':
+                    DB::userAdd($login, $inputRequestData['_']);
+                    break;
 
-            case 'dbUserUpdate':
-                DB::userUpdate($login, $inputRequestData['_']);
-                break;
+                case 'dbUserUpdate':
+                    DB::userUpdate($login, $inputRequestData['_']);
+                    break;
 
-            case 'dbUpdateUser':
-                DB::updateUser($login, $inputRequestData);#depricated
-                break;
+                case 'dbUpdateUser':
+                    DB::updateUser($login, $inputRequestData);#depricated
+                    break;
 
-            case 'dbDeleteUser':
-                DB::deleteUser($login, $inputRequestData);
-                break;
+                case 'dbDeleteUser':
+                    DB::deleteUser($login, $inputRequestData);
+                    break;
 
-            case 'dbSyncUsers':
-                var_dump(DB::syncUsers($login, $logDir));
-                break;
+                case 'dbSyncUsers':
+                    var_dump(DB::syncUsers($login));
+                    break;
 
-            case 'dbShowUsers':
-                DB::showUsers($login, $inputRequestData['conditions']);
-                break;
+                case 'dbShowUsers':
+                    DB::showUsers($login, $inputRequestData['conditions']);
+                    break;
 
-            case 'gcAddUserRequest':
-                GetCourse::addUserRequest($inputRequestData, $logDir);
-                break;
+                case 'gcAddUserRequest':
+                    GetCourse::addUserRequest($inputRequestData);
+                    break;
 
-            case 'twilioSend':
-                var_dump(Twilio::send($inputRequestData, $logDir));
-                break;
+                case 'twilioSend':
+                    var_dump(Twilio::send($inputRequestData));
+                    break;
 
-            case 'twilioCall':
-                var_dump(Twilio::call($inputRequestData, $logDir));
-                break;
+                case 'twilioCall':
+                    var_dump(Twilio::call($inputRequestData));
+                    break;
 
-            case 'senlerAddSubscriber':
-                Senler::addSubscriber($inputRequestData, $logDir);
-                break;
+                case 'senlerAddSubscriber':
+                    Senler::addSubscriber($inputRequestData);
+                    break;
 
-            case 'senlerDelSubscriber':
-                Senler::delSubscriber($inputRequestData, $logDir);
-                break;
+                case 'senlerDelSubscriber':
+                    Senler::delSubscriber($inputRequestData);
+                    break;
 
-            case 'senlerAddSubscription':
-                Senler::addSubscription($inputRequestData, $logDir);
-                break;
+                case 'senlerAddSubscription':
+                    Senler::addSubscription($inputRequestData);
+                    break;
 
-            case 'showWa24Queue':
-                echo DB::showWa24Queue();
-                break;
+                case 'showWa24Queue':
+                    echo DB::showWa24Queue();
+                    break;
 
-            case 'clearWa24Queue':
-                DB::clearWa24Queue();
-                echo 'Ok';
-                break;
+                case 'clearWa24Queue':
+                    DB::clearWa24Queue();
+                    echo 'Ok';
+                    break;
 
-            case 'vkAdsImportTargetContactsNow':
-                Vkontakte::adsImportTargetContactsNow($inputRequestData, $logDir);
-                break;
+                case 'vkAdsImportTargetContactsNow':
+                    Vkontakte::adsImportTargetContactsNow($inputRequestData);
+                    break;
 
-            case 'vkAdsRemoveTargetContactsNow':
-                Vkontakte::adsRemoveTargetContactsNow($inputRequestData, $logDir);
-                break;
+                case 'vkAdsRemoveTargetContactsNow':
+                    Vkontakte::adsRemoveTargetContactsNow($inputRequestData);
+                    break;
 
-            case 'vkAdsImportTargetContactsQueue':
-                Vkontakte::adsImportTargetContactsQueue($inputRequestData, $login);
-                break;
+                case 'vkAdsImportTargetContactsQueue':
+                    Vkontakte::adsImportTargetContactsQueue($inputRequestData, $login);
+                    break;
 
-            case 'vkAdsRemoveTargetContactsQueue':
-                Vkontakte::adsRemoveTargetContactsQueue($inputRequestData, $login);
-                break;
+                case 'vkAdsRemoveTargetContactsQueue':
+                    Vkontakte::adsRemoveTargetContactsQueue($inputRequestData, $login);
+                    break;
 
-            case 'showVkQueue':
-                echo DB::showVkQueue();
-                break;
+                case 'showVkQueue':
+                    echo DB::showVkQueue();
+                    break;
 
-            case 'yaAddItemToAudience':
-                Yandex::addItemToAudience($inputRequestData, $login);
-                break;
+                case 'yaAddItemToAudience':
+                    Yandex::addItemToAudience($inputRequestData, $login);
+                    break;
 
-            case 'yaDelItemFromAudience':
-                var_dump(Yandex::delItemFromAudience($inputRequestData, $login));
-                break;
+                case 'yaDelItemFromAudience':
+                    var_dump(Yandex::delItemFromAudience($inputRequestData, $login));
+                    break;
 
-            case 'yaModifyAudience':
-                Yandex::modifyAudience($inputRequestData, $logDir);
-                break;
+                case 'yaModifyAudience':
+                    Yandex::modifyAudience($inputRequestData);
+                    break;
 
-            case 'mtGetAccessToken':
-                MyTarget::getAccessToken($logDir);
-                break;
+                case 'mtGetAccessToken':
+                    MyTarget::getAccessToken();
+                    break;
 
-            case 'mtClearAccessTokens':
-                MyTarget::clearAccessTokens($logDir);
-                break;
+                case 'mtClearAccessTokens':
+                    MyTarget::clearAccessTokens();
+                    break;
 
-            case 'mtAddItemToAudience':
-                MyTarget::addItemToAudience($inputRequestData, $login);
-                break;
+                case 'mtAddItemToAudience':
+                    MyTarget::addItemToAudience($inputRequestData, $login);
+                    break;
 
-            case 'mtDelItemFromAudience':
-                MyTarget::delItemFromAudience($inputRequestData, $login);
-                break;
+                case 'mtDelItemFromAudience':
+                    MyTarget::delItemFromAudience($inputRequestData, $login);
+                    break;
 
-            case 'mtModifyItem':
-                var_dump(MyTarget::modifyItem($inputRequestData['_'], $login));
-                break;
+                case 'mtModifyItem':
+                    var_dump(MyTarget::modifyItem($inputRequestData['_'], $login));
+                    break;
 
-            case 'mtModifyAudience':
-                var_dump(MyTarget::modifyAudience($inputRequestData['_'], $login, $logDir));
-                break;
+                case 'mtModifyAudience':
+                    var_dump(MyTarget::modifyAudience($inputRequestData['_'], $login));
+                    break;
 
-            case 'sbCreditRegister':
-                echo Sberbank::register($inputRequestData, $logDir);
-                break;
+                case 'sbCreditRegister':
+                    echo Sberbank::register($inputRequestData);
+                    break;
 
-            case 'semySMSTrap':
-                
-                break;
+                case 'semySMSTrap':
 
-            case 'exportDublicatePhonesToExcel':
-                DB::exportDublicatePhonesToExcel($login);
-                break;
+                    break;
 
-            case 'test':
-                var_dump(Wazzup24::send($login, $logDir));
-                #$nameFromWhatsapp = 'Anton';
-                #var_dump(Dadata::cleanNameFromWhatsapp($nameFromWhatsapp, $logDir));
-                #$params['user']['addfields']['d_utm_source']='var1';
-                #$params['user']['addfields']['Возраст']='var2';
-                #$result['user']['addfields']['Имя из ватсапа'] = 'var3';
-                #var_dump(array_merge($params,$result));
-                #var_dump(DB::query('SELECT * FROM vk_api WHERE success=0 LIMIT 1')->fetch_object());
-                #var_dump(implode('/', array_filter(array(filter_input(INPUT_SERVER, 'DOCUMENT_ROOT'), substr(dirname(filter_input(INPUT_SERVER, 'PHP_SELF')),1), 'logs', '*.log'))));
-                
-                break;
+                case 'exportDublicatePhonesToExcel':
+                    DB::exportDublicatePhonesToExcel($login);
+                    break;
 
-            default:
-                echo 'Silent is golden';
-                break;
+                case 'test':
+                    var_dump(Wazzup24::send($login));
+                    #$nameFromWhatsapp = 'Anton';
+                    #var_dump(Dadata::cleanNameFromWhatsapp($nameFromWhatsapp));
+                    #$params['user']['addfields']['d_utm_source']='var1';
+                    #$params['user']['addfields']['Возраст']='var2';
+                    #$result['user']['addfields']['Имя из ватсапа'] = 'var3';
+                    #var_dump(array_merge($params,$result));
+                    #var_dump(DB::query('SELECT * FROM vk_api WHERE success=0 LIMIT 1')->fetch_object());
+                    #var_dump(implode('/', array_filter(array(filter_input(INPUT_SERVER, 'DOCUMENT_ROOT'), substr(dirname(filter_input(INPUT_SERVER, 'PHP_SELF')),1), 'logs', '*.log'))));
+
+                    break;
+
+                default:
+                    echo 'Silent is golden';
+                    break;
+            }
         }
         break;
     case 'POST':
@@ -221,26 +222,26 @@ switch ($inputRequestMethod){
         switch ($inputRemoteAddr) {
             case '95.211.243.70':
             case '193.42.110.5':
-                SemySMS::trap($login, $inputRequestData, $logDir);
+                SemySMS::trap($login, $inputRequestData);
                 break;
 
             case '136.243.44.89':
-                Senler::trap($inputRequestData, $logDir);
+                Senler::trap($inputRequestData);
                 break;
 
 #            case '159.69.73.62':
 #            case '35.228.37.107':
-#                ChatApi::trap($login, $inputRequestData, $logDir);
+#                ChatApi::trap($login, $inputRequestData);
 #                break;
 
 #            case '148.251.13.26':
 #            case '144.76.56.26':
-#                Wazzup24::trap($login, $inputRequestData, $logDir);
+#                Wazzup24::trap($login, $inputRequestData);
 #                break;
 
             default:
-#                ChatApi::trap($login, $inputRequestData, $logDir);
-                Wazzup24::trap($login, $inputRequestData, $logDir);
+#                ChatApi::trap($login, $inputRequestData);
+                Wazzup24::trap($login, $inputRequestData);
                 break;
         }
         break;
@@ -266,6 +267,4 @@ switch ($inputRemoteAddr) {
 #        echo 'Silent is golden';
         break;
 }
-#Logs::clear($logDir);
-#Logs::add($logDir, basename(__FILE__,".php"), "$inputRemoteAddr | $inputRequestMethod | ".serialize($inputRequestData));
 Logs::access("$inputRemoteAddr | $inputRemoteHost | $inputRequestMethod | ".serialize($inputRequestData));

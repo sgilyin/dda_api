@@ -23,37 +23,33 @@
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class Dadata {
+    public static function cleanNameFromWhatsapp($nameFromWhatsapp) {
+        if (DADATA_ENABLED && DADATA_API_KEY != '' && DADATA_SECRET_KEY != '') {
+            $dadataName = json_decode(static::clean('name', $nameFromWhatsapp));
+            $result['user']['addfields']['QC имя из ватсапа'] = $dadataName[0]->qc;
+            switch ($dadataName[0]->qc) {
+                case 0:
+                    $result['user']['first_name'] = ($dadataName[0]->patronymic) ? $dadataName[0]->name.' '.$dadataName[0]->patronymic : $dadataName[0]->name;
+                    if ($dadataName[0]->surname) {
+                        $result['user']['last_name'] = $dadataName[0]->surname;
+                    }
+                    $result['user']['addfields']['Имя из ватсапа'] = $dadataName[0]->source;
+                    break;
+                case 1:
+                    $result['user']['addfields']['Имя из ватсапа'] = $dadataName[0]->source;
+                    break;
 
-    public static function cleanNameFromWhatsapp($nameFromWhatsapp, $logDir) {
-        $dadataName = json_decode(static::clean('name', $nameFromWhatsapp, $logDir));
-        $result['user']['addfields']['QC имя из ватсапа'] = $dadataName[0]->qc;
-        switch ($dadataName[0]->qc) {
-            case 0:
-                $result['user']['first_name'] = ($dadataName[0]->patronymic) ? $dadataName[0]->name.' '.$dadataName[0]->patronymic : $dadataName[0]->name;
-                if ($dadataName[0]->surname) {
-                    $result['user']['last_name'] = $dadataName[0]->surname;
-                }
-                $result['user']['addfields']['Имя из ватсапа'] = $dadataName[0]->source;
-                break;
-            case 1:
-                $result['user']['addfields']['Имя из ватсапа'] = $dadataName[0]->source;
-                break;
-
-            default:
-                break;
+                default:
+                    break;
+            }
+            return $result;
         }
-        return $result;
+        
     }
 
-    /**
-     * Standardizes Name in Dadata
-     * @param array $inputRequestData
-     * @param string $logDir
-     * @return string
-     */
-    public static function cleanName($inputRequestData, $logDir) {
+    public static function cleanName($inputRequestData) {
         if ($inputRequestData['email'] && $inputRequestData['data']){
-            $dadataName = json_decode(static::clean('name', $inputRequestData['data'], $logDir));
+            $dadataName = json_decode(static::clean('name', $inputRequestData['data']));
             $params['user']['email'] = $inputRequestData['email'];
             if ($dadataName[0]->name){
                 $params['user']['addfields']['first_name'] = $dadataName[0]->name;
@@ -74,20 +70,13 @@ class Dadata {
             } else {
                 $params['user']['addfields']['QC ФИО DADATA'] = 0;
             }
-            return GetCourse::addUser($params, $logDir);
+            return GetCourse::addUser($params);
         }
     }
 
-    /**
-     * Standardizes Phone in Dadata
-     * 
-     * @param array $inputRequestData
-     * @param string $logDir
-     * @return string
-     */
-    public static function cleanPhone($inputRequestData, $logDir) {
+    public static function cleanPhone($inputRequestData) {
         if ($inputRequestData['email'] && $inputRequestData['data']){
-            $dadataPhone = json_decode(static::clean('phone', $inputRequestData['data'], $logDir));
+            $dadataPhone = json_decode(static::clean('phone', $inputRequestData['data']));
             $params['user']['email'] = $inputRequestData['email'];
             if ($dadataPhone[0]->phone){
                 $params['user']['phone'] = $dadataPhone[0]->phone;
@@ -110,20 +99,13 @@ class Dadata {
                 $params['user']['addfields']['UTC+'] = $timezone;
             }
             $params['user']['addfields']['Страна_мобильного_по_DADATA'] = $dadataPhone[0]->country ?? 'null';
-            return GetCourse::addUser($params, $logDir);
+            return GetCourse::addUser($params);
         }
     }
 
-    /**
-     * Standardizes data in Dadata
-     * 
-     * @param string $type
-     * @param string $value
-     * @param string $logDir
-     * @return string
-     */
-    public static function clean($type, $value, $logDir) {
-        if (DADATA_API_KEY && DADATA_SECRET_KEY) {
+    public static function clean($type, $value) {
+        if (DADATA_ENABLED && DADATA_API_KEY != '' && DADATA_SECRET_KEY != '') {
+            Logs::handler(__CLASS__."::".__FUNCTION__." | $type | $value");
             $url = "https://cleaner.dadata.ru/api/v1/clean/$type";
             $headers = array(
                 "Content-Type: application/json",
@@ -132,8 +114,7 @@ class Dadata {
                 "X-Secret: " . DADATA_SECRET_KEY,
             );
             $post = json_encode(array($value));
-#            return cURL::executeRequest($url, $post, $headers, false, $logDir);
-            return cURL::executeRequestTest('POST', $url, $post, $headers, false, $logDir);
+            return cURL::executeRequestTest('POST', $url, $post, $headers, false);
         }
     }
 }

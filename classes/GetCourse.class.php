@@ -23,15 +23,7 @@
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class GetCourse {
-
-    /**
-     * Send contact form to GetCourse
-     * 
-     * @param string $email
-     * @param string $text
-     * @return string
-     */
-    public static function sendContactForm($email, $text, $logDir){
+    public static function sendContactForm($email, $text){
         if (GC_ACCOUNT) {
             $url='https://'.GC_ACCOUNT.'.getcourse.ru/cms/system/contact';
             $page = file_get_contents($url);
@@ -58,38 +50,24 @@ class GetCourse {
                     "Accept: */*",
                 );
             }
-
-            return cURL::executeRequest($url, $post, $headers, false, $logDir);
+            Logs::handler(__CLASS__.'::'.__FUNCTION__." | $email | $text");
+            return cURL::executeRequest($url, $post, $headers, false);
         }
     }
 
-    /**
-     * Add user to GetCourse
-     * 
-     * @param array $params
-     * @param string $logDir
-     * @return string
-     */
-    public static function addUser($params, $logDir) {
+    public static function addUser($params) {
         if (GC_ACCOUNT && GC_API_KEY) {
             $url = 'https://'.GC_ACCOUNT.'.getcourse.ru/pl/api/users';
             $post['action'] = "add";
             $post['key'] = GC_API_KEY;
             $params['system']['refresh_if_exists'] = 1;
             $post['params']=base64_encode(json_encode($params));
-
-            return cURL::executeRequest($url, $post, false, false, $logDir);
+            Logs::handler(__CLASS__.'::'.__FUNCTION__." | {$params['user']['email']}");
+            return cURL::executeRequest($url, $post, false, false);
         }
     }
-    
-    /**
-     * Request for add user to GetCourse
-     * 
-     * @param array $inputRequestData
-     * @param string $logDir
-     * @return integer
-     */
-    public static function addUserRequest($inputRequestData, $logDir) {
+
+    public static function addUserRequest($inputRequestData) {
         if ($inputRequestData['phone']){
             //preg_replace('/[^0-9]/', '', $inputRequestData['phone'])
             //$params['user']['phone'] = $inputRequestData['phone'];
@@ -102,16 +80,9 @@ class GetCourse {
             $params['user']['group_name'] = static::getRequestGroups($inputRequestData['groups']);
         }
 
-        return static::addUser($params, $logDir);
+        return static::addUser($params);
     }
 
-    /**
-     * Create array whith groups for GetCourse request
-     * 
-     * @global array $addFields
-     * @param array $requestGroups
-     * @return array
-     */
     private function getRequestGroups($requestGroups) {
         $groups = explode(',', $requestGroups);
         global $addFields;

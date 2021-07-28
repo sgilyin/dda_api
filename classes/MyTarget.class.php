@@ -23,7 +23,7 @@
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class MyTarget {
-    public function modifyAudience($inputRequestData, $login, $logDir) {
+    public function modifyAudience($inputRequestData, $login) {
         if (MT_ACCESS_TOKEN && $inputRequestData['operation'] && $inputRequestData['segment'] && $inputRequestData['name']) {
             $query = "SELECT * FROM my_target_audience WHERE login='$login' AND segment={$inputRequestData['segment']} AND operation='{$inputRequestData['operation']}' AND success=0";
             if ($result = DB::query($query)) {
@@ -42,7 +42,7 @@ class MyTarget {
                 $prefix = ($inputRequestData['operation'] == 'del') ? '-' : '';
                 $post['data'] = '{"base": ' . $prefix . $inputRequestData['segment'] . ', "name": "' . $inputRequestData['name'] . '", "type": "' . $type . '"}';
                 $post['file'] = new CurlFile(realpath("MT_{$inputRequestData['segment']}.txt"));
-                $json = json_decode(cURL::executeRequest($url, $post, $headers, false, $logDir));
+                $json = json_decode(cURL::executeRequest($url, $post, $headers, false));
                 if ($json->id) {
                     $stringIds = implode(',', $ids);
                     $query = "UPDATE my_target_audience SET success=1 WHERE id IN ($stringIds)";
@@ -63,25 +63,25 @@ class MyTarget {
         }
     }
 
-    public static function getAccessToken($logDir) {
+    public static function getAccessToken() {
         if (MT_CLIENT_ID && MT_CLIENT_SECRET) {
             $url = 'https://target-sandbox.my.com/api/v2/oauth2/token.json';
             $headers = array(
                 'Content-Type: application/x-www-form-urlencoded',
             );
             $post = 'grant_type=client_credentials&client_id=' . MT_CLIENT_ID . '&client_secret=' . MT_CLIENT_SECRET . '&permanent=true';
-            return cURL::executeRequest($url, $post, $headers, false, $logDir);
+            return cURL::executeRequest($url, $post, $headers, false);
         }
     }
 
-    public static function clearAccessTokens($logDir) {
+    public static function clearAccessTokens() {
         if (MT_CLIENT_ID && MT_CLIENT_SECRET) {
             $url = 'https://target-sandbox.my.com/api/v2/oauth2/token/delete.json';
             $headers = array(
                 'Content-Type: application/x-www-form-urlencoded',
             );
             $post = 'client_id=' . MT_CLIENT_ID . '&client_secret=' . MT_CLIENT_SECRET;
-            return cURL::executeRequest($url, $post, $headers, false, $logDir);
+            return cURL::executeRequest($url, $post, $headers, false);
         }
     }
 }

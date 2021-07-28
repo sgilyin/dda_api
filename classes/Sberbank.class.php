@@ -23,7 +23,7 @@
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class Sberbank {
-    public static function register($inputRequestData, $logDir) {
+    public static function register($inputRequestData) {
         if ($inputRequestData['email'] && $inputRequestData['orderNumber'] && $inputRequestData['itemPrice']) {
             $itemPrice = intval($inputRequestData['itemPrice'])*100;
             $url = 'https://securepayments.sberbank.ru/sbercredit/'.__FUNCTION__.'.do';
@@ -52,12 +52,12 @@ class Sberbank {
             $orderBundle->cartItems->items = $arr;
             $orderBundle->installments = $installments;
             $post['orderBundle'] = json_encode($orderBundle);
-            $result = json_decode(cURL::executeRequest($url, $post, false, false, $logDir));
+            $result = json_decode(cURL::executeRequest($url, $post, false, false));
 
             if ($result->formUrl) {
                 $params['user']['email'] = $inputRequestData['email'];
                 $params['user']['addfields']['Sber'] = $result->formUrl;
-                return GetCourse::addUser($params, $logDir);
+                return GetCourse::addUser($params);
             } else {var_dump($result);}
         }
     }

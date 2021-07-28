@@ -28,10 +28,9 @@ class Yandex {
      * Modify Yandex Audience whith CSV-file
      * 
      * @param array $inputRequestData
-     * @param string $logDir
      * @return boolean
      */
-    public static function modifyAudience($inputRequestData, $logDir) {
+    public static function modifyAudience($inputRequestData) {
         if (YANDEX_TOKEN) {
             $segmentId = $inputRequestData['segmentId'] ?? false;
             if ($segmentId){
@@ -46,7 +45,7 @@ class Yandex {
                     }
                     $result->close();
                     $post['file'] = new CurlFile(realpath("$segmentId.csv"));
-                    return cURL::executeRequest($url, $post, $headers, false, $logDir);
+                    return cURL::executeRequest($url, $post, $headers, false);
                 }
             } else {
                 return false;

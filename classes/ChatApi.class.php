@@ -7,6 +7,7 @@
 class ChatApi {
     public static function queue($login, $inputRequestData) {
         if (CHAT_API_ENABLED && CHAT_API_TOKEN != '') {
+            Logs::handler(__CLASS__."::".__FUNCTION__." | $login");
             if ($inputRequestData['phone'] && $inputRequestData['body']){
                 $phone = $inputRequestData['phone'];
                 $body = $inputRequestData['body'];
@@ -18,8 +19,9 @@ class ChatApi {
         }
     }
 
-    public static function send($login, $logDir) {
+    public static function send($login) {
         if (CHAT_API_ENABLED && CHAT_API_TOKEN != '') {
+            Logs::handler(__CLASS__."::".__FUNCTION__." | $login");
             for($i = 0; $i < 3; $i++){
                 sleep(rand(15,19));
 #                $last = strtotime(DB::query("SELECT last FROM request WHERE service='wazzup24'")->fetch_object()->last);
@@ -31,7 +33,7 @@ class ChatApi {
                     $post['body'] = $row->body;
                     $post['phone'] = $row->phone;
                     $post=json_encode($post);
-                    $result = json_decode(cURL::executeRequest($url, $post, $headers, false, $logDir));
+                    $result = json_decode(cURL::executeRequest($url, $post, $headers, false));
                     DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='chatapi' AND login='$login'");
                     if ($result->sent) {
                         DB::query("UPDATE send_to_chatapi SET success=1 WHERE id={$row->id}");
@@ -44,10 +46,11 @@ class ChatApi {
         }
     }
 
-    public static function trap($login, $inputRequestData, $logDir) {
+    public static function trap($login, $inputRequestData) {
         if (CHAT_API_ENABLED && CHAT_API_TOKEN != '') {
             if (isset($inputRequestData['messages'])) {
                 if ($inputRequestData['messages'][0]['fromMe'] == false) {
+                    Logs::handler(__CLASS__."::".__FUNCTION__." | $login");
                     $phone = substr(preg_replace('/[^0-9]/', '', $inputRequestData['messages'][0]['chatId']), -15);
                     try {
                         $user = DB::query("SELECT email, instagram, firstName FROM gc_users WHERE phone='$phone' AND login='$login'")->fetch_object();
@@ -60,7 +63,7 @@ class ChatApi {
                     if (empty($email)){
                         try {
                             $nameFromWhatsapp = $inputRequestData['messages'][0]['senderName'] ?? $inputRequestData['messages'][0]['nameInMessenger'];
-                            $params = Dadata::cleanNameFromWhatsapp($nameFromWhatsapp, $logDir);
+                            $params = Dadata::cleanNameFromWhatsapp($nameFromWhatsapp);
                         } catch (Exception $exc) {
                             Logs::error(__CLASS__ . '::' . __FUNCTION__ . " | dadata cleanName | $exc");
                         }
@@ -104,7 +107,7 @@ class ChatApi {
                     if (empty($firstName)) {
                         try {
                             $nameFromWhatsapp = $inputRequestData['messages'][0]['senderName'] ?? $inputRequestData['messages'][0]['nameInMessenger'];
-                            $params = Dadata::cleanNameFromWhatsapp($nameFromWhatsapp, $logDir);
+                            $params = Dadata::cleanNameFromWhatsapp($nameFromWhatsapp);
                         } catch (Exception $exc) {
                             Logs::error(__CLASS__ . '::' . __FUNCTION__ . " | dadata nameFromWa | $exc");
                         }
@@ -112,8 +115,8 @@ class ChatApi {
                     $params['user']['phone'] = $phone;
                     $params['user']['email'] = $email;
                     $params['user']['addfields']['whatsapp']=$phone;
-                    GetCourse::addUser($params, $logDir);
-                    GetCourse::sendContactForm($email, $inputRequestData['messages'][0]['body'].PHP_EOL.'Отправлено из WhatsApp', $logDir);
+                    GetCourse::addUser($params);
+                    GetCourse::sendContactForm($email, $inputRequestData['messages'][0]['body'].PHP_EOL.'Отправлено из WhatsApp');
                     return true;
                 }
             }

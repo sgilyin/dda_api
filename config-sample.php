@@ -32,6 +32,7 @@ define('WA24_CID_WA', '');
 define('WA24_CID_IG', '');
 
 #SMSC Settings
+define('SMSC_ENABLED', false);
 define('SMSC_ACCOUNT', '');
 define('SMSC_PSW', '');
 
@@ -40,6 +41,7 @@ define('GC_ACCOUNT', '');
 define('GC_API_KEY', '');
 
 #Dadata Settings
+define('DADATA_ENABLED', false);
 define('DADATA_API_KEY', '');
 define('DADATA_SECRET_KEY', '');
 
