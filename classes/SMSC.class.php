@@ -39,15 +39,27 @@ class SMSC {
                 $post['get_messages'] = 1;
                 $result = cURL::executeRequest($url, $post, false, false);
                 $json=json_decode($result);
-                for ($i=0; $i<count($json); $i++){
-                    if ($json[$i]->id && $json[$i]->phone && $json[$i]->message){
-                        $query = "SELECT id FROM smsc_messages WHERE login='$login' AND id='{$json[$i]->id}'";
-                        $result = DB::query($query);
-                        if ($result->num_rows == 0) {
-                            $query = "INSERT INTO smsc_messages (`id`, `phone`, `message`, `login`) VALUES ('{$json[$i]->id}', '{$json[$i]->phone}', '{$json[$i]->message}', '$login')";
-                            Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | {$json[$i]->id}");
-                            DB::query($query);
+                if (is_array($json)) {
+                    for ($i=0; $i<count($json); $i++){
+                        if ($json[$i]->id && $json[$i]->phone && $json[$i]->message){
+                            $query = "SELECT id FROM smsc_messages WHERE login='$login' AND id='{$json[$i]->id}'";
+                            $result = DB::query($query);
+                            if ($result->num_rows == 0) {
+                                $query = "INSERT INTO smsc_messages (`id`, `phone`, `message`, `login`) VALUES ('{$json[$i]->id}', '{$json[$i]->phone}', '{$json[$i]->message}', '$login')";
+                                Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | {$json[$i]->id}");
+                                DB::query($query);
+                            }
                         }
+                    }
+                }
+                if (isset($json->error)) {
+                    switch ($json->error) {
+                        case 'message not found':
+                            break;
+
+                        default:
+                            Logs::error(__CLASS__.'::'.__FUNCTION__." | $login | {$json->error}");
+                            break;
                     }
                 }
                 DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='smsc' AND login='$login'");

@@ -23,6 +23,10 @@
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class DB {
+    private static function argsToStrSet($args){
+        return implode(', ', array_map(function ($v, $k) { return sprintf("%s='%s'", $k, $v); }, $args, array_keys($args)));
+    }
+
     public static function query($query){
         if (DB_HOST != '' && DB_USER != '' && DB_PASSWORD != '' && DB_NAME != '') {
             $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
@@ -63,31 +67,28 @@ class DB {
         }
     }
 
-    public static function userUpdate($login, $inputRequestData){
-        if ($inputRequestData['id'] && $inputRequestData['email'] && $inputRequestData['phone']) {
-            $conditions = preg_replace('/^[+]?([0-9]{0,4})\(?([0-9]{3})\)?([ .-]?)([0-9]{3})([ .-]?)([0-9]{2,5})([ .-]?)([0-9]{2,5})$/', '$1$2$4$6$8', $inputRequestData['_']);
+    public static function userUpdateGet($login, $args){
+        if ($args['id'] && $args['email'] && $args['phone']) {
+            $conditions = preg_replace('/^[+]?([0-9]{0,4})\(?([0-9]{3})\)?([ .-]?)([0-9]{3})([ .-]?)([0-9]{2,5})([ .-]?)([0-9]{2,5})$/', '$1$2$4$6$8', $args['_']);
             foreach ($conditions as $key => $val) {
                 $setArr[] = "$key='$val'";
             }
             $setStr = implode(", ", $setArr);
             Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | $setStr");
-            return static::query("UPDATE gc_users SET $setStr WHERE login=$login AND id='{$inputRequestData['_']['id']}'");
+            return static::query("UPDATE gc_users SET $setStr WHERE login=$login AND id='{$args['_']['id']}'");
         }
     }
 
     public static function dealUpdate($login, $args) {
-        if ($args['id'] && $args['number']) {
+        if (isset($args['id']) && isset($args['number'])) {
             Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | {$args['id']}");
-            foreach ($args as $key => $val) {
-                $setArr[] = "$key='$val'";
-            }
-            $setStr = implode(", ", $setArr);
             $query = "SELECT id FROM gc_deals WHERE login='$login' AND id='{$args['id']}'";
             $result = static::query($query);
+            $strSet = static::argsToStrSet($args);
             if ($result->num_rows > 0) {
-                $query = "UPDATE gc_deals SET $setStr WHERE login='$login' AND id='{$args['id']}'";
+                $query = "UPDATE gc_deals SET $strSet WHERE login='$login' AND id='{$args['id']}'";
             } else {
-                $query = "INSERT INTO gc_deals SET $setStr, login='$login'";
+                $query = "INSERT INTO gc_deals SET $strSet, login='$login'";
             }
             static::query($query);
         }

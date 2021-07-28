@@ -75,7 +75,7 @@ switch ($inputRequestMethod){
                     break;
 
                 case 'dbUserUpdate':
-                    DB::userUpdate($login, $inputRequestData['_']);
+                    DB::userUpdateGet($login, $inputRequestData['_']);
                     break;
 
                 case 'dbUpdateUser':
@@ -196,7 +196,7 @@ switch ($inputRequestMethod){
                     break;
 
                 case 'test':
-                    var_dump(Wazzup24::send($login));
+                    var_dump(SMSC::syncMessages('avtoservice'));
                     #$nameFromWhatsapp = 'Anton';
                     #var_dump(Dadata::cleanNameFromWhatsapp($nameFromWhatsapp));
                     #$params['user']['addfields']['d_utm_source']='var1';

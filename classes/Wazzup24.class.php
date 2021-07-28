@@ -47,10 +47,13 @@ class Wazzup24 {
                     $post=json_encode($post);
                     $result = json_decode(cURL::executeRequest($url, $post, $headers, false));
                     DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='wazzup24' AND login='$login'");
-                    if ($result->messageId) {
+                    if (isset($result->messageId)) {
                         DB::query("UPDATE send_to_wazzup24 SET sendTime=CURRENT_TIMESTAMP() WHERE id={$row->id}");
                     }
                 }
+            }
+            if (isset($result->errors)) {
+                Logs::error(__CLASS__.'::'.__FUNCTION__." | $login | {$result->errors[0]->description}");
             }
             return true;
         } else {
@@ -67,7 +70,7 @@ class Wazzup24 {
      */
     public static function queue($login, $args) {
         if (WA24_ENABLED && WA24_API_KEY != '' && WA24_CID_WA != '') {
-            if ($args['chatId'] && ($args['text'] || $args['content'])) {
+            if (isset($args['chatId']) && (isset($args['text']) || isset($args['content']))) {
                 $args['channelId'] = $args['channelId'] ?? WA24_CID_WA;
                 $args['chatType'] = $args['chatType'] ?? 'whatsapp';
                 foreach ($args as $key => $val) {
