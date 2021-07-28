@@ -84,6 +84,14 @@ define('WA_SEMYSMS_NOTIFY', '');
 define('CHAT_API_ENABLED', false);
 define('CHAT_API_TOKEN', '');
 
+#Bitrix24 Settings
+define('BX24_ENABLED', false);
+define('BX24_HOST', '');
+define('BX24_USER', '');
+define('BX24_SECRET', '');
+define('BX24_BOT_ID', '');
+define('BX24_CLIENT_ID', '');
+
 #GC Fields
 #$addFields = new stdClass();
 #$addFields->{'123456'} = '<Enter here>';
