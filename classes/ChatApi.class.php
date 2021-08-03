@@ -116,7 +116,7 @@ class ChatApi {
                     $params['user']['email'] = $email;
                     $params['user']['addfields']['whatsapp']=$phone;
                     GetCourse::addUser($params);
-                    GetCourse::sendContactForm($email, $inputRequestData['messages'][0]['body'].PHP_EOL.'Отправлено из WhatsApp');
+                    GetCourse::sendContactForm($email, $inputRequestData['messages'][0]['body'].PHP_EOL.'Отправлено из WhatsApp ('.__CLASS__.')');
                     return true;
                 }
             }
