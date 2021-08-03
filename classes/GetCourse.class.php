@@ -56,14 +56,19 @@ class GetCourse {
     }
 
     public static function addUser($params) {
-        if (GC_ACCOUNT && GC_API_KEY) {
+        if (GC_ACCOUNT && GC_API_KEY != '') {
             $url = 'https://'.GC_ACCOUNT.'.getcourse.ru/pl/api/users';
             $post['action'] = "add";
             $post['key'] = GC_API_KEY;
             $params['system']['refresh_if_exists'] = 1;
             $post['params']=base64_encode(json_encode($params));
             Logs::handler(__CLASS__.'::'.__FUNCTION__." | {$params['user']['email']}");
-            return cURL::executeRequest($url, $post, false, false);
+            $userGC = json_decode(cURL::executeRequest($url, $post, false, false));
+            if ($userGC->success) {
+                return $userGC->result->user_id;
+            } else {
+                Logs::error(__CLASS__ . '::' . __FUNCTION__ . " | {$params['user']['email']} | {$userGC->result}");
+            }
         }
     }
 

@@ -141,8 +141,15 @@ class DB {
             $id = $inputRequestData['id'];
             $firstName = $inputRequestData['name'] ?? '';
             Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | $id");
-
-            return static::query("INSERT INTO gc_users (`email`, `phone`, `id`, `login`, `firstName`) VALUES ('$email', '$phoneNum', '$id', '$login', '$firstName')");
+            $query = "SELECT id FROM gc_users WHERE login='$login' AND id='$id'";
+            $result = static::query($query);
+            #$strSet = static::argsToStrSet($args);
+            if ($result->num_rows > 0) {
+                #$query = "UPDATE gc_deals SET $strSet WHERE login='$login' AND id='{$args['id']}'";
+            } else {
+                $query = "INSERT INTO gc_users (`email`, `phone`, `id`, `login`, `firstName`) VALUES ('$email', '$phoneNum', '$id', '$login', '$firstName')";
+            }
+            return static::query($query);
         }
     }
 

@@ -63,7 +63,7 @@ class SemySMS {
                 $params['user']['email'] = $email;
                 $params['user']['addfields']['whatsapp']=$phone;
                 GetCourse::addUser($params);
-                GetCourse::sendContactForm($email, $inputRequestData['msg'].PHP_EOL.'Отправлено из WhatsApp');
+                GetCourse::sendContactForm($email, $inputRequestData['msg'].PHP_EOL.'Отправлено из WhatsApp ('.__CLASS__.')');
             }
             if ($inputRequestData['type']=='0' && $inputRequestData['dir']=='in') {
                 $whatsapp['to'] = WA_SEMYSMS_NOTIFY;
