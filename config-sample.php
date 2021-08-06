@@ -78,6 +78,8 @@ define('SBRF_CREDIT_RETURNURL', '');
 
 #SemySMS Settings
 define('SEMYSMS_ENABLED', false);
+define('SEMYSMS_TOKEN', '');
+define('SEMYSMS_DEVICE', '');
 define('WA_SEMYSMS_NOTIFY', '');
 
 #ChatApi Settings

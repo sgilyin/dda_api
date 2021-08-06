@@ -303,4 +303,28 @@ class DB {
             }
         }
     }
+
+    public static function checkSentWhatsapp($phone, $message) {
+        $alreadySent = false;
+        if (static::query("SELECT COUNT(*) AS count FROM send_to_chatapi WHERE sendTime > CURRENT_TIMESTAMP - INTERVAL 24 HOUR AND phone='$phone' AND body='$message'")->fetch_object()->count > 0) {
+            $alreadySent = 'ChatApi';
+        }
+        if (static::query("SELECT COUNT(*) AS count FROM send_to_semysms WHERE sendTime > CURRENT_TIMESTAMP - INTERVAL 24 HOUR AND phone='$phone' AND msg='$message'")->fetch_object()->count > 0) {
+            $alreadySent = 'SemySMS';
+        }
+        if (static::query("SELECT COUNT(*) AS count FROM send_to_wazzup24 WHERE sendTime > CURRENT_TIMESTAMP - INTERVAL 24 HOUR AND chatId='$phone' AND text='$message'")->fetch_object()->count > 0) {
+            $alreadySent = 'Wazzup24';
+        }
+        Logs::handler(__CLASS__.'::'.__FUNCTION__." | $phone | $message | $alreadySent");
+        return $alreadySent;
+    }
+
+    public static function checkSentGetCourse($email, $text) {
+        $alreadySent = false;
+        if (static::query("SELECT COUNT(*) AS count FROM gc_contact_form WHERE sendTime > CURRENT_TIMESTAMP - INTERVAL 24 HOUR AND email='$email' AND text='$text'")->fetch_object()->count > 0) {
+            $alreadySent = true;
+            Logs::handler(__CLASS__.'::'.__FUNCTION__." | $email | $text | already sent");
+        }
+        return $alreadySent;
+    }
 }

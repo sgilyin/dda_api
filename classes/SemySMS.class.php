@@ -63,7 +63,11 @@ class SemySMS {
                 $params['user']['email'] = $email;
                 $params['user']['addfields']['whatsapp']=$phone;
                 GetCourse::addUser($params);
-                GetCourse::sendContactForm($email, $inputRequestData['msg'].PHP_EOL.'Отправлено из WhatsApp ('.__CLASS__.')');
+                $alreadySent = DB::checkSentGetCourse($email, $inputRequestData['msg']);
+                if (!$alreadySent) {
+                    DB::query("INSERT INTO gc_contact_form SET email='$email', text='{$inputRequestData['msg']}'");
+                    GetCourse::sendContactForm($email, $inputRequestData['msg'].PHP_EOL.'Отправлено из WhatsApp ('.__CLASS__.')');
+                }
             }
             if ($inputRequestData['type']=='0' && $inputRequestData['dir']=='in') {
                 $whatsapp['to'] = WA_SEMYSMS_NOTIFY;
@@ -76,6 +80,58 @@ class SemySMS {
                     $inputRequestData['msg'] . PHP_EOL . $inputRequestData['date'];
                 ChatApi::queue($login, $toChatApi);
             }
+        }
+    }
+
+    public static function queue($login, $args) {
+        if (SEMYSMS_ENABLED && SEMYSMS_TOKEN != '') {
+            Logs::handler(__CLASS__."::".__FUNCTION__." | $login");
+            if (isset($args['phone']) && isset($args['msg'])) {
+                $args['device'] = $args['device'] ?? SEMYSMS_DEVICE;
+                foreach ($args as $key => $val) {
+                    $setArr[] = "$key='$val'";        
+                }
+                $setStr = implode(", ", $setArr);
+                $query = "INSERT INTO send_to_semysms SET $setStr, login='$login'";
+                DB::query($query);
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static function send($login) {
+        if (SEMYSMS_ENABLED && SEMYSMS_TOKEN != '') {
+            Logs::handler(__CLASS__."::".__FUNCTION__." | $login");
+            for($i = 0; $i < 3; $i++){
+                sleep(rand(15,19));
+                if ($row = DB::query("SELECT * FROM send_to_semysms WHERE sendTime=0 AND login='$login' LIMIT 1")->fetch_object()) {
+                    $alreadySent = DB::checkSentWhatsapp($row->phone, $row->msg);
+                    if ($alreadySent) {
+                        Logs::handler(__CLASS__."::".__FUNCTION__." | $login | Message {$row->id} already sent via $alreadySent");
+                        DB::query("UPDATE send_to_semysms SET sendTime=CURRENT_TIMESTAMP() WHERE id={$row->id}");
+                    } else {
+                        $url = 'https://semysms.net/api/3/sms.php';
+                        $post = array();
+                        $post['phone'] = $row->phone;
+                        $post['msg'] = $row->msg;
+                        $post['device'] = $row->device;
+                        $post['token'] = SEMYSMS_TOKEN;
+                        $result = json_decode(cURL::executeRequestTest('POST', $url, $post, false, false));
+                        DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='semysms' AND login='$login'");
+                        if ($result->code == '0') {
+                            DB::query("UPDATE send_to_semysms SET sendTime=CURRENT_TIMESTAMP() WHERE id={$row->id}");
+                        } else {
+                            Logs::error(__CLASS__.'::'.__FUNCTION__." | $login | {$result->code}");
+                            BX24::sendBotMessage('chat8666', __CLASS__.'::'.__FUNCTION__." | $login | {$result->code}");
+                        }
+                    }
+                }
+            }
+            return true;
+        } else {
+            return false;
         }
     }
 }

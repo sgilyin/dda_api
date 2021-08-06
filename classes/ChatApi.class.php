@@ -5,13 +5,11 @@
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class ChatApi {
-    public static function queue($login, $inputRequestData) {
+    public static function queue($login, $args) {
         if (CHAT_API_ENABLED && CHAT_API_TOKEN != '') {
             Logs::handler(__CLASS__."::".__FUNCTION__." | $login");
-            if ($inputRequestData['phone'] && $inputRequestData['body']){
-                $phone = $inputRequestData['phone'];
-                $body = $inputRequestData['body'];
-                DB::query("INSERT INTO send_to_chatapi (`phone`, `body`, `login`) VALUES ('$phone', '$body', '$login')");
+            if ($args['phone'] && $args['body']){
+                DB::query("INSERT INTO send_to_chatapi SET phone='{$args['phone']}', body='{$args['body']}', login='$login'");
                 return true;
             }
         } else {
@@ -25,24 +23,34 @@ class ChatApi {
             for($i = 0; $i < 3; $i++){
                 sleep(rand(15,19));
 #                $last = strtotime(DB::query("SELECT last FROM request WHERE service='wazzup24'")->fetch_object()->last);
-                if ($row = DB::query("SELECT * FROM send_to_chatapi WHERE success=0 AND login='$login' LIMIT 1")->fetch_object()){
-                    $url = 'https://api.chat-api.com/instance272955/sendMessage?token=' . CHAT_API_TOKEN;
-                    $headers = array();
-                    $post = array();
-                    $headers[] = "Content-Type: application/json";
-                    $post['body'] = $row->body;
-                    $post['phone'] = $row->phone;
-                    $post=json_encode($post);
-                    $result = json_decode(cURL::executeRequest($url, $post, $headers, false));
-                    DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='chatapi' AND login='$login'");
-                    if ($result->sent) {
-                        DB::query("UPDATE send_to_chatapi SET success=1 WHERE id={$row->id}");
-                        return true;
+                if ($row = DB::query("SELECT * FROM send_to_chatapi WHERE sendTime=0 AND login='$login' LIMIT 1")->fetch_object()) {
+                    $alreadySent = DB::checkSentWhatsapp($row->phone, $row->body);
+                    if ($alreadySent) {
+                        Logs::handler(__CLASS__."::".__FUNCTION__." | $login | Message {$row->id} already sent via $alreadySent");
+                        DB::query("UPDATE send_to_chatapi SET sendTime=CURRENT_TIMESTAMP() WHERE id={$row->id}");
                     } else {
-                        return false;
+                        $url = 'https://api.chat-api.com/instance272955/sendMessage?token=' . CHAT_API_TOKEN;
+                        $headers = array();
+                        $post = array();
+                        $headers[] = "Content-Type: application/json";
+                        $post['body'] = $row->body;
+                        $post['phone'] = $row->phone;
+                        $post=json_encode($post);
+                        $result = json_decode(cURL::executeRequest($url, $post, $headers, false));
+                        DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='chatapi' AND login='$login'");
+                        if ($result->sent) {
+                            DB::query("UPDATE send_to_chatapi SET sendTime=CURRENT_TIMESTAMP() WHERE id={$row->id}");
+                        } else {
+                            Logs::error(__CLASS__.'::'.__FUNCTION__." | $login | {$result->error}");
+                            BX24::sendBotMessage('chat8666', __CLASS__.'::'.__FUNCTION__." | $login | {$result->error}");
+                        }
                     }
+                    
                 }
             }
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -116,7 +124,11 @@ class ChatApi {
                     $params['user']['email'] = $email;
                     $params['user']['addfields']['whatsapp']=$phone;
                     GetCourse::addUser($params);
-                    GetCourse::sendContactForm($email, $inputRequestData['messages'][0]['body'].PHP_EOL.'Отправлено из WhatsApp ('.__CLASS__.')');
+                    $alreadySent = DB::checkSentGetCourse($email, $inputRequestData['messages'][0]['body']);
+                    if (!$alreadySent) {
+                        DB::query("INSERT INTO gc_contact_form SET email='$email', text='{$inputRequestData['messages'][0]['body']}'");
+                        GetCourse::sendContactForm($email, $inputRequestData['messages'][0]['body'].PHP_EOL.'Отправлено из WhatsApp ('.__CLASS__.')');
+                    }
                     return true;
                 }
             }

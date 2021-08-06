@@ -78,12 +78,15 @@ class SMSC {
         for ($i = 0; $i < count($messages); $i++) {
             $id = $messages[$i][0];
             if (preg_match("/Вам пишет .*:/",$messages[$i][2])){
-                $args['chatId'] = $messages[$i][1];
-                $args['text'] = substr($messages[$i][2], stripos($messages[$i][2],':')+2);
-                Wazzup24::queue($login, $args);
+                $toWazzup24['chatId'] = $messages[$i][1];
+                $toWazzup24['text'] = substr($messages[$i][2], stripos($messages[$i][2],':')+2);
+                Wazzup24::queue($login, $toWazzup24);
                 $toChatApi['phone'] = $messages[$i][1];
                 $toChatApi['body'] = substr($messages[$i][2], stripos($messages[$i][2],':')+2);
-                ChatApi::queue($messages[$i][3], $toChatApi);
+                ChatApi::queue($login, $toChatApi);
+                $toSemySMS['phone'] = $messages[$i][1];
+                $toSemySMS['msg'] = substr($messages[$i][2], stripos($messages[$i][2],':')+2);
+                SemySMS::queue($login, $toSemySMS);
                 DB::query("UPDATE smsc_messages SET success=1 WHERE id=$id");
             }
             if (preg_match("/\|\d*\|\S*@\S*\|http.*\|/",$messages[$i][2])){

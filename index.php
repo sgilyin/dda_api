@@ -30,6 +30,8 @@ $inputRemoteHost = filter_input(INPUT_SERVER, 'REMOTE_HOST');
 $inputRequestMethod = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
 $login = substr(dirname(filter_input(INPUT_SERVER, 'PHP_SELF')),1);
 
+Logs::handler("$inputRemoteAddr | $inputRequestMethod");
+
 if ($login == '' && $inputRemoteAddr == '195.191.78.178') {
     echo 'ok';
     die();
@@ -196,16 +198,7 @@ switch ($inputRequestMethod){
                     break;
 
                 case 'test':
-                    var_dump(SMSC::syncMessages('avtoservice'));
-                    #$nameFromWhatsapp = 'Anton';
-                    #var_dump(Dadata::cleanNameFromWhatsapp($nameFromWhatsapp));
-                    #$params['user']['addfields']['d_utm_source']='var1';
-                    #$params['user']['addfields']['Возраст']='var2';
-                    #$result['user']['addfields']['Имя из ватсапа'] = 'var3';
-                    #var_dump(array_merge($params,$result));
-                    #var_dump(DB::query('SELECT * FROM vk_api WHERE success=0 LIMIT 1')->fetch_object());
-                    #var_dump(implode('/', array_filter(array(filter_input(INPUT_SERVER, 'DOCUMENT_ROOT'), substr(dirname(filter_input(INPUT_SERVER, 'PHP_SELF')),1), 'logs', '*.log'))));
-
+                    
                     break;
 
                 default:

@@ -29,26 +29,32 @@ class Wazzup24 {
             for($i = 0; $i < 4; $i++){
                 sleep(rand(11,15));
     //            $last = strtotime(DB::query("SELECT last FROM request WHERE service='wazzup24'")->fetch_object()->last);
-                if ($row = DB::query("SELECT * FROM send_to_wazzup24 WHERE sendTime=0 AND login='$login' LIMIT 1")->fetch_object()){
-                    $url = 'https://api.wazzup24.com/v2/send_message';
-                    $headers = array();
-                    $post = array();
-                    $headers[] = "Content-type:application/json";
-                    $headers[] = "Authorization: Basic ".WA24_API_KEY;
-                    $post['chatType'] = $row->chatType;
-                    $post['channelId'] = $row->channelId;
-                    $post['chatId'] = $row->chatId;
-                    if (!$row->text == '') {
-                        $post['text'] = $row->text;
-                    }
-                    if (!$row->content == '') {
-                        $post['content'] = $row->content;
-                    }
-                    $post=json_encode($post);
-                    $result = json_decode(cURL::executeRequest($url, $post, $headers, false));
-                    DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='wazzup24' AND login='$login'");
-                    if (isset($result->messageId)) {
+                if ($row = DB::query("SELECT * FROM send_to_wazzup24 WHERE sendTime=0 AND login='$login' LIMIT 1")->fetch_object()) {
+                    $alreadySent = DB::checkSentWhatsapp($row->chatId, $row->text);
+                    if ($alreadySent) {
+                        Logs::handler(__CLASS__."::".__FUNCTION__." | $login | Message {$row->id} already sent via $alreadySent");
                         DB::query("UPDATE send_to_wazzup24 SET sendTime=CURRENT_TIMESTAMP() WHERE id={$row->id}");
+                    } else {
+                        $url = 'https://api.wazzup24.com/v2/send_message';
+                        $headers = array();
+                        $post = array();
+                        $headers[] = "Content-type:application/json";
+                        $headers[] = "Authorization: Basic ".WA24_API_KEY;
+                        $post['chatType'] = $row->chatType;
+                        $post['channelId'] = $row->channelId;
+                        $post['chatId'] = $row->chatId;
+                        if ($row->text != '') {
+                            $post['text'] = $row->text;
+                        }
+                        if (!$row->content == '') {
+                            $post['content'] = $row->content;
+                        }
+                        $post=json_encode($post);
+                        $result = json_decode(cURL::executeRequest($url, $post, $headers, false));
+                        DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='wazzup24' AND login='$login'");
+                        if (isset($result->messageId)) {
+                            DB::query("UPDATE send_to_wazzup24 SET sendTime=CURRENT_TIMESTAMP() WHERE id={$row->id}");
+                        }
                     }
                 }
             }
@@ -165,7 +171,11 @@ class Wazzup24 {
                         $params['user']['email'] = $email;
                         $params['user']['addfields']['whatsapp']=$phone;
                         GetCourse::addUser($params);
-                        GetCourse::sendContactForm($email, $inputRequestData['messages'][0]['text'].PHP_EOL.'Отправлено из WhatsApp ('.__CLASS__.')');
+                        $alreadySent = DB::checkSentGetCourse($email, $inputRequestData['messages'][0]['text']);
+                        if (!$alreadySent) {
+                            DB::query("INSERT INTO gc_contact_form SET email='$email', text='{$inputRequestData['messages'][0]['text']}'");
+                            GetCourse::sendContactForm($email, $inputRequestData['messages'][0]['text'].PHP_EOL.'Отправлено из WhatsApp ('.__CLASS__.')');
+                        }
                         return true;
                     }
                 }
