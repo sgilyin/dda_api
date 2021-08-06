@@ -252,7 +252,7 @@ switch ($inputRemoteAddr) {
         break;
 
     default:
-        if (isset($inputRequestData['class']['method'])) {
+        if (isset($inputRequestData['class']['method']) && isset($inputRequestData['args'])) {
             $inputRequestData['class']['method']($login, $inputRequestData['args']);
         } else {
             Auth::logIn($login, $inputRequestData);

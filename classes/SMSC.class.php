@@ -59,7 +59,7 @@ class SMSC {
 
                         default:
                             Logs::error(__CLASS__.'::'.__FUNCTION__." | $login | {$json->error}");
-                            BX24::sendBotMessage('chat8666', __CLASS__.'::'.__FUNCTION__." | $login | {$json->error}");
+                            BX24::sendBotMessage(__CLASS__.'::'.__FUNCTION__." | $login | {$json->error}");
                             break;
                     }
                 }

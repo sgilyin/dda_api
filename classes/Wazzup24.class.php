@@ -60,7 +60,7 @@ class Wazzup24 {
             }
             if (isset($result->errors)) {
                 Logs::error(__CLASS__.'::'.__FUNCTION__." | $login | {$result->errors[0]->description}");
-                BX24::sendBotMessage('chat8666', __CLASS__.'::'.__FUNCTION__." | $login | {$result->errors[0]->description}");
+                BX24::sendBotMessage(__CLASS__.'::'.__FUNCTION__." | $login | {$result->errors[0]->description}");
             }
             return true;
         } else {

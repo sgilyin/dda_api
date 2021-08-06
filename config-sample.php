@@ -93,6 +93,7 @@ define('BX24_USER', '');
 define('BX24_SECRET', '');
 define('BX24_BOT_ID', '');
 define('BX24_CLIENT_ID', '');
+define('BX24_ALARM_CHAT_ID', '');
 
 #GC Fields
 #$addFields = new stdClass();

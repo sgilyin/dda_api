@@ -124,7 +124,7 @@ class SemySMS {
                             DB::query("UPDATE send_to_semysms SET sendTime=CURRENT_TIMESTAMP() WHERE id={$row->id}");
                         } else {
                             Logs::error(__CLASS__.'::'.__FUNCTION__." | $login | {$result->code}");
-                            BX24::sendBotMessage('chat8666', __CLASS__.'::'.__FUNCTION__." | $login | {$result->code}");
+                            BX24::sendBotMessage(__CLASS__.'::'.__FUNCTION__." | $login | {$result->code}");
                         }
                     }
                 }
