@@ -33,6 +33,7 @@ class Sberbank {
             $post['amount'] = $itemPrice;
             $post['currency'] = 643;
             $post['returnUrl'] = SBRF_CREDIT_RETURNURL;
+            $jsonParams = new stdClass();
             $jsonParams->email = $inputRequestData['email'];
             $post['jsonParams'] = json_encode($jsonParams);
             $installments->productType = 'INSTALLMENT';

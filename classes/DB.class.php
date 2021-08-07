@@ -98,6 +98,7 @@ class DB {
         $query = "SELECT * FROM gc_deals WHERE login='$login' AND manager='$manager' AND status NOT IN ('Отменен')";
         Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | $manager");
         $deals = static::query($query);
+        $rows = '';
         while ($deal = $deals->fetch_object()) {
             $rows .= "
                 <tr>
