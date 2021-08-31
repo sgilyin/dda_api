@@ -18,7 +18,7 @@ class ChatApi {
     }
 
     public static function send($login) {
-        if (CHAT_API_ENABLED && CHAT_API_TOKEN != '') {
+        if (CHAT_API_ENABLED && CHAT_API_INSTANCE != '' && CHAT_API_TOKEN != '') {
             Logs::handler(__CLASS__."::".__FUNCTION__." | $login");
             for($i = 0; $i < 3; $i++){
                 sleep(rand(15,19));
@@ -29,7 +29,7 @@ class ChatApi {
                         Logs::handler(__CLASS__."::".__FUNCTION__." | $login | Message {$row->id} already sent via $alreadySent");
                         DB::query("UPDATE send_to_chatapi SET sendTime=CURRENT_TIMESTAMP() WHERE id={$row->id}");
                     } else {
-                        $url = 'https://api.chat-api.com/instance272955/sendMessage?token=' . CHAT_API_TOKEN;
+                        $url = 'https://api.chat-api.com/instance' . CHAT_API_INSTANCE . '/sendMessage?token=' . CHAT_API_TOKEN;
                         $headers = array();
                         $post = array();
                         $headers[] = "Content-Type: application/json";

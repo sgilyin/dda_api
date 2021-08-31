@@ -328,4 +328,135 @@ class DB {
         }
         return $alreadySent;
     }
+
+    public static function createSchema($login) {
+        $tables[] = '
+CREATE TABLE IF NOT EXISTS `gc_contact_form` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `sendTime` timestamp NOT NULL DEFAULT current_timestamp(),
+  `email` varchar(50) COLLATE utf8_bin NOT NULL,
+  `text` varchar(2048) COLLATE utf8_bin NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin
+';
+        $tables[] = '
+CREATE TABLE IF NOT EXISTS `gc_deals` (
+  `login` varchar(50) COLLATE utf8_bin NOT NULL,
+  `id` int NOT NULL,
+  `number` int NOT NULL,
+  `created_at` date DEFAULT curdate(),
+  `status` varchar(20) COLLATE utf8_bin DEFAULT NULL,
+  `positions` varchar(2048) COLLATE utf8_bin DEFAULT NULL,
+  `manager` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `cost_money_value` varchar(20) COLLATE utf8_bin DEFAULT NULL,
+  `payed_money` varchar(20) COLLATE utf8_bin DEFAULT NULL,
+  `payed_at` varchar(20) COLLATE utf8_bin DEFAULT NULL,
+  `client_id` int DEFAULT NULL,
+  `first_name` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `phone` varchar(30) COLLATE utf8_bin DEFAULT NULL,
+  `last_update` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  UNIQUE KEY `id` (`login`,`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin
+';
+        $tables[] = '
+CREATE TABLE IF NOT EXISTS `gc_users` (
+  `id` int NOT NULL,
+  `login` varchar(50) COLLATE utf8_bin NOT NULL,
+  `email` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `phone` varchar(15) COLLATE utf8_bin DEFAULT NULL,
+  `instagram` varchar(30) COLLATE utf8_bin DEFAULT NULL,
+  `firstName` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  UNIQUE KEY `id` (`id`,`login`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin
+';
+        $tables[] = "
+CREATE TABLE IF NOT EXISTS `request` (
+  `service` varchar(100) COLLATE utf8_bin NOT NULL,
+  `login` varchar(50) COLLATE utf8_bin NOT NULL,
+  `last` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin
+";
+        $tables[] = "
+INSERT INTO request VALUES ('chatapi', '$login', 0), ('getcourse', '$login', 0), ('smsc', '$login', 0), ('semysms', '$login', 0), ('vkontakte', '$login', 0), ('wazzup24', '$login', 0)
+";
+        $tables[] = "
+CREATE TABLE IF NOT EXISTS `send_to_chatapi` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `login` varchar(50) COLLATE utf8_bin NOT NULL,
+  `queueTime` timestamp NOT NULL DEFAULT current_timestamp(),
+  `sendTime` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `phone` varchar(30) COLLATE utf8_bin NOT NULL,
+  `body` varchar(2048) COLLATE utf8_bin NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin
+";
+        $tables[] = "
+CREATE TABLE IF NOT EXISTS `send_to_semysms` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `login` varchar(50) COLLATE utf8_bin NOT NULL,
+  `queueTime` timestamp NOT NULL DEFAULT current_timestamp(),
+  `sendTime` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `phone` varchar(30) COLLATE utf8_bin NOT NULL,
+  `msg` varchar(2048) COLLATE utf8_bin DEFAULT NULL,
+  `device` int NOT NULL,
+  `priority` int DEFAULT NULL,
+  `name` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `surname` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `add_contact` int(1) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin
+";
+        $tables[] = "
+CREATE TABLE IF NOT EXISTS `send_to_wazzup24` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `login` varchar(50) COLLATE utf8_bin NOT NULL,
+  `queueTime` timestamp NOT NULL DEFAULT current_timestamp(),
+  `sendTime` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `channelId` varchar(40) COLLATE utf8_bin NOT NULL,
+  `chatType` varchar(10) COLLATE utf8_bin NOT NULL,
+  `chatId` varchar(30) COLLATE utf8_bin NOT NULL,
+  `text` varchar(2048) COLLATE utf8_bin DEFAULT NULL,
+  `content` varchar(254) COLLATE utf8_bin DEFAULT NULL,
+  `refMessageId` varchar(40) COLLATE utf8_bin DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin
+";
+        $tables[] = "
+CREATE TABLE IF NOT EXISTS `smsc_messages` (
+  `id` int NOT NULL,
+  `phone` varchar(15) COLLATE utf8_bin NOT NULL,
+  `message` varchar(2048) COLLATE utf8_bin DEFAULT NULL,
+  `login` varchar(50) COLLATE utf8_bin NOT NULL,
+  `success` varchar(1) COLLATE utf8_bin NOT NULL DEFAULT '0',
+  `last_update` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin
+";
+        $tables[] = "
+CREATE TABLE IF NOT EXISTS `vk_api` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `method` varchar(255) COLLATE utf8_bin NOT NULL,
+  `params` varchar(2048) COLLATE utf8_bin DEFAULT NULL,
+  `login` varchar(50) COLLATE utf8_bin NOT NULL,
+  `success` varchar(1) COLLATE utf8_bin NOT NULL DEFAULT '0',
+  `last_update` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin
+";
+        $tables[] = "
+CREATE TABLE IF NOT EXISTS `yandex_audience` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(50) COLLATE utf8_bin DEFAULT NULL,
+  `phone` varchar(15) COLLATE utf8_bin DEFAULT NULL,
+  `login` varchar(50) COLLATE utf8_bin NOT NULL,
+  `segment` int NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin
+";
+        for ($i =0; $i < count($tables); $i++) {
+            static::query($tables[$i]);
+        }
+    }
 }

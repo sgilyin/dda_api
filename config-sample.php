@@ -84,6 +84,7 @@ define('WA_SEMYSMS_NOTIFY', '');
 
 #ChatApi Settings
 define('CHAT_API_ENABLED', false);
+define('CHAT_API_INSTANCE', '');
 define('CHAT_API_TOKEN', '');
 
 #Bitrix24 Settings
