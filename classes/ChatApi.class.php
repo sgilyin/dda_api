@@ -41,8 +41,8 @@ class ChatApi {
                         if ($result->sent) {
                             DB::query("UPDATE send_to_chatapi SET sendTime=CURRENT_TIMESTAMP() WHERE id={$row->id}");
                         } else {
-                            Logs::error(__CLASS__.'::'.__FUNCTION__." | $login | {$result->error}");
-                            BX24::sendBotMessage(__CLASS__.'::'.__FUNCTION__." | $login | {$result->error}");
+                            Logs::error(__CLASS__.'::'.__FUNCTION__." | $login | {$result->message}");
+                            BX24::sendBotMessage(__CLASS__.'::'.__FUNCTION__." | $login | {$result->message}");
                         }
                     }
                     
