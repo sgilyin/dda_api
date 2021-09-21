@@ -121,7 +121,11 @@ switch ($inputRequestMethod){
                     break;
 
                 case 'showWa24Queue':
-                    echo DB::showWa24Queue();
+                    echo 'Depricated. Use:<br>
+                        https://api.dmitry-dubrovsky.ru/<LOGIN>/?class[method]=DB::showQueue&args[*]=<VALUE>&args[*]=<VALUE>
+                        <br><br>class[method]=DB::showQueue<br>
+                        *<br>
+                        service (required) - сервис отправки: chat-api | wazzup24 | semysms';
                     break;
 
                 case 'clearWa24Queue':
@@ -224,8 +228,9 @@ switch ($inputRequestMethod){
 
 #            case '159.69.73.62':
 #            case '35.228.37.107':
-#                ChatApi::trap($login, $inputRequestData);
-#                break;
+            case '135.181.136.202':
+                ChatApi::trap($login, $inputRequestData);
+                break;
 
 #            case '148.251.13.26':
 #            case '144.76.56.26':
@@ -233,7 +238,7 @@ switch ($inputRequestMethod){
 #                break;
 
             default:
-#                ChatApi::trap($login, $inputRequestData);
+                ChatApi::trap($login, $inputRequestData);
                 Wazzup24::trap($login, $inputRequestData);
                 break;
         }

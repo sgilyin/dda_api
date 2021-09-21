@@ -94,6 +94,28 @@ class DB {
         }
     }
 
+    public function showSendQueue($login, $args) {
+        if (isset($args['service'])) {
+            switch ($args['service']) {
+                case 'chat-api':
+                    $query = "SELECT COUNT(*) AS count FROM send_to_chatapi WHERE sendTime=0 AND login='$login'";
+                    break;
+                case 'wazzup24':
+                    $query = "SELECT COUNT(*) AS count FROM send_to_wazzup24 WHERE sendTime=0 AND login='$login'";
+                    break;
+                case 'semysms':
+                    $query = "SELECT COUNT(*) AS count FROM send_to_semysms WHERE sendTime=0 AND login='$login'";
+                    break;
+
+                default:
+                    break;
+            }
+            if (isset($query)) {
+                echo (static::query($query)->fetch_object()->count);
+            }
+        }
+    }
+
     public static function getManagersDeals($login, $manager) {
         $query = "SELECT * FROM gc_deals WHERE login='$login' AND manager='$manager' AND status NOT IN ('Отменен')";
         Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | $manager");
@@ -243,15 +265,6 @@ class DB {
             } while (!$json->success);
             return $json;
         }
-    }
-
-    /**
-     * Show send queue to Wazzup24
-     * 
-     * @return string
-     */
-    public static function showWa24Queue() {
-        return static::query("SELECT COUNT(*) AS count FROM send_to_wazzup24 WHERE success=0")->fetch_object()->count;
     }
 
     /**
