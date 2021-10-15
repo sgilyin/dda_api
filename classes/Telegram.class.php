@@ -9,11 +9,7 @@ class Telegram {
     public static function sendMessage($login, $args) {
         if (TELEGRAM_ENABLED && TELEGRAM_BOT_TOKEN != '') {
             $url = 'https://api.telegram.org/bot' . TELEGRAM_BOT_TOKEN . '/' . __FUNCTION__;
-            $post = array(
-                'chat_id' => $args['chat_id'],
-                'text' => $args['text'],
-            );
-            return cURL::executeRequestTest('POST', $url, $post, false, false);
+            return cURL::executeRequestTest('POST', $url, $args, false, false);
         }
     }
 
