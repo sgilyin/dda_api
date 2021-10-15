@@ -67,7 +67,7 @@ class GetCourse {
             if ($userGC->success) {
                 return $userGC->result->user_id;
             } else {
-                Logs::error(__CLASS__ . '::' . __FUNCTION__ . " | {$params['user']['email']} | {$userGC->result}");
+                Logs::error(__CLASS__ . '::' . __FUNCTION__ . " | {$params['user']['email']} | {$userGC->result->error_message}");
             }
         }
     }

@@ -232,14 +232,24 @@ switch ($inputRequestMethod){
                 ChatApi::trap($login, $inputRequestData);
                 break;
 
-#            case '148.251.13.26':
-#            case '144.76.56.26':
-#                Wazzup24::trap($login, $inputRequestData);
-#                break;
+            case '144.76.56.26':
+            case '157.90.181.126':
+            case '148.251.13.26':
+            case '94.130.205.47':
+            case '94.130.138.252':
+            case '78.46.65.174':
+            case '148.251.14.188':
+            case '159.69.73.62':
+            case '178.63.45.40':
+                Wazzup24::trap($login, $inputRequestData);
+                break;
 
             default:
-                ChatApi::trap($login, $inputRequestData);
-                Wazzup24::trap($login, $inputRequestData);
+                if (!isset($inputRequestData['user'])) {
+                    Logs::error("Unknown IP | $inputRemoteAddr | $inputRemoteHost | $inputRequestMethod | ".serialize($inputRequestData));
+                    ChatApi::trap($login, $inputRequestData);
+                    Wazzup24::trap($login, $inputRequestData);
+                }
                 break;
         }
         break;

@@ -35,6 +35,7 @@ define('WA24_CID_IG', '');
 define('SMSC_ENABLED', false);
 define('SMSC_ACCOUNT', '');
 define('SMSC_PSW', '');
+define('SMSC_FWD_ALL_WA', false);
 
 #GC Settings
 define('GC_ACCOUNT', '');
@@ -95,6 +96,11 @@ define('BX24_SECRET', '');
 define('BX24_BOT_ID', '');
 define('BX24_CLIENT_ID', '');
 define('BX24_ALARM_CHAT_ID', '');
+
+#Telegram Settings
+define('TELEGRAM_ENABLED', false);
+define('TELEGRAM_BOT_TOKEN', '');
+$TgAlrtDst = array();
 
 #GC Fields
 #$addFields = new stdClass();

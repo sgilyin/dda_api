@@ -59,8 +59,10 @@ class Wazzup24 {
                 }
             }
             if (isset($result->errors)) {
-                Logs::error(__CLASS__.'::'.__FUNCTION__." | $login | {$result->errors[0]->description}");
-                BX24::sendBotMessage(__CLASS__.'::'.__FUNCTION__." | $login | {$result->errors[0]->description}");
+                $message = __CLASS__.'::'.__FUNCTION__." | $login | {$result->errors[0]->description}";
+                Logs::error($message);
+                BX24::sendBotMessage($message);
+                Telegram::alert($message);
             }
             return true;
         } else {

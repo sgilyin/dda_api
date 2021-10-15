@@ -35,7 +35,7 @@ class DB {
                 Logs::error(__CLASS__.'::'.__FUNCTION__.' | No DB connection: '.$mysqli->connect_error);
                 exit();
             }
-            $mysqli->set_charset('utf8');
+            $mysqli->set_charset('utf8mb4');
             $result = $mysqli->query($query);
             $errNo = $mysqli->errno;
             if (!$result) {

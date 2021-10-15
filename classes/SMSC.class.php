@@ -58,8 +58,10 @@ class SMSC {
                             break;
 
                         default:
-                            Logs::error(__CLASS__.'::'.__FUNCTION__." | $login | {$json->error}");
-                            BX24::sendBotMessage(__CLASS__.'::'.__FUNCTION__." | $login | {$json->error}");
+                            $message = __CLASS__.'::'.__FUNCTION__." | $login | {$json->error}";
+                            Logs::error($message);
+                            BX24::sendBotMessage($message);
+                            Telegram::alert($message);
                             break;
                     }
                 }
@@ -77,7 +79,18 @@ class SMSC {
         $messages = $obj->fetch_all();
         for ($i = 0; $i < count($messages); $i++) {
             $id = $messages[$i][0];
-            if (preg_match("/Вам пишет .*:/",$messages[$i][2])){
+            if (SMSC_FWD_ALL_WA) {
+                $toWazzup24['chatId'] = $messages[$i][1];
+                $toWazzup24['text'] = $messages[$i][2];
+                Wazzup24::queue($login, $toWazzup24);
+                $toChatApi['phone'] = $messages[$i][1];
+                $toChatApi['body'] = $messages[$i][2];
+                ChatApi::queue($login, $toChatApi);
+                $toSemySMS['phone'] = $messages[$i][1];
+                $toSemySMS['msg'] = $messages[$i][2];
+                SemySMS::queue($login, $toSemySMS);
+                DB::query("UPDATE smsc_messages SET success=1 WHERE id=$id");
+            } elseif (preg_match("/Вам пишет .*:/",$messages[$i][2])) {
                 $toWazzup24['chatId'] = $messages[$i][1];
                 $toWazzup24['text'] = substr($messages[$i][2], stripos($messages[$i][2],':')+2);
                 Wazzup24::queue($login, $toWazzup24);
@@ -89,6 +102,18 @@ class SMSC {
                 SemySMS::queue($login, $toSemySMS);
                 DB::query("UPDATE smsc_messages SET success=1 WHERE id=$id");
             }
+#            if (preg_match("/Вам пишет .*:/",$messages[$i][2])){
+#                $toWazzup24['chatId'] = $messages[$i][1];
+#                $toWazzup24['text'] = substr($messages[$i][2], stripos($messages[$i][2],':')+2);
+#                Wazzup24::queue($login, $toWazzup24);
+#                $toChatApi['phone'] = $messages[$i][1];
+#                $toChatApi['body'] = substr($messages[$i][2], stripos($messages[$i][2],':')+2);
+#                ChatApi::queue($login, $toChatApi);
+#                $toSemySMS['phone'] = $messages[$i][1];
+#                $toSemySMS['msg'] = substr($messages[$i][2], stripos($messages[$i][2],':')+2);
+#                SemySMS::queue($login, $toSemySMS);
+#                DB::query("UPDATE smsc_messages SET success=1 WHERE id=$id");
+#            }
             if (preg_match("/\|\d*\|\S*@\S*\|http.*\|/",$messages[$i][2])){
                 global $addFields;
                 $msg_part=explode("|", $messages[$i][2]);
