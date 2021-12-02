@@ -15,12 +15,12 @@ class Auth {
                     <input type=submit value=LogIn>
                 </form>
                 HTML;
-                global $managersGC;
-                $manager = array_keys($managersGC)[array_search($inputRequestData['user'], array_column($managersGC, 'user'))];
-                if ($inputRequestData['user'] == $managersGC[$manager]['user'] && $inputRequestData['password'] == $managersGC[$manager]['password']) {
-                    DB::getManagersDeals($login, $manager);
+                $query = "SELECT user, password, status, salt FROM gc_managers WHERE login='$login' AND user='{$inputRequestData['user']}'";
+                $manager = DB::query($query)->fetch_object();
+                if (md5(md5($inputRequestData['password']).$manager->salt) == $manager->password && $manager->status == 'enable') {
+                    DB::getManagersDeals($login, $manager->user);
                 } else {
-                    echo 'Неверный логин или пароль';
+                    echo 'Неверный логин/пароль или пользователь отключен';
                 }
             }
         } else {

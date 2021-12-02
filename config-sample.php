@@ -105,8 +105,3 @@ $TgAlrtDst = array();
 #GC Fields
 #$addFields = new stdClass();
 #$addFields->{'123456'} = '<Enter here>';
-
-#GC Managers
-#$managersGC = array();
-#$managersGC['ManagerGC1']['user'] = 'user';
-#$managersGC['ManagerGC1']['password'] = 'password';

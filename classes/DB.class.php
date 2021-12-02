@@ -94,6 +94,32 @@ class DB {
         }
     }
 
+    public static function managerUpdate($login, $args) {
+        if (isset($args['id']) && isset($args['user']) && isset($args['status'])) {
+            Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | {$args['user']}");
+            $query = "SELECT user, salt FROM gc_managers WHERE login='$login' AND id='{$args['id']}' AND user='{$args['user']}'";
+            $result = self::query($query);
+            $manager = $result->fetch_object();
+            $salt = (empty($manager->salt)) ? self::genSalt() : $manager->salt;
+            $args['password'] = md5(md5($args['password']).$salt);
+            $strSet = self::argsToStrSet($args);
+            if ($result->num_rows > 0) {
+                $query = "UPDATE gc_managers SET $strSet WHERE login='$login' AND id='{$args['id']}'";
+            } else {
+                $query = "INSERT INTO gc_managers SET $strSet, salt='$salt', login='$login'";
+            }
+            self::query($query);
+        }
+    }
+
+    private static function genSalt() {
+        $salt = '';
+        for($i=0; $i<5; $i++) {
+             $salt .= chr(rand(33,126));
+        }
+        return $salt;
+    }
+
     public function showSendQueue($login, $args) {
         if (isset($args['service'])) {
             switch ($args['service']) {

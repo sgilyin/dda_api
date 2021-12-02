@@ -244,6 +244,16 @@ switch ($inputRequestMethod){
                 Wazzup24::trap($login, $inputRequestData);
                 break;
 
+            case '87.251.80.4':
+            case '188.124.47.158':
+            case '188.68.216.91':
+            case '46.148.234.78':
+            case '185.151.241.5':
+            case '46.148.230.20':
+            case '84.38.189.114':
+                #GetCourse IP adresses
+                break;
+
             default:
                 if (!isset($inputRequestData['user'])) {
                     Logs::error("Unknown IP | $inputRemoteAddr | $inputRemoteHost | $inputRequestMethod | ".serialize($inputRequestData));
@@ -257,9 +267,15 @@ switch ($inputRequestMethod){
 
 switch ($inputRemoteAddr) {
     case '185.151.241.45':
-    case '87.251.80.4':
     case '217.66.154.84':
     case '149.154.161.20':
+    case '87.251.80.4':
+    case '188.124.47.158':
+    case '188.68.216.91':
+    case '46.148.234.78':
+    case '185.151.241.5':
+    case '46.148.230.20':
+    case '84.38.189.114':
 #    case '195.191.78.178':
         if (isset($inputRequestData['class']['method'])) {
             $inputRequestData['class']['method']($login, $inputRequestData['args']);
