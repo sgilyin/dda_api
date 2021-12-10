@@ -115,7 +115,7 @@ class DB {
     private static function genSalt() {
         $salt = '';
         for($i=0; $i<5; $i++) {
-             $salt .= chr(rand(33,126));
+             $salt .= chr(rand(40,126));
         }
         return $salt;
     }

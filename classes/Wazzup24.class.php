@@ -80,16 +80,19 @@ class Wazzup24 {
     public static function queue($login, $args) {
         if (WA24_ENABLED && WA24_API_KEY != '' && WA24_CID_WA != '') {
             if (isset($args['chatId']) && (isset($args['text']) || isset($args['content']))) {
-                $args['channelId'] = $args['channelId'] ?? WA24_CID_WA;
-                $args['chatType'] = $args['chatType'] ?? 'whatsapp';
-                foreach ($args as $key => $val) {
-                    $setArr[] = "$key='$val'";        
+                $chatIdLen = strlen($args['chatId']);
+                if ($chatIdLen > 8 && $chatIdLen < 17) {
+                    $args['channelId'] = $args['channelId'] ?? WA24_CID_WA;
+                    $args['chatType'] = $args['chatType'] ?? 'whatsapp';
+                    foreach ($args as $key => $val) {
+                        $setArr[] = "$key='$val'";        
+                    }
+                    $setStr = implode(", ", $setArr);
+                    $query = "INSERT INTO send_to_wazzup24 SET $setStr, login='$login'";
+                    DB::query($query);
+                    return true;
                 }
-                $setStr = implode(", ", $setArr);
-                $query = "INSERT INTO send_to_wazzup24 SET $setStr, login='$login'";
-                DB::query($query);
             }
-            return true;
         } else {
             return false;
         }
