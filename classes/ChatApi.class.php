@@ -9,6 +9,7 @@ class ChatApi {
         if (CHAT_API_ENABLED && CHAT_API_TOKEN != '') {
             Logs::handler(__CLASS__."::".__FUNCTION__." | $login");
             if ($args['phone'] && $args['body']){
+                $args['phone'] = intval($args['phone']);
                 $phoneLen = strlen($args['phone']);
                 if ($phoneLen > 8 && $phoneLen < 15) {
                    DB::query("INSERT INTO send_to_chatapi SET phone='{$args['phone']}', body='{$args['body']}', login='$login'");

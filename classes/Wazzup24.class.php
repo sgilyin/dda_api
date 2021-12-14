@@ -80,6 +80,7 @@ class Wazzup24 {
     public static function queue($login, $args) {
         if (WA24_ENABLED && WA24_API_KEY != '' && WA24_CID_WA != '') {
             if (isset($args['chatId']) && (isset($args['text']) || isset($args['content']))) {
+                $args['chatId'] = intval($args['chatId']);
                 $chatIdLen = strlen($args['chatId']);
                 if ($chatIdLen > 8 && $chatIdLen < 17) {
                     $args['channelId'] = $args['channelId'] ?? WA24_CID_WA;
