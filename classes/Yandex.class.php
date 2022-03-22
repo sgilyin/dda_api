@@ -45,7 +45,7 @@ class Yandex {
                     }
                     $result->close();
                     $post['file'] = new CurlFile(realpath("$segmentId.csv"));
-                    return cURL::executeRequest($url, $post, $headers, false);
+                    return cURL::executeRequest($url, $post, $headers, false, false);
                 }
             } else {
                 return false;

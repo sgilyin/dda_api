@@ -40,7 +40,7 @@ class ChatApi {
                         $post['body'] = $row->body;
                         $post['phone'] = $row->phone;
                         $post=json_encode($post);
-                        $result = json_decode(cURL::executeRequest($url, $post, $headers, false));
+                        $result = json_decode(cURL::executeRequest($url, $post, $headers, false, false));
                         DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='chatapi' AND login='$login'");
                         if ($result->sent) {
                             DB::query("UPDATE send_to_chatapi SET sendTime=CURRENT_TIMESTAMP() WHERE id={$row->id}");

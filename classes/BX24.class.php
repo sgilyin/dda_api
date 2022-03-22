@@ -9,7 +9,7 @@ class BX24 {
     public static function callMethod($bx24Method, $bx24Data) {
         if (BX24_ENABLED && BX24_HOST != '' && BX24_USER != '' && BX24_SECRET != '') {
             $url = BX24_HOST.'/rest/'.BX24_USER.'/'.BX24_SECRET."/{$bx24Method}";
-            $result = cURL::executeRequestTest('POST', $url, $bx24Data, false, false);
+            $result = cURL::executeRequestTest('POST', $url, $bx24Data, false, false, false);
             Logs::handler(__CLASS__."::".__FUNCTION__." | $result");
             return $result;
         }

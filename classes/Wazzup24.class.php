@@ -50,7 +50,7 @@ class Wazzup24 {
                             $post['content'] = $row->content;
                         }
                         $post=json_encode($post);
-                        $result = json_decode(cURL::executeRequest($url, $post, $headers, false));
+                        $result = json_decode(cURL::executeRequest($url, $post, $headers, false, false));
                         DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='wazzup24' AND login='$login'");
                         if (isset($result->messageId)) {
                             DB::query("UPDATE send_to_wazzup24 SET sendTime=CURRENT_TIMESTAMP() WHERE id={$row->id}");
@@ -188,6 +188,20 @@ class Wazzup24 {
             }
         } else {
             return false;
+        }
+    }
+
+    public static function alertSemySMS($login, $argsI) {
+        if (WA24_ENABLED && WA24_API_KEY != '' && WA24_CID_WA != '') {
+            Logs::handler(__CLASS__."::".__FUNCTION__." | {$argsI['message']}");
+            global $WA24SemySMSAlrtDst;
+            for ($index = 0; $index < count($WA24SemySMSAlrtDst); $index++) {
+                $argsO = array(
+                    'chatId' => $WA24SemySMSAlrtDst[$index],
+                    'text' => $argsI['message'],
+                );
+                self::queue($login, $argsO);
+            }
         }
     }
 }

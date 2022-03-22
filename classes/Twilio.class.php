@@ -49,7 +49,7 @@ class Twilio {
             if ($inputRequestData['MediaUrl']){
                 $post['MediaUrl'] = $inputRequestData['MediaUrl'];
             }
-            return cURL::executeRequest($url, $post, false, $userpwd);
+            return cURL::executeRequest($url, $post, false, $userpwd, false);
         }
     }
 
@@ -60,7 +60,7 @@ class Twilio {
             $post['From'] = TWILIO_CALL_NUMBER;
             $post['To'] = $inputRequestData['To'];
             $post['Twiml'] = '<Response><Play>' . $inputRequestData['File'] .'</Play></Response>';
-            return cURL::executeRequest($url, $post, false, $userpwd);
+            return cURL::executeRequest($url, $post, false, $userpwd, false);
         }
     }
 }

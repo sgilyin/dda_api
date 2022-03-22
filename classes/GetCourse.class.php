@@ -51,7 +51,7 @@ class GetCourse {
                 );
             }
             Logs::handler(__CLASS__.'::'.__FUNCTION__." | $email | $text");
-            return cURL::executeRequest($url, $post, $headers, false);
+            return cURL::executeRequest($url, $post, $headers, false, false);
         }
     }
 
@@ -63,7 +63,7 @@ class GetCourse {
             $params['system']['refresh_if_exists'] = 1;
             $post['params']=base64_encode(json_encode($params));
             Logs::handler(__CLASS__.'::'.__FUNCTION__." | {$params['user']['email']}");
-            $userGC = json_decode(cURL::executeRequest($url, $post, false, false));
+            $userGC = json_decode(cURL::executeRequest($url, $post, false, false, false));
             if ($userGC->success) {
                 return $userGC->result->user_id;
             } else {

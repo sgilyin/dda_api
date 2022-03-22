@@ -30,6 +30,7 @@ define('WA24_ENABLED', false);
 define('WA24_API_KEY', '');
 define('WA24_CID_WA', '');
 define('WA24_CID_IG', '');
+$WA24SemySMSAlrtDst = array();
 
 #SMSC Settings
 define('SMSC_ENABLED', false);
@@ -82,11 +83,13 @@ define('SEMYSMS_ENABLED', false);
 define('SEMYSMS_TOKEN', '');
 define('SEMYSMS_DEVICE', '');
 define('WA_SEMYSMS_NOTIFY', '');
+$SemySMSAlrtDst = array();
 
 #ChatApi Settings
 define('CHAT_API_ENABLED', false);
 define('CHAT_API_INSTANCE', '');
 define('CHAT_API_TOKEN', '');
+$ChatAPISemySMSAlrtDst = array();
 
 #Bitrix24 Settings
 define('BX24_ENABLED', false);
@@ -101,6 +104,16 @@ define('BX24_ALARM_CHAT_ID', '');
 define('TELEGRAM_ENABLED', false);
 define('TELEGRAM_BOT_TOKEN', '');
 $TgAlrtDst = array();
+
+#Dolyame Settings
+define('DOLYAME_ENABLED', false);
+define('DOLYAME_USER', '');
+define('DOLYAME_PASSWORD', '');
+define('DOLYAME_PRIVATE', '');
+define('DOLYAME_CERT', '');
+define('DOLYAME_NOTIFICATION_URL', '');
+define('DOLYAME_FAIL_URL', '');
+define('DOLYAME_SUCCESS_URL', '');
 
 #GC Fields
 #$addFields = new stdClass();

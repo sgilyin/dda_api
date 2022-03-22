@@ -41,7 +41,7 @@ class Vkontakte {
             $data['target_group_id'] = $inputRequestData['target_group_id'] ?? false;
             $data['contacts'] = $inputRequestData['contacts'] ?? false;
             DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='vkontakte'");
-            return cURL::executeRequest($url, $data, false, false);
+            return cURL::executeRequest($url, $data, false, false, false);
         }
     }
 

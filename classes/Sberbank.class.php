@@ -53,7 +53,7 @@ class Sberbank {
             $orderBundle->cartItems->items = $arr;
             $orderBundle->installments = $installments;
             $post['orderBundle'] = json_encode($orderBundle);
-            $result = json_decode(cURL::executeRequest($url, $post, false, false));
+            $result = json_decode(cURL::executeRequest($url, $post, false, false, false));
 
             if ($result->formUrl) {
                 $params['user']['email'] = $inputRequestData['email'];

@@ -11,7 +11,7 @@ class Telegram {
             if (isset($args['chat_id']) && isset($args['text'])) {
                 Logs::handler(__CLASS__."::".__FUNCTION__." | $login | " . serialize($args));
                 $url = 'https://api.telegram.org/bot' . TELEGRAM_BOT_TOKEN . '/' . __FUNCTION__;
-                return cURL::executeRequestTest('POST', $url, $args, false, false);
+                return cURL::executeRequestTest('POST', $url, $args, false, false, false);
             }
         }
     }

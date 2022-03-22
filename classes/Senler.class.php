@@ -54,7 +54,7 @@ class Senler {
                 $params['hash'] = static::getHash($params, SENLER_CALLBACK_KEY);
                 $url = 'https://senler.ru/api/subscribers/add';
 
-                return cURL::executeRequest($url, http_build_query($params), false, false);
+                return cURL::executeRequest($url, http_build_query($params), false, false, false);
             }
         }
     }
@@ -76,7 +76,7 @@ class Senler {
                 $params['hash'] = static::getHash($params, SENLER_CALLBACK_KEY);
                 $url = 'https://senler.ru/api/subscribers/del';
 
-                return cURL::executeRequest($url, http_build_query($params), false, false);
+                return cURL::executeRequest($url, http_build_query($params), false, false, false);
             }
         }
     }
@@ -96,7 +96,7 @@ class Senler {
                 $params['hash'] = static::getHash($params, SENLER_CALLBACK_KEY);
                 $url = 'https://senler.ru/api/subscriptions/add';
 
-                return cURL::executeRequest($url, http_build_query($params), false, false);
+                return cURL::executeRequest($url, http_build_query($params), false, false, false);
             }
         }
     }

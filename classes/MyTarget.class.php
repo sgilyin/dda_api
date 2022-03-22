@@ -42,7 +42,7 @@ class MyTarget {
                 $prefix = ($inputRequestData['operation'] == 'del') ? '-' : '';
                 $post['data'] = '{"base": ' . $prefix . $inputRequestData['segment'] . ', "name": "' . $inputRequestData['name'] . '", "type": "' . $type . '"}';
                 $post['file'] = new CurlFile(realpath("MT_{$inputRequestData['segment']}.txt"));
-                $json = json_decode(cURL::executeRequest($url, $post, $headers, false));
+                $json = json_decode(cURL::executeRequest($url, $post, $headers, false, false));
                 if ($json->id) {
                     $stringIds = implode(',', $ids);
                     $query = "UPDATE my_target_audience SET success=1 WHERE id IN ($stringIds)";
@@ -70,7 +70,7 @@ class MyTarget {
                 'Content-Type: application/x-www-form-urlencoded',
             );
             $post = 'grant_type=client_credentials&client_id=' . MT_CLIENT_ID . '&client_secret=' . MT_CLIENT_SECRET . '&permanent=true';
-            return cURL::executeRequest($url, $post, $headers, false);
+            return cURL::executeRequest($url, $post, $headers, false, false);
         }
     }
 
@@ -81,7 +81,7 @@ class MyTarget {
                 'Content-Type: application/x-www-form-urlencoded',
             );
             $post = 'client_id=' . MT_CLIENT_ID . '&client_secret=' . MT_CLIENT_SECRET;
-            return cURL::executeRequest($url, $post, $headers, false);
+            return cURL::executeRequest($url, $post, $headers, false, false);
         }
     }
 }

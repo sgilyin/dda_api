@@ -34,6 +34,6 @@ class Facebook {
         $post['description'] = 'Test';
         $post['customer_file_source'] = 'USER_PROVIDED_ONLY';
         $post['access_token'] = FB_ACCESS_TOKEN;
-        return cURL::executeRequest($url, $post, false, false);
+        return cURL::executeRequest($url, $post, false, false, false);
     }
 }

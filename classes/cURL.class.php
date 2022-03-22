@@ -23,7 +23,7 @@
  * @author Sergey Ilyin <developer@ilyins.ru>
  */
 class cURL {
-    public static function executeRequest($url, $post, $headers, $userpwd) {
+    public static function executeRequest($url, $post, $headers, $userpwd, $ssl) {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         if ($post){
@@ -35,6 +35,12 @@ class cURL {
         }
         if ($userpwd){
             curl_setopt($ch, CURLOPT_USERPWD, $userpwd);
+        }
+        if ($ssl){
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($ch, CURLOPT_SSLCERT, $ssl->certPath);
+            curl_setopt($ch, CURLOPT_SSLKEY, $ssl->keyPath);
         }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         $result = curl_exec($ch);
@@ -43,7 +49,7 @@ class cURL {
         return $result;
     }
 
-    public static function executeRequestTest($customRequest, $url, $post, $headers, $userpwd) {
+    public static function executeRequestTest($customRequest, $url, $post, $headers, $userpwd, $ssl) {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         if ($post){
@@ -55,6 +61,12 @@ class cURL {
         }
         if ($userpwd){
             curl_setopt($ch, CURLOPT_USERPWD, $userpwd);
+        }
+        if ($ssl){
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($ch, CURLOPT_SSLCERT, $ssl->certPath);
+            curl_setopt($ch, CURLOPT_SSLKEY, $ssl->keyPath);
         }
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $customRequest);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);

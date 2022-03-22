@@ -37,7 +37,7 @@ class SMSC {
                 $post['start'] = date('d.m.Y', strtotime('Now - 1 day'));
                 $post['cnt'] = 1000;
                 $post['get_messages'] = 1;
-                $result = cURL::executeRequest($url, $post, false, false);
+                $result = cURL::executeRequest($url, $post, false, false, false);
                 $json=json_decode($result);
                 if (is_array($json)) {
                     for ($i=0; $i<count($json); $i++){

@@ -97,7 +97,8 @@ class DB {
     public static function managerUpdate($login, $args) {
         if (isset($args['id']) && isset($args['user']) && isset($args['status'])) {
             Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | {$args['user']}");
-            $query = "SELECT user, salt FROM gc_managers WHERE login='$login' AND id='{$args['id']}' AND user='{$args['user']}'";
+#            $query = "SELECT user, salt FROM gc_managers WHERE login='$login' AND id='{$args['id']}' AND user='{$args['user']}'";
+            $query = "SELECT user, salt FROM gc_managers WHERE login='$login' AND id='{$args['id']}'";
             $result = self::query($query);
             $manager = $result->fetch_object();
             $salt = (empty($manager->salt)) ? self::genSalt() : $manager->salt;
@@ -272,7 +273,7 @@ class DB {
             $post['key'] = GC_API_KEY;
             $url = "https://".GC_ACCOUNT.".getcourse.ru/pl/api/account/users?status=$status";
             do {
-                $response = cURL::executeRequest($url, $post, false, false);
+                $response = cURL::executeRequest($url, $post, false, false, false);
                 $json = json_decode($response);
                 sleep(60);
             } while (!$json->success);
@@ -285,7 +286,7 @@ class DB {
             $url = "https://".GC_ACCOUNT.".getcourse.ru/pl/api/account/exports/$export_id";
             $post['key'] = GC_API_KEY;
             do {
-                $response = cURL::executeRequest($url, $post, false, false);
+                $response = cURL::executeRequest($url, $post, false, false, false);
                 $json = json_decode($response);
                 sleep(60);
             } while (!$json->success);
