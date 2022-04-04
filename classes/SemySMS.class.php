@@ -8,7 +8,6 @@
 class SemySMS {
     public static function trap($login, $inputRequestData) {
         if (SEMYSMS_ENABLED) {
-            #if ($inputRequestData['type']=='2' && $inputRequestData['dir']=='in') {
             if ($inputRequestData['type']=='2') {
                 Logs::handler(__CLASS__ . '::' . __FUNCTION__ . 
                     ' | RCVD | ' . $inputRequestData['phone'] . 
@@ -70,7 +69,6 @@ class SemySMS {
                     GetCourse::sendContactForm($email, $inputRequestData['msg'].PHP_EOL.'Отправлено из WhatsApp ('.__CLASS__.')');
                 }
             }
-            #if ($inputRequestData['type']=='0' && $inputRequestData['dir']=='in') {
             if ($inputRequestData['type']=='0') {
                 $whatsapp['to'] = WA_SEMYSMS_NOTIFY;
                 $whatsapp['transport'] = 'whatsapp';
@@ -125,7 +123,7 @@ class SemySMS {
                         if ($result->code == '0') {
                             DB::query("UPDATE send_to_semysms SET sendTime=CURRENT_TIMESTAMP() WHERE id={$row->id}");
                         } else {
-                            $message = __CLASS__.'::'.__FUNCTION__." | $login | {$result->error}";
+                            $message = __CLASS__.'::'.__FUNCTION__." | $login | $result";
                             Logs::error($message);
                             BX24::sendBotMessage($message);
                             Telegram::alert($message);
