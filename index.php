@@ -18,7 +18,7 @@
  */
 
 ini_set('max_execution_time', '300');
-// ini_set('memory_limit', '-1'); //Для загрузки всех пользователей из ГК
+#ini_set('memory_limit', '-1');#Для загрузки всего импорта из ГК
 set_time_limit(300);
 
 spl_autoload_register(function ($class) {
@@ -26,9 +26,11 @@ spl_autoload_register(function ($class) {
 });
 
 $inputRemoteAddr = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
-$inputRemoteHost = filter_input(INPUT_SERVER, 'REMOTE_HOST');
 $inputRequestMethod = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
 $login = substr(dirname(filter_input(INPUT_SERVER, 'PHP_SELF')),1);
+$inputRequestData = filter_input_array(INPUT_POST) ?? 
+    json_decode(file_get_contents("php://input"), true) ??
+    filter_input_array(INPUT_GET);
 
 if ($login == '') {
     if ($inputRemoteAddr == '195.191.78.178') {
@@ -39,40 +41,10 @@ if ($login == '') {
     die();
 }
 
-$srcs['sgilyin'] = array('195.191.78.178/32');
-$srcs['DDA-API'] = array('185.43.4.16/32');
-$srcs['Chat-API'] = array('135.181.136.202/32');
-$srcs['Dolyame'] = array('91.194.226.0/23');
-$srcs['Senler'] = array('136.243.44.89/32');
-$srcs['Wazzup24'] = array('144.76.56.26/32', '157.90.181.126/32',
-    '148.251.13.26/32', '94.130.205.47/32', '94.130.138.252/32',
-    '78.46.65.174/32', '148.251.14.188/32', '159.69.73.62/32', '178.63.45.40/32');
-$srcs['GetCourse'] = array('87.251.80.0/22', '185.151.240.0/23',
-    '46.148.234.0/23', '188.68.216.0/23', '188.124.46.0/23', '46.148.230.0/23',
-    '82.202.192.0/18', '84.38.188.0/23');#selectel = getcourse
-$srcs['SemySMS'] = array('193.42.110.5/32', '193.42.110.33/32');
-
-function searchServiceByIP($ip, $srcs) {
-   foreach ($srcs as $key => $src) {
-       foreach ($src as $cidr) {
-           list ($net, $mask) = explode ("/", $cidr);
-           $ip_net = ip2long ($net);
-           $ip_mask = ~((1 << (32 - $mask)) - 1);
-           $ip_ip = ip2long ($ip);
-           $ip_ip_net = $ip_ip & $ip_mask;
-           if ($ip_ip_net == $ip_net) {
-               return $key;
-           }
-       }
-   }
-   return 'Unknown';
-}
-
 include_once 'config.php';
 
 switch ($inputRequestMethod){
     case 'GET':
-        $inputRequestData = filter_input_array(INPUT_GET);
         if (isset($inputRequestData['cmd'])) {
             #BX24::sendBotMessage('Used depricated method - cmd='.$inputRequestData['cmd']);
             switch ($inputRequestData['cmd']) {
@@ -192,19 +164,19 @@ switch ($inputRequestMethod){
             }
         }
         break;
-    case 'POST':
-        $inputRequestData = filter_input_array(INPUT_POST);
-        if (!$inputRequestData){
-            $inputRequestData = json_decode(file_get_contents("php://input"), true);
-        }
-        break;
 }
-switch ($serviceByIP = searchServiceByIP($inputRemoteAddr, $srcs)) {
-    case 'sgilyin':
+$serviceByIP = DB::checkIp($inputRemoteAddr);
+#Logs::debug("$serviceByIP found by IP: $inputRemoteAddr");
+Logs::access("$inputRemoteAddr ($serviceByIP) | $inputRequestMethod | ".serialize($inputRequestData));
+Logs::handler("$inputRemoteAddr ($serviceByIP) | $inputRequestMethod | ".serialize($inputRequestData));
+
+switch ($serviceByIP) {
+    case 'developer':
     case 'DDA-API':
     case 'GetCourse':
     case 'SMSC':
     case 'Senler':
+    case 'manager':
         if (isset($inputRequestData['class']['method'])) {
             if (isset($inputRequestData['args'])) {
                 $inputRequestData['class']['method']($login, $inputRequestData['args']);
@@ -238,12 +210,10 @@ switch ($serviceByIP = searchServiceByIP($inputRemoteAddr, $srcs)) {
             }
         } else {
             Auth::logIn($login, $inputRequestData);
-            if (isset($inputRequestData['user']) && isset($inputRequestData['password'])) {
-                BX24::sendBotMessage("$inputRemoteAddr is not some service IP-address");
+            if (Auth::checkAccess($login, $inputRequestData)) {
+                DB::query("UPDATE ip_route SET name='manager' WHERE ip='$inputRemoteAddr'");
+                BX24::sendBotMessage("ip_route: $inputRemoteAddr | manager");
             }
         }
         break;
 }
-#Logs::debug("$serviceByIP found by IP: $inputRemoteAddr");
-Logs::access("$inputRemoteAddr ($serviceByIP) | $inputRemoteHost | $inputRequestMethod | ".serialize($inputRequestData));
-Logs::handler("$inputRemoteAddr ($serviceByIP) | $inputRequestMethod | ".serialize($inputRequestData));
