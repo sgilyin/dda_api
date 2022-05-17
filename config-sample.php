@@ -39,6 +39,7 @@ define('SMSC_PSW', '');
 define('SMSC_FWD_ALL_WA', false);
 
 #GC Settings
+define('GC_ENABLED', false);
 define('GC_ACCOUNT', '');
 define('GC_API_KEY', '');
 
@@ -48,6 +49,7 @@ define('DADATA_API_KEY', '');
 define('DADATA_SECRET_KEY', '');
 
 #Twilio Settings
+define('TWILIO_ENABLED', false);
 define('TWILIO_SID', '');
 define('TWILIO_TOKEN', '');
 define('TWILIO_WA_NUMBER', '');
@@ -55,25 +57,31 @@ define('TWILIO_SMS_NUMBER', '');
 define('TWILIO_CALL_NUMBER', '');
 
 #Senler Settings
+define('SENLER_ENABLED', false);
 define('SENLER_CALLBACK_KEY', '');
 
 define('INSTAGRAM_FROM', '');
 
 #VK Settings
+define('VK_ENABLED', false);
 define('VK_TOKEN', '');
 
 #Yandex Settings
+define('YANDEX_ENABLED', false);
 define('YANDEX_TOKEN', '');
 
 #MT Settings
+define('MT_ENABLED', false);
 define('MT_CLIENT_ID', '');
 define('MT_CLIENT_SECRET', '');
 define('MT_ACCESS_TOKEN', '');
 
 #FB Settings
+define('FB_ENABLED', false);
 define('FB_ACCESS_TOKEN', '');
 
 #SBRF Settings
+define('SBRF_ENABLED', false);
 define('SBRF_CREDIT_USER', '');
 define('SBRF_CREDIT_PASSWORD', '');
 define('SBRF_CREDIT_RETURNURL', '');
