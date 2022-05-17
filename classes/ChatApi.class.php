@@ -26,7 +26,6 @@ class ChatApi {
             Logs::handler(__CLASS__."::".__FUNCTION__." | $login");
             for($i = 0; $i < 3; $i++){
                 sleep(rand(15,19));
-#                $last = strtotime(DB::query("SELECT last FROM request WHERE service='wazzup24'")->fetch_object()->last);
                 if ($row = DB::query("SELECT * FROM send_to_chatapi WHERE sendTime=0 AND login='$login' LIMIT 1")->fetch_object()) {
                     $alreadySent = DB::checkSentWhatsapp($row->phone, $row->body);
                     if ($alreadySent) {
@@ -67,7 +66,7 @@ class ChatApi {
                     Logs::handler(__CLASS__."::".__FUNCTION__." | $login");
                     $phone = substr(preg_replace('/[^0-9]/', '', $inputRequestData['messages'][0]['chatId']), -15);
                     try {
-                        $user = DB::query("SELECT email, instagram, firstName FROM gc_users WHERE phone='$phone' AND login='$login'")->fetch_object();
+                        $user = DB::query("SELECT email, instagram, firstName FROM gc_users WHERE login='$login' AND phone REGEXP '$phone'")->fetch_object();
                         $email = $user->email ?? null;
                         $firstName = $user->firstName ?? null;
                         $instagram = $user->instagram ?? null;
