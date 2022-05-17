@@ -97,4 +97,83 @@ class GetCourse {
 
         return $result;
     }
+
+    private static function execute($method, $action, $param) {
+        Logs::handler(__CLASS__."::".__FUNCTION__." | $method | $action | ". serialize($param));
+        $url = 'https://'.GC_ACCOUNT.".getcourse.ru/pl/api/$method/";
+        $post['key'] = GC_API_KEY;
+        switch ($action) {
+            case 'export':
+                break;
+            case 'update':
+                $param['system']['refresh_if_exists'] = 1;
+                $post['params']=base64_encode(json_encode($param));
+                break;
+
+            default:
+                $post['action'] = "add";
+                $param['system']['refresh_if_exists'] = 1;
+                $post['params']=base64_encode(json_encode($param));
+                break;
+        }
+        return cURL::executeRequest($url, $post, false, false, false);
+    }
+
+    public static function dealsAdd($login, $args) {
+        if (GC_ENABLED) {
+            Logs::handler(__CLASS__."::".__FUNCTION__." | $login | ". serialize($args));
+            if (isset($args['phone']) && isset($args['number']) && isset($args['status'])) {
+                $query = "SELECT created_at FROM gc_deals WHERE id={$args['id']}";
+                $created_at = DB::query($query)->fetch_object()->created_at;
+                $param['user']['phone'] = $args['phone'];
+                $param['user']['email'] = $args['email'];
+                $param['deal']['deal_number'] = $args['number'];
+                $param['deal']['deal_status'] = $args['status'];
+                $param['deal']['deal_created_at'] = "$created_at 00:00:00";
+                $param['deal']['product_title'] = $args['positions'];
+                $param['deal']['deal_cost'] = $args['cost_money_value'];
+                $param['deal']['addfields']['api_status'] = $args['status'];
+                echo self::execute('deals', 'add', $param);
+            }
+        } else { echo 'Service is not configured. Check config.'; }
+    }
+
+    private function utmFromArgs($args, $pref = '') {
+        $arr = false;
+        !isset($args['utm_source']) ?: $arr[$pref.'utm_source'] = $args['utm_source'];
+        !isset($args['utm_medium']) ?: $arr[$pref.'utm_medium'] = $args['utm_medium'];
+        !isset($args['utm_campaign']) ?: $arr[$pref.'utm_campaign'] = $args['utm_campaign'];
+        !isset($args['utm_content']) ?: $arr[$pref.'utm_content'] = $args['utm_content'];
+        !isset($args['utm_group']) ?: $arr[$pref.'utm_group'] = $args['utm_group'];
+        !isset($args['gcpc']) ?: $arr[$pref.'gcpc'] = $args['gcpc'];
+        !isset($args['gcao']) ?: $arr[$pref.'gcao'] = $args['gcao'];
+        !isset($args['referer']) ?: $arr[$pref.'referer'] = $args['referer'];
+        return $arr;
+    }
+
+    public static function utmSession($login, $args) {
+        if (GC_ENABLED) {
+            Logs::handler(__CLASS__."::".__FUNCTION__." | $login | ". serialize($args));
+            if (isset($args['email'])) {
+                $param['user']['email'] = $args['email'];
+                $param['session'] = self::utmFromArgs($args);
+                echo self::execute('users', 'add', $param);
+            } else {
+                echo 'Не указан email';
+            }
+        } else { echo 'Service is not configured. Check config.'; }
+    }
+
+    public static function utmOrigin($login, $args) {
+        if (GC_ENABLED) {
+            Logs::handler(__CLASS__."::".__FUNCTION__." | $login | ". serialize($args));
+            if (isset($args['email'])) {
+                $param['user']['email'] = $args['email'];
+                $param['user']['addfields'] = self::utmFromArgs($args, 'origin_');
+                echo self::execute('users', 'add', $param);
+            } else {
+                echo 'Не указан email';
+            }
+        } else { echo 'Service is not configured. Check config.'; }
+    }
 }
