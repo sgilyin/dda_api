@@ -14,7 +14,7 @@ class SemySMS {
                     ' | ' . $inputRequestData['msg']);
                 $phone = substr(preg_replace('/[^0-9]/', '', $inputRequestData['phone']), -15);
                 try {
-                    $obj = DB::query("SELECT email FROM gc_users WHERE phone='$phone' AND login='$login'")->fetch_object();
+                    $obj = DB::query("SELECT email FROM gc_users WHERE login='$login' AND phone REGEXP '$phone'")->fetch_object();
                     if (isset($obj->email)) {
                         $email = $obj->email;
                     }
