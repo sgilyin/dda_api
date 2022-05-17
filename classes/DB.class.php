@@ -79,19 +79,74 @@ class DB {
         }
     }
 
+    public static function userUpdate($login, $args){
+        $strSet = self::argsToStrSet($args);
+        Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | {$args['id']} | $strSet");
+        $query = "SELECT id FROM gc_users WHERE login='$login' AND id='{$args['id']}'";
+        $result = self::query($query);
+        if ($result->num_rows > 0) {
+            $query = "UPDATE gc_users SET $strSet WHERE id='{$args['id']}' AND login='$login'";
+        } else {
+            $query = "INSERT INTO gc_users SET $strSet, login='$login'";
+        }
+        return static::query($query);
+    }
+
     public static function dealUpdate($login, $args) {
         if (isset($args['id']) && isset($args['number'])) {
-            Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | {$args['id']}");
             $query = "SELECT id FROM gc_deals WHERE login='$login' AND id='{$args['id']}'";
-            $result = static::query($query);
-            $strSet = static::argsToStrSet($args);
+            $result = self::query($query);
+            $strSet = self::argsToStrSet($args);
             if ($result->num_rows > 0) {
                 $query = "UPDATE gc_deals SET $strSet WHERE login='$login' AND id='{$args['id']}'";
             } else {
                 $query = "INSERT INTO gc_deals SET $strSet, login='$login'";
             }
-            static::query($query);
+            $error = self::query($query);
+            if ($error == 0) {
+                #GetCourse::dealsAdd($login, $args);
+            }
+            Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | {$args['id']}");
         }
+    }
+
+    public static function checkRoute($route) {
+        $query = "SELECT name FROM route_subnets WHERE route='$route'";
+        $result = self::query($query);
+        $name = ($result->num_rows > 0) ? $result->fetch_object()->name : 'Unknown';
+        if ($name == 'Unknown' && $route != '') {
+            $query = "INSERT INTO route_subnets VALUES ('$route', '$name')";
+            self::query($query);
+        }
+        Logs::handler(__CLASS__.'::'.__FUNCTION__." | $route | $name");
+        return $name;
+    }
+
+    public static function checkIp($ip) {
+        $query = "SELECT ip, route, name FROM ip_route WHERE ip='$ip'";
+        $result = self::query($query);
+        if ($result->num_rows > 0) {
+            $obj = $result->fetch_object();
+            $name = $obj->name;
+            $route = $obj->route;
+            if ($route == '') {
+                exec('whois -H -K '.$ip.' | grep route', $whois);
+                $route = preg_replace('/.*[ \t]/', '', $whois[0]);
+                $query = "UPDATE ip_route SET route='$route' WHERE ip='$ip'";
+                self::query($query);
+            }
+        } else {
+            exec('whois -H -K '.$ip.' | grep route', $whois);
+            $route = preg_replace('/.*[ \t]/', '', $whois[0]);
+            $query = "SELECT name FROM ip_route WHERE route='$route' LIMIT 1";
+            $result = self::query($query);
+            $name = ($result->num_rows > 0) ? $result->fetch_object()->name : 'Unknown';
+            $query = "INSERT INTO ip_route SET ip='$ip', route='$route', name='$name'";
+            self::query($query);
+            BX24::sendBotMessage("ip_route: $ip | $route | $name");
+        }
+        Logs::handler(__CLASS__.'::'.__FUNCTION__." | $ip | $route | $name");
+        return $name;
     }
 
     public static function managerUpdate($login, $args) {
@@ -369,6 +424,49 @@ class DB {
         return $alreadySent;
     }
 
+    public static function syncDeals($login, $args){
+        $mysqli = static::query("SELECT last FROM request WHERE service='getcourse' AND login='$login'");
+        $result = $mysqli->fetch_object();
+        $last = strtotime($result->last);
+        $allCount = 0;
+        if (time() - $last > 180){
+            #$export_ids = static::runExports();
+            //static::query("TRUNCATE TABLE gc_users");
+            #for ($i=0; $i<count($export_ids); $i++) {
+            #$json = static::getExportData($export_ids[$i]);
+            $json = static::getExportData($args['export_id']);
+            static::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='getcourse' AND login='$login'");
+            var_dump(count($json->info->items));
+            for ($j=0; $j<count($json->info->items); $j++) {
+            #    $allCount++;
+                $id = $json->info->items[$j][0];
+                $number = $json->info->items[$j][1];
+                $created_at = $json->info->items[$j][6];
+                $query = "SELECT * FROM gc_deals_sync WHERE id=$id";
+                $result = static::query($query);
+                if ($result->num_rows > 0) {
+                    $query = "UPDATE gc_deals_sync SET created_at='$created_at' WHERE id=$id";
+                    static::query($query);
+                    echo "<br>UPDATE: $id, $number, $created_at";
+                } else {
+                    if (preg_match('/Дизайнер интерьера с .*/', $json->info->items[$j][8])) {
+                        $query = "INSERT INTO gc_deals_sync (`login`, `id`, `number`, `created_at`) VALUES ('$login', '$id', '$number', '$created_at')";
+                        static::query($query);
+                        echo "<br>INSERT: $id, $number, $created_at";
+                    }
+                }
+                #$email = $json->info->items[$j][1];
+                #$phone = substr(preg_replace('/[^0-9]/', '', $json->info->items[$j][7]), -15);
+                #static::query("INSERT INTO gc_users (`id`, `email`, `phone`, `login`) VALUES ('$id', '$email', '$phone', '$login')");
+            }
+            #}
+            #return $allCount;
+        } else {
+            echo 'Рано';
+            #return false;
+        }
+    }
+
     public static function createSchema($login) {
         $tables[] = '
 CREATE TABLE IF NOT EXISTS `gc_contact_form` (
@@ -494,6 +592,38 @@ CREATE TABLE IF NOT EXISTS `yandex_audience` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin
+";
+        $tables[] = "
+CREATE TABLE IF NOT EXISTS `route_subnets` (
+  `route` varchar(30) COLLATE utf8_bin NOT NULL,
+  `name` varchar(30) COLLATE utf8_bin NOT NULL,
+  PRIMARY KEY (`route`),
+  UNIQUE KEY `route` (`route`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin
+";
+        $tables[] = "
+INSERT INTO route_subnets VALUES 
+('195.191.78.0/24', 'developer'),
+('185.43.4.0/23', 'DDA-API'),
+('135.181.0.0/16', 'Chat-API'),
+('136.243.0.0/16', 'Senler'),
+('78.46.0.0/15', 'Wazzup24'),
+('144.76.0.0/16', 'Wazzup24'),
+('157.90.0.0/16', 'Wazzup24'),
+('159.69.0.0/16', 'Wazzup24'),
+('178.63.0.0/16', 'Wazzup24'),
+('94.130.0.0/16', 'Wazzup24'),
+('148.251.0.0/16', 'Wazzup24'),
+('193.42.110.0/23', 'SemySMS'),
+('91.194.226.0/24', 'Dolyame'),
+('84.38.188.0/23', 'GetCourse'),
+('87.251.80.0/22', 'GetCourse'),
+('188.124.46.0/23', 'GetCourse'),
+('188.68.216.0/23', 'GetCourse'),
+('46.148.230.0/23', 'GetCourse'),
+('46.148.234.0/23', 'GetCourse'),
+('82.202.192.0/18', 'GetCourse'),
+('185.151.240.0/23', 'GetCourse')
 ";
         for ($i =0; $i < count($tables); $i++) {
             static::query($tables[$i]);
