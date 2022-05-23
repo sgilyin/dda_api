@@ -7,17 +7,18 @@
  */
 class BX24 {
     public static function callMethod($bx24Method, $bx24Data) {
-        if (BX24_ENABLED && BX24_HOST != '' && BX24_USER != '' && BX24_SECRET != '') {
+        if (BX24_ENABLED) {
             $url = BX24_HOST.'/rest/'.BX24_USER.'/'.BX24_SECRET."/{$bx24Method}";
-            $result = cURL::executeRequestTest('POST', $url, $bx24Data, false, false, false);
-            Logs::handler(__CLASS__."::".__FUNCTION__." | $result");
+            $result = cURL::execute('POST', $url, $bx24Data, false, false, false);
+            Logs::handler(sprintf('%s::%s | %s', __CLASS__, __FUNCTION__, $result));
             return $result;
         }
     }
 
     public static function sendBotMessage($message) {
-        if (BX24_ENABLED && BX24_BOT_ID != '' && BX24_CLIENT_ID != '') {
-            Logs::handler(__CLASS__."::".__FUNCTION__." | ".BX24_ALARM_CHAT_ID." | $message");
+        if (BX24_ENABLED) {
+            Logs::handler(sprintf('%s::%s | %s | %s', __CLASS__, __FUNCTION__,
+                BX24_ALARM_CHAT_ID, $message));
             $bx24Data = http_build_query(
                 array(
                     'DIALOG_ID' => BX24_ALARM_CHAT_ID,
@@ -26,7 +27,7 @@ class BX24 {
                     'CLIENT_ID' => BX24_CLIENT_ID,
                 )
             );
-            return static::callMethod('imbot.message.add.json', $bx24Data);
+            return self::callMethod('imbot.message.add.json', $bx24Data);
         }
     }
 }
