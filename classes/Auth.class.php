@@ -35,7 +35,8 @@ class Auth {
         $query = "SELECT user, password, status, salt FROM gc_managers WHERE login='$login' AND user='{$args['user']}'";
         $manager = DB::query($query)->fetch_object();
         $access = (md5(md5($args['password']).$manager->salt) == $manager->password && $manager->status == 'enable') ? true : false;
-        Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | {$args['user']} | $access");
+        Logs::handler(sprintf('%s::%s | %s | %s | %s', __CLASS__, __FUNCTION__,
+            $login, $args['user'], $access));
         return $access;
     }
 }
