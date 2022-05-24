@@ -123,6 +123,13 @@ define('DOLYAME_NOTIFICATION_URL', '');
 define('DOLYAME_FAIL_URL', '');
 define('DOLYAME_SUCCESS_URL', '');
 
+#Skorozvon Settings
+define('SKOROZVON_ENABLED', false);
+define('SKOROZVON_USERNAME', '');
+define('SKOROZVON_API_KEY', '');
+define('SKOROZVON_CLIENT_ID', '');
+define('SKOROZVON_CLIENT_SECRET', '');
+
 #GC Fields
 #$addFields = new stdClass();
 #$addFields->{'123456'} = '<Enter here>';
