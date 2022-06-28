@@ -80,6 +80,13 @@ class DB {
     }
 
     public static function userUpdate($login, $args){
+        if (isset($args['phone'])) {
+            $args['phone'] = substr(preg_replace('/[^0-9]/', '', $args['phone']), -15);
+        }
+        if (isset($args['instagram'])) {
+            $patterns = array('/https:\/\/instagram\.com\//', '/\?.*|\/$/');
+            $args['instagram'] = preg_replace($patterns, '', $args['instagram']);
+        }
         $strSet = self::argsToStrSet($args);
         Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | {$args['id']} | $strSet");
         $query = "SELECT id FROM gc_users WHERE login='$login' AND id='{$args['id']}'";
