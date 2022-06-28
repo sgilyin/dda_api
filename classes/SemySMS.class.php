@@ -62,7 +62,7 @@ class SemySMS {
                 $params['user']['phone'] = $phone;
                 $params['user']['email'] = $email;
                 $params['user']['addfields']['whatsapp']=$phone;
-                GetCourse::addUser($params);
+                GetCourse::usersAdd($login, $params);
                 $alreadySent = DB::checkSentGetCourse($email, $inputRequestData['msg']);
                 if (!$alreadySent) {
                     DB::query("INSERT INTO gc_contact_form SET email='$email', text='{$inputRequestData['msg']}'");
