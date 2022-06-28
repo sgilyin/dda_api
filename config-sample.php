@@ -130,6 +130,10 @@ define('SKOROZVON_API_KEY', '');
 define('SKOROZVON_CLIENT_ID', '');
 define('SKOROZVON_CLIENT_SECRET', '');
 
+#Remplaner Settings
+define('REMPLANER_ENABLED', false);
+define('REMPLANER_AUTHKEY', '');
+
 #GC Fields
 #$addFields = new stdClass();
 #$addFields->{'123456'} = '<Enter here>';
