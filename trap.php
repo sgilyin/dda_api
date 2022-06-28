@@ -34,17 +34,9 @@ $inputRequestMethod = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
 $logDir = __DIR__.dirname(filter_input(INPUT_SERVER, 'PHP_SELF'));
 $login = substr(dirname(filter_input(INPUT_SERVER, 'PHP_SELF')),1);
 
-switch ($inputRequestMethod){
-    case 'GET':
-        $inputRequestData = filter_input_array(INPUT_GET);
-        break;
-    case 'POST':
-        $inputRequestData = filter_input_array(INPUT_POST);
-        if (!$inputRequestData){
-            $inputRequestData = json_decode(file_get_contents("php://input"), true);
-        }
-        break;
-}
+$inputRequestData = filter_input_array(INPUT_POST) ?? 
+    json_decode(file_get_contents("php://input"), true) ??
+    filter_input_array(INPUT_GET);
 
 logClear($logDir);
 logAdd($logDir, basename(__FILE__,".php"), "$inputRemoteAddr | $inputRequestMethod | ".serialize($inputRequestData));
