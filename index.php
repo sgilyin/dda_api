@@ -199,6 +199,15 @@ switch ($serviceByIP) {
     case 'Wazzup24':
         Wazzup24::trap($login, $inputRequestData);
         break;
+    case 'Skorozvon':
+        Skorozvon::trap($login, $inputRequestData);
+        break;
+    case 'Yandex':
+        Yandex::trap($login, $inputRequestData);
+        break;
+    case 'Zvonobot':
+        Zvonobot::trap($login, $inputRequestData);
+        break;
 
     default:
         BX24::sendBotMessage("$serviceByIP IP: $inputRemoteAddr");
