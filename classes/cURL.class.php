@@ -26,56 +26,81 @@ class cURL {
     public static function executeRequest($url, $post, $headers, $userpwd, $ssl) {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
-        if ($post){
-            curl_setopt($ch, CURLOPT_POST, TRUE);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-        }
-        if ($headers){
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        }
-        if ($userpwd){
-            curl_setopt($ch, CURLOPT_USERPWD, $userpwd);
-        }
-        if ($ssl){
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-            curl_setopt($ch, CURLOPT_SSLCERT, $ssl->certPath);
-            curl_setopt($ch, CURLOPT_SSLKEY, $ssl->keyPath);
-        }
+        !$post ?: curl_setopt($ch, CURLOPT_POST, TRUE);
+        !$post ?: curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+        !$headers ?: curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        !$userpwd ?: curl_setopt($ch, CURLOPT_USERPWD, $userpwd);
+        !$ssl ?: curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+        !$ssl ?: curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        !$ssl ?: curl_setopt($ch, CURLOPT_SSLCERT, $ssl->certPath);
+        !$ssl ?: curl_setopt($ch, CURLOPT_SSLKEY, $ssl->keyPath);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         $result = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        Logs::handler(__CLASS__."::".__FUNCTION__." | $url | ".serialize($post)." | ". serialize($result));
+        Logs::handler(sprintf('%s::%s | %d | %s | %s | %s', __CLASS__,
+            __FUNCTION__, $http_code, $url, serialize($post), serialize($result)));
+        if ($http_code != 200 && $http_code != 201) {
+            Logs::error(sprintf('%s::%s | %d | %s | %s | %s', __CLASS__,
+                __FUNCTION__, $http_code, $url, serialize($post), serialize($result)));
+        }
         return $result;
     }
 
     public static function executeRequestTest($customRequest, $url, $post, $headers, $userpwd, $ssl) {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
-        if ($post){
-            curl_setopt($ch, CURLOPT_POST, TRUE);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-        }
-        if ($headers){
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        }
-        if ($userpwd){
-            curl_setopt($ch, CURLOPT_USERPWD, $userpwd);
-        }
-        if ($ssl){
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-            curl_setopt($ch, CURLOPT_SSLCERT, $ssl->certPath);
-            curl_setopt($ch, CURLOPT_SSLKEY, $ssl->keyPath);
-        }
+        !$post ?: curl_setopt($ch, CURLOPT_POST, TRUE);
+        !$post ?: curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+        !$headers ?: curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        !$userpwd ?: curl_setopt($ch, CURLOPT_USERPWD, $userpwd);
+        !$ssl ?: curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+        !$ssl ?: curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        !$ssl ?: curl_setopt($ch, CURLOPT_SSLCERT, $ssl->certPath);
+        !$ssl ?: curl_setopt($ch, CURLOPT_SSLKEY, $ssl->keyPath);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $customRequest);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        #curl_setopt($ch, CURLOPT_HEADER, TRUE);
+        curl_setopt($ch, CURLINFO_HEADER_OUT, TRUE);
+        $result = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $info = curl_getinfo($ch);
+        curl_close($ch);
+        Logs::handler(sprintf('%s::%s | %d | %s | %s | %s | %s', __CLASS__,
+            __FUNCTION__, $info['CURLINFO_HTTP_CODE'], $url, serialize($post),
+            serialize($result), serialize($info)));
+        if ($http_code != 200 && $http_code != 201) {
+            Logs::error(sprintf('%s::%s | %d | %s | %s | %s', __CLASS__,
+                __FUNCTION__, $info['CURLINFO_HTTP_CODE'], $url,
+                serialize($post), serialize($result), serialize($info)));
+        }
+        return $result;
+    }
+
+    public static function execute($customRequest, $url, $post, $headers, $userpwd, $ssl) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        !$post ?: curl_setopt($ch, CURLOPT_POST, TRUE);
+        !$post ?: curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+        !$headers ?: curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        !$userpwd ?: curl_setopt($ch, CURLOPT_USERPWD, $userpwd);
+        !$ssl ?: curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+        !$ssl ?: curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        !$ssl ?: curl_setopt($ch, CURLOPT_SSLCERT, $ssl->certPath);
+        !$ssl ?: curl_setopt($ch, CURLOPT_SSLKEY, $ssl->keyPath);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $customRequest);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         curl_setopt($ch, CURLINFO_HEADER_OUT, TRUE);
         $result = curl_exec($ch);
         $info = curl_getinfo($ch);
         curl_close($ch);
-        Logs::handler(__CLASS__."::".__FUNCTION__." | $url | ".serialize($post)." | ". serialize($result)." | ". serialize($info));
+        Logs::handler(sprintf('%s::%s | %d | %s | %s | %s', __CLASS__,
+            __FUNCTION__, $info['http_code'], $url, serialize($post),
+            serialize($result)));
+        if ($info['http_code'] != 200 && $info['http_code'] != 201) {
+            Logs::error(sprintf('%s::%s | %d | %s | %s | %s', __CLASS__,
+                __FUNCTION__, $info['http_code'], $url,
+                serialize($post), serialize($result), serialize($info)));
+        }
         return $result;
     }
 }
