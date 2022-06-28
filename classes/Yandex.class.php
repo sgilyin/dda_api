@@ -96,4 +96,20 @@ class Yandex {
             return false;
         }
     }
+
+    public static function trap($login, $args) {
+        Logs::handler(sprintf('%s::%s | %s | %s', __CLASS__, __FUNCTION__,
+            $login, serialize($args)));
+        foreach ($args['params'] as $key => $value) {
+            if (substr($key, 0, 4) == 'utm_') {
+                $param['session'][$key] = $value;
+                $param['user']['addfields']["origin_$key"] = $value;
+                $param['user']['addfields']["d_$key"] = $value;
+            }
+        }
+        $param['user']['phone'] = $args['params']['phone'];
+        $param['user']['email'] = $args['params']['email'];
+        $param['user']['first_name'] = $args['params']['first_name'];
+        GetCourse::usersAdd($login, $param);
+    }
 }
