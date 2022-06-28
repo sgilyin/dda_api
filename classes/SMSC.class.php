@@ -28,7 +28,7 @@ class SMSC {
             Logs::handler(__CLASS__."::".__FUNCTION__." | $login");
             $success = false;
             $last = strtotime(DB::query("SELECT last FROM request WHERE service='smsc' AND login='$login'")->fetch_object()->last);
-            if (time() - $last > 150){
+            if (time() - $last > 160){
                 $url="https://smsc.ru/sys/get.php";
                 $post['login'] = SMSC_ACCOUNT;
                 $post['psw'] = SMSC_PSW;
