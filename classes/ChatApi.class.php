@@ -6,8 +6,9 @@
  */
 class ChatApi {
     public static function queue($login, $args) {
-        if (CHAT_API_ENABLED && CHAT_API_TOKEN != '') {
-            Logs::handler(__CLASS__."::".__FUNCTION__." | $login");
+        if (CHAT_API_ENABLED) {
+            Logs::handler(sprintf('%s::%s | %s | %s', __CLASS__, __FUNCTION__,
+                $login, serialize($args)));
             if ($args['phone'] && $args['body']){
                 $args['phone'] = intval($args['phone']);
                 $phoneLen = strlen($args['phone']);
@@ -22,14 +23,15 @@ class ChatApi {
     }
 
     public static function send($login) {
-        if (CHAT_API_ENABLED && CHAT_API_INSTANCE != '' && CHAT_API_TOKEN != '') {
-            Logs::handler(__CLASS__."::".__FUNCTION__." | $login");
+        if (CHAT_API_ENABLED) {
+            Logs::handler(sprintf('%s::%s | %s', __CLASS__, __FUNCTION__, $login));
             for($i = 0; $i < 3; $i++){
                 sleep(rand(15,19));
                 if ($row = DB::query("SELECT * FROM send_to_chatapi WHERE sendTime=0 AND login='$login' LIMIT 1")->fetch_object()) {
                     $alreadySent = DB::checkSentWhatsapp($row->phone, $row->body);
                     if ($alreadySent) {
-                        Logs::handler(__CLASS__."::".__FUNCTION__." | $login | Message {$row->id} already sent via $alreadySent");
+                        Logs::handler(sprintf('%s::%s | %s | Message %i already sent via %s',
+                            __CLASS__, __FUNCTION__, $login, $row->id, $alreadySent));
                         DB::query("UPDATE send_to_chatapi SET sendTime=CURRENT_TIMESTAMP() WHERE id={$row->id}");
                     } else {
                         $url = 'https://api.chat-api.com/instance' . CHAT_API_INSTANCE . '/sendMessage?token=' . CHAT_API_TOKEN;
@@ -39,18 +41,20 @@ class ChatApi {
                         $post['body'] = $row->body;
                         $post['phone'] = $row->phone;
                         $post=json_encode($post);
-                        $result = json_decode(cURL::executeRequest($url, $post, $headers, false, false));
+                        $answer = cURL::execute('POST', $url, $post, $headers, false, false);
+                        $result = json_decode($answer);
                         DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='chatapi' AND login='$login'");
-                        if ($result->sent) {
+                        if (isset($result->sent)) {
                             DB::query("UPDATE send_to_chatapi SET sendTime=CURRENT_TIMESTAMP() WHERE id={$row->id}");
                         } else {
-                            $message = __CLASS__.'::'.__FUNCTION__." | $login | {$result->message}";
+                            $error = $result->error ?? $answer;
+                            $message = sprintf('%s::%s | %s | %s', __CLASS__,
+                                __FUNCTION__, $login, $error);
                             Logs::error($message);
                             BX24::sendBotMessage($message);
                             Telegram::alert($message);
                         }
                     }
-                    
                 }
             }
             return true;
@@ -60,10 +64,10 @@ class ChatApi {
     }
 
     public static function trap($login, $inputRequestData) {
-        if (CHAT_API_ENABLED && CHAT_API_TOKEN != '') {
+        if (CHAT_API_ENABLED) {
             if (isset($inputRequestData['messages'])) {
                 if ($inputRequestData['messages'][0]['fromMe'] == false) {
-                    Logs::handler(__CLASS__."::".__FUNCTION__." | $login");
+                    Logs::handler(sprintf('%s::%s | %s', __CLASS__, __FUNCTION__, $login));
                     $phone = substr(preg_replace('/[^0-9]/', '', $inputRequestData['messages'][0]['chatId']), -15);
                     try {
                         $user = DB::query("SELECT email, instagram, firstName FROM gc_users WHERE login='$login' AND phone REGEXP '$phone'")->fetch_object();
@@ -71,14 +75,14 @@ class ChatApi {
                         $firstName = $user->firstName ?? null;
                         $instagram = $user->instagram ?? null;
                     } catch (Exception $exc) {
-                        Logs::error(__CLASS__ . '::' . __FUNCTION__ . " | var user | $exc");
+                        Logs::error(sprintf('%s::%s | var user | %s', __CLASS__, __FUNCTION__, $exc));
                     }
                     if (empty($email)){
                         try {
                             $nameFromWhatsapp = $inputRequestData['messages'][0]['senderName'] ?? $inputRequestData['messages'][0]['nameInMessenger'];
                             $params = Dadata::cleanNameFromWhatsapp($nameFromWhatsapp);
                         } catch (Exception $exc) {
-                            Logs::error(__CLASS__ . '::' . __FUNCTION__ . " | dadata cleanName | $exc");
+                            Logs::error(sprintf('%s::%s | dadata cleanName | %s', __CLASS__, __FUNCTION__, $exc));
                         }
                         preg_match("/\|.*\|/",$inputRequestData['messages'][0]['body'],$matches);
                         if ($matches){
@@ -128,7 +132,7 @@ class ChatApi {
                     $params['user']['phone'] = $phone;
                     $params['user']['email'] = $email;
                     $params['user']['addfields']['whatsapp']=$phone;
-                    GetCourse::addUser($params);
+                    GetCourse::usersAdd($login, $params);
                     $alreadySent = DB::checkSentGetCourse($email, $inputRequestData['messages'][0]['body']);
                     if (!$alreadySent) {
                         DB::query("INSERT INTO gc_contact_form SET email='$email', text='{$inputRequestData['messages'][0]['body']}'");
