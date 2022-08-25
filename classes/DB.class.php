@@ -206,7 +206,7 @@ class DB {
     }
 
     public static function getManagersDeals($login, $manager) {
-        $query = "SELECT * FROM gc_deals WHERE login='$login' AND manager='$manager' AND status NOT IN ('Отменен')";
+        $query = "SELECT * FROM gc_deals WHERE login='$login' AND manager='$manager'";# AND status NOT IN ('Отменен')";
         Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | $manager");
         $deals = static::query($query);
         $rows = '';
@@ -354,15 +354,6 @@ class DB {
             } while (!$json->success);
             return $json;
         }
-    }
-
-    /**
-     * Clear queue to Wazzup24
-     * 
-     * @return string
-     */
-    public static function clearWa24Queue() {
-        static::query("TRUNCATE send_to_wazzup24");
     }
 
     /**
