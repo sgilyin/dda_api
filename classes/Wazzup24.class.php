@@ -29,7 +29,7 @@ class Wazzup24 {
             for($i = 0; $i < 4; $i++){
                 sleep(rand(11,15));
                 if ($row = DB::query("SELECT * FROM send_to_wazzup24 WHERE sendTime=0 AND login='$login' LIMIT 1")->fetch_object()) {
-                    $alreadySent = DB::checkSentWhatsapp($row->chatId, $row->text);
+                    $alreadySent = DB::checkSentWhatsapp($row->chatId, htmlspecialchars_decode($row->text));
                     if ($alreadySent) {
                         Logs::handler(sprintf('%s::%s | %s | Message %d already sent via %s',
                             __CLASS__, __FUNCTION__, $login, $row->id, $alreadySent));
@@ -44,23 +44,26 @@ class Wazzup24 {
                         $post['channelId'] = $row->channelId;
                         $post['chatId'] = $row->chatId;
                         if ($row->text != '') {
-                            $post['text'] = $row->text;
+                            $post['text'] = htmlspecialchars_decode($row->text);
                         }
-                        if (!$row->content == '') {
-                            $post['contentUri'] = $row->content;
+                        if (!$row->contentUri == '') {
+                            $post['contentUri'] = $row->contentUri;
                         }
                         $post=json_encode($post);
                         $result = json_decode(cURL::executeRequest($url, $post, $headers, false, false));
                         DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='wazzup24' AND login='$login'");
                         if (isset($result->messageId)) {
-                            DB::query("UPDATE send_to_wazzup24 SET sendTime=CURRENT_TIMESTAMP() WHERE id={$row->id}");
+                            DB::query("UPDATE send_to_wazzup24 SET sendTime=CURRENT_TIMESTAMP(), result='{$result->messageId}' WHERE id={$row->id}");
                         }
                     }
                 }
             }
-            if (isset($result->errors)) {
+            if (isset($result->error)) {
+                $description = $result->description.' '.$result->data[0]->description ?? $result->description ?? $result->data[0]->description;
+                $error = $result->error . ': ' . implode(', ', $result->data->fields) . $description;
+                DB::query("UPDATE send_to_wazzup24 SET sendTime=CURRENT_TIMESTAMP(), result='$error' WHERE id={$row->id}");
                 $message = sprintf('%s::%s | %s | %s', __CLASS__, __FUNCTION__,
-                    $login, $result->errors[0]->description);
+                    $login, $error);
                 Logs::error($message);
                 BX24::sendBotMessage($message);
                 Telegram::alert($message);
@@ -73,8 +76,9 @@ class Wazzup24 {
 
     public static function queue($login, $args) {
         if (WA24_ENABLED) {
-            if (isset($args['chatId']) && (isset($args['text']) || isset($args['content']))) {
+            if (isset($args['chatId']) && (isset($args['text']) || isset($args['contentUri']))) {
                 $args['chatId'] = intval($args['chatId']);
+                $args['text'] = htmlspecialchars($args['text']);
                 $chatIdLen = strlen($args['chatId']);
                 if ($chatIdLen > 8 && $chatIdLen < 17) {
                     $args['channelId'] = $args['channelId'] ?? WA24_CID_WA;
@@ -113,57 +117,11 @@ class Wazzup24 {
                             $phone = substr(preg_replace('/[^0-9]/', '', $inputRequestData['messages'][$i]['chatId']), -15);
                             try {
                                 $user = DB::query("SELECT email, instagram, firstName FROM gc_users WHERE login='$login' AND phone REGEXP '$phone'")->fetch_object();
-                                $email = $user->email ?? null;
-                                $firstName = $user->firstName ?? null;
-                                $instagram = $user->instagram ?? null;
+                                !isset($user->email) ?: $email = $user->email;
+                                !isset($user->firstName) ?: $firstName = $user->firstName;
                             } catch (Exception $exc) {
                                 Logs::error(sprintf('%s::%s | %s | var user | %s',
                                     __CLASS__, __FUNCTION__, $login, $exc));
-                            }
-                            if (empty($email)) {
-                                try {
-                                    $nameFromWhatsapp = $inputRequestData['messages'][$i]['contact']['name'];
-                                    $params = Dadata::cleanNameFromWhatsapp($nameFromWhatsapp);
-                                } catch (Exception $exc) {
-                                    Logs::error(sprintf('%s::%s | %s | dadata cleanName | %s',
-                                    __CLASS__, __FUNCTION__, $login, $exc));
-                                }
-                                preg_match("/\|.*\|/",$inputRequestData['messages'][$i]['text'],$matches);
-                                if ($matches) {
-                                    $item=explode("|", $matches[0]);
-                                    if ($item[1]) {
-                                        global $addFields;
-                                        $params['user']['group_name']= array($addFields->{$item[1]});
-                                    }
-                                    if ($item[2]) {
-                                        $params['user']['addfields']['d_utm_source']=$item[2];
-                                    }
-                                    if ($item[3]) {
-                                        $params['user']['addfields']['d_utm_medium']=$item[3];
-                                    }
-                                    if ($item[4]) {
-                                        $params['user']['addfields']['d_utm_content']=$item[4];
-                                    }
-                                    if ($item[5]) {
-                                        $params['user']['addfields']['d_utm_campaign']=$item[5];
-                                    }
-                                    if ($item[6]) {
-                                        $params['user']['addfields']['d_utm_term']=$item[6];
-                                    }
-                                    if ($item[7]) {
-                                        $params['user']['addfields']['d_utm_rs']=$item[7];
-                                    }
-                                    if ($item[8]) {
-                                        $params['user']['addfields']['d_utm_acc']=$item[8];
-                                    }
-                                    if ($item[9]) {
-                                        $params['user']['addfields']['Возраст']=$item[9];
-                                    }
-                                    if ($item[10]) {
-                                        $emailInMessage=$item[10];
-                                    }
-                                }
-                                $email = $emailInMessage ?? "$phone@facebook.com";
                             }
                             if (empty($firstName)) {
                                 try {
@@ -174,6 +132,22 @@ class Wazzup24 {
                                     __CLASS__, __FUNCTION__, $login, $exc));
                                 }
                             }
+                            preg_match("/\|.*\|/",$inputRequestData['messages'][$i]['text'],$matches);
+                            if ($matches) {
+                                $item=explode("|", $matches[0]);
+                                global $addFields;
+                                !isset($item[1]) ?: $params['user']['group_name']= array($addFields->{$item[1]});
+                                !isset($item[2]) ?: $params['user']['addfields']['d_utm_source']=$item[2];
+                                !isset($item[3]) ?: $params['user']['addfields']['d_utm_medium']=$item[3];
+                                !isset($item[4]) ?: $params['user']['addfields']['d_utm_content']=$item[4];
+                                !isset($item[5]) ?: $params['user']['addfields']['d_utm_campaign']=$item[5];
+                                !isset($item[6]) ?: $params['user']['addfields']['d_utm_term']=$item[6];
+                                !isset($item[7]) ?: $params['user']['addfields']['d_utm_rs']=$item[7];
+                                !isset($item[8]) ?: $params['user']['addfields']['d_utm_acc']=$item[8];
+                                !isset($item[9]) ?: $params['user']['addfields']['Возраст']=$item[9];
+                                !isset($item[10]) ?: $emailInMessage=$item[10];
+                            }
+                            $email = $email ?? $emailInMessage ?? "$phone@facebook.com";
                             $params['user']['phone'] = $phone;
                             $params['user']['email'] = $email;
                             $params['user']['addfields']['whatsapp']=$phone;
@@ -205,6 +179,13 @@ class Wazzup24 {
                 );
                 self::queue($login, $argsO);
             }
+        }
+    }
+
+    public static function clearWa24Queue($login) {
+        if (WA24_ENABLED) {
+            Logs::handler(sprintf('%s::%s | %s', __CLASS__, __FUNCTION__, $login));
+            DB::query("DELETE FROM send_to_wazzup24 WHERE login='$login' AND sendTime=0");
         }
     }
 }
