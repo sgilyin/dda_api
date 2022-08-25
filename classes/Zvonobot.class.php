@@ -19,23 +19,34 @@ class Zvonobot {
         }
         $param['user']['phone'] = $phone;
         $param['user']['email'] = $email;
-        $param['deal']['product_title'] = 'Консультация';
-        $param['deal']['deal_status'] = 'Новый';
-        GetCourse::dealsAdd($login, $param);
-        $msg = sprintf('%s %s', $args['msg'], $args['call']['answer']);
-        $to = $args['to'];
-        switch ($args['integration']) {
-            case 'SemySMS':
-                $whatsapp['phone'] = $to;
-                $whatsapp['msg'] = $msg;
+        switch ($args['preset']) {
+            case 'addGroupGC':
+                $param['user']['group_name'][] = $args['groupName'];
+                GetCourse::usersAdd($login, $param);
                 break;
-            case 'Wazzup24':
-                $whatsapp['chatId'] = $to;
-                $whatsapp['text'] = $msg;
+            case 'addDealGC':
+                $param['deal']['product_title'] = 'Консультация';
+                $param['deal']['deal_status'] = 'Новый';
+                GetCourse::dealsAdd($login, $param);
+                $msg = sprintf('%s %s', $args['msg'], $args['call']['answer']);
+                $to = $args['to'];
+                switch ($args['integration']) {
+                    case 'SemySMS':
+                        $whatsapp['phone'] = $to;
+                        $whatsapp['msg'] = $msg;
+                        break;
+                    case 'Wazzup24':
+                        $whatsapp['chatId'] = $to;
+                        $whatsapp['text'] = $msg;
+
+                    default:
+                        break;
+                }
+                $args['integration']::queue($login, $whatsapp);
+                break;
 
             default:
                 break;
         }
-        $args['integration']::queue($login, $whatsapp);
     }
 }
