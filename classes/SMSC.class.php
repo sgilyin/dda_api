@@ -45,7 +45,8 @@ class SMSC {
                             $query = "SELECT id FROM smsc_messages WHERE login='$login' AND id='{$json[$i]->id}'";
                             $result = DB::query($query);
                             if ($result->num_rows == 0) {
-                                $query = "INSERT INTO smsc_messages (`id`, `phone`, `message`, `login`) VALUES ('{$json[$i]->id}', '{$json[$i]->phone}', '{$json[$i]->message}', '$login')";
+                                $message = preg_replace("/'/", "\'", $json[$i]->message);
+                                $query = "INSERT INTO smsc_messages (`id`, `phone`, `message`, `login`) VALUES ('{$json[$i]->id}', '{$json[$i]->phone}', '$message', '$login')";
                                 Logs::handler(__CLASS__.'::'.__FUNCTION__." | $login | {$json[$i]->id}");
                                 DB::query($query);
                             }
@@ -102,18 +103,6 @@ class SMSC {
                 SemySMS::queue($login, $toSemySMS);
                 DB::query("UPDATE smsc_messages SET success=1 WHERE id=$id");
             }
-#            if (preg_match("/Вам пишет .*:/",$messages[$i][2])){
-#                $toWazzup24['chatId'] = $messages[$i][1];
-#                $toWazzup24['text'] = substr($messages[$i][2], stripos($messages[$i][2],':')+2);
-#                Wazzup24::queue($login, $toWazzup24);
-#                $toChatApi['phone'] = $messages[$i][1];
-#                $toChatApi['body'] = substr($messages[$i][2], stripos($messages[$i][2],':')+2);
-#                ChatApi::queue($login, $toChatApi);
-#                $toSemySMS['phone'] = $messages[$i][1];
-#                $toSemySMS['msg'] = substr($messages[$i][2], stripos($messages[$i][2],':')+2);
-#                SemySMS::queue($login, $toSemySMS);
-#                DB::query("UPDATE smsc_messages SET success=1 WHERE id=$id");
-#            }
             if (preg_match("/\|\d*\|\S*@\S*\|http.*\|/",$messages[$i][2])){
                 global $addFields;
                 $msg_part=explode("|", $messages[$i][2]);
@@ -126,5 +115,9 @@ class SMSC {
             }
         }
         //return json_encode(array('success' => $success,));
+    }
+
+    public function historyClear($login, $args) {
+        DB::query("DELETE FROM smsc_messages WHERE login='$login' AND last_update < CURRENT_DATE - INTERVAL {$args['interval']}");
     }
 }
