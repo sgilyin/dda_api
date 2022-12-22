@@ -20,8 +20,16 @@ class Skorozvon {
             $headers = array("Authorization: Bearer $accessToken");
             $result = json_decode(cURL::execute('POST', $url, $post, $headers, false, false));
             $accessToken = $result->access_token;
-            DB::query(sprintf("UPDATE options SET option_value='%s' WHERE login='%s' AND option_name='%s'", $accessToken, $login, 'skorozvon_access'));
-            DB::query(sprintf("UPDATE options SET option_value='%s' WHERE login='%s' AND option_name='%s'", $result->refresh_token, $login, 'skorozvon_refresh'));
+            $refreshToken = $result->refresh_token;
+            if ($accessToken != '' && $refreshToken=!'') {
+                DB::query(sprintf("UPDATE options SET option_value='%s' WHERE login='%s' AND option_name='%s'",
+                    $accessToken, $login, 'skorozvon_access'));
+                DB::query(sprintf("UPDATE options SET option_value='%s' WHERE login='%s' AND option_name='%s'",
+                    $refreshToken, $login, 'skorozvon_refresh'));
+            } else {
+                DB::query(sprintf("DELETE FROM options WHERE login='%s' AND option_name LIKE '%s'",
+                    $login, 'skorozvon_%'));
+            }
         } else {
             $post['grant_type'] = 'password';
             $post['username'] = SKOROZVON_USERNAME;
