@@ -27,4 +27,16 @@ class Telegram {
             self::sendMessage(false, $args);
         }
     }
+
+    public static function notice($message) {
+        Logs::handler(__CLASS__."::".__FUNCTION__." | $message");
+        global $TgNtcDst;
+        for ($index = 0; $index < count($TgNtcDst); $index++) {
+            $args = array(
+                'chat_id' => $TgNtcDst[$index],
+                'text' => $message,
+            );
+            self::sendMessage(false, $args);
+        }
+    }
 }
