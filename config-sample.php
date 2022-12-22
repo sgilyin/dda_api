@@ -112,6 +112,7 @@ define('BX24_ALARM_CHAT_ID', '');
 define('TELEGRAM_ENABLED', false);
 define('TELEGRAM_BOT_TOKEN', '');
 $TgAlrtDst = array();
+$TgNtcDst = array();
 
 #Dolyame Settings
 define('DOLYAME_ENABLED', false);
