@@ -37,12 +37,14 @@ class cURL {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         $result = curl_exec($ch);
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
         curl_close($ch);
         Logs::handler(sprintf('%s::%s | %d | %s | %s | %s', __CLASS__,
             __FUNCTION__, $http_code, $url, serialize($post), serialize($result)));
         if ($http_code != 200 && $http_code != 201) {
-            Logs::error(sprintf('%s::%s | %d | %s | %s | %s', __CLASS__,
-                __FUNCTION__, $http_code, $url, serialize($post), serialize($result)));
+            Logs::error(sprintf('%s::%s | %d | %s | %s | %s | %s | %s', __CLASS__,
+                __FUNCTION__, $http_code, $url, serialize($post), serialize($result),
+                serialize($headers), $error));
         }
         return $result;
     }
@@ -64,14 +66,15 @@ class cURL {
         $result = curl_exec($ch);
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $info = curl_getinfo($ch);
+        $error = curl_error($ch);
         curl_close($ch);
         Logs::handler(sprintf('%s::%s | %d | %s | %s | %s | %s', __CLASS__,
-            __FUNCTION__, $info['CURLINFO_HTTP_CODE'], $url, serialize($post),
+            __FUNCTION__, $info['http_code'], $url, serialize($post),
             serialize($result), serialize($info)));
         if ($http_code != 200 && $http_code != 201) {
-            Logs::error(sprintf('%s::%s | %d | %s | %s | %s', __CLASS__,
-                __FUNCTION__, $info['CURLINFO_HTTP_CODE'], $url,
-                serialize($post), serialize($result), serialize($info)));
+            Logs::error(sprintf('%s::%s | %d | %s | %s | %s | %s', __CLASS__,
+                __FUNCTION__, $info['http_code'], $url,
+                serialize($post), serialize($result), serialize($info), $error));
         }
         return $result;
     }
@@ -92,14 +95,15 @@ class cURL {
         curl_setopt($ch, CURLINFO_HEADER_OUT, TRUE);
         $result = curl_exec($ch);
         $info = curl_getinfo($ch);
+        $error = curl_error($ch);
         curl_close($ch);
         Logs::handler(sprintf('%s::%s | %d | %s | %s | %s', __CLASS__,
             __FUNCTION__, $info['http_code'], $url, serialize($post),
             serialize($result)));
         if ($info['http_code'] != 200 && $info['http_code'] != 201) {
-            Logs::error(sprintf('%s::%s | %d | %s | %s | %s', __CLASS__,
+            Logs::error(sprintf('%s::%s | %d | %s | %s | %s | %s', __CLASS__,
                 __FUNCTION__, $info['http_code'], $url,
-                serialize($post), serialize($result), serialize($info)));
+                serialize($post), serialize($result), serialize($info), $error));
         }
         return $result;
     }
