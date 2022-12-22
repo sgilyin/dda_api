@@ -73,53 +73,8 @@ class ChatApi {
                         $user = DB::query("SELECT email, instagram, firstName FROM gc_users WHERE login='$login' AND phone REGEXP '$phone'")->fetch_object();
                         $email = $user->email ?? null;
                         $firstName = $user->firstName ?? null;
-                        $instagram = $user->instagram ?? null;
                     } catch (Exception $exc) {
                         Logs::error(sprintf('%s::%s | var user | %s', __CLASS__, __FUNCTION__, $exc));
-                    }
-                    if (empty($email)){
-                        try {
-                            $nameFromWhatsapp = $inputRequestData['messages'][0]['senderName'] ?? $inputRequestData['messages'][0]['nameInMessenger'];
-                            $params = Dadata::cleanNameFromWhatsapp($nameFromWhatsapp);
-                        } catch (Exception $exc) {
-                            Logs::error(sprintf('%s::%s | dadata cleanName | %s', __CLASS__, __FUNCTION__, $exc));
-                        }
-                        preg_match("/\|.*\|/",$inputRequestData['messages'][0]['body'],$matches);
-                        if ($matches){
-                            $item=explode("|", $matches[0]);
-                            if ($item[1]){
-                                global $addFields;
-                                $params['user']['group_name']= array($addFields->{$item[1]});
-                            }
-                            if ($item[2]){
-                                $params['user']['addfields']['d_utm_source']=$item[2];
-                            }
-                            if ($item[3]){
-                                $params['user']['addfields']['d_utm_medium']=$item[3];
-                            }
-                            if ($item[4]){
-                                $params['user']['addfields']['d_utm_content']=$item[4];
-                            }
-                            if ($item[5]){
-                                $params['user']['addfields']['d_utm_campaign']=$item[5];
-                            }
-                            if ($item[6]){
-                                $params['user']['addfields']['d_utm_term']=$item[6];
-                            }
-                            if ($item[7]){
-                                $params['user']['addfields']['d_utm_rs']=$item[7];
-                            }
-                            if ($item[8]){
-                                $params['user']['addfields']['d_utm_acc']=$item[8];
-                            }
-                            if ($item[9]){
-                                $params['user']['addfields']['Возраст']=$item[9];
-                            }
-                            if ($item[10]){
-                                $emailInMessage=$item[10];
-                            }
-                        }
-                        $email = $emailInMessage ?? "$phone@facebook.com";
                     }
                     if (empty($firstName)) {
                         try {
@@ -129,6 +84,22 @@ class ChatApi {
                             Logs::error(__CLASS__ . '::' . __FUNCTION__ . " | dadata nameFromWa | $exc");
                         }
                     }
+                    preg_match("/\|.*\|/",$inputRequestData['messages'][0]['body'],$matches);
+                    if ($matches){
+                        $item=explode("|", $matches[0]);
+                        global $addFields;
+                        !isset($item[1]) ?: $params['user']['group_name']= array($addFields->{$item[1]});
+                        !isset($item[2]) ?: $params['user']['addfields']['d_utm_source']=$item[2];
+                        !isset($item[3]) ?: $params['user']['addfields']['d_utm_medium']=$item[3];
+                        !isset($item[4]) ?: $params['user']['addfields']['d_utm_content']=$item[4];
+                        !isset($item[5]) ?: $params['user']['addfields']['d_utm_campaign']=$item[5];
+                        !isset($item[6]) ?: $params['user']['addfields']['d_utm_term']=$item[6];
+                        !isset($item[7]) ?: $params['user']['addfields']['d_utm_rs']=$item[7];
+                        !isset($item[8]) ?: $params['user']['addfields']['d_utm_acc']=$item[8];
+                        !isset($item[9]) ?: $params['user']['addfields']['Возраст']=$item[9];
+                        !isset($item[10]) ?: $emailInMessage=$item[10]; 
+                    }
+                    $email = $email ?? $emailInMessage ?? "$phone@facebook.com";
                     $params['user']['phone'] = $phone;
                     $params['user']['email'] = $email;
                     $params['user']['addfields']['whatsapp']=$phone;
