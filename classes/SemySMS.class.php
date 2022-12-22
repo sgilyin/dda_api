@@ -8,7 +8,7 @@
 class SemySMS {
     public static function trap($login, $inputRequestData) {
         if (SEMYSMS_ENABLED) {
-            Logs::handler(sprintf('%s::$s | $s', __CLASS__, __FUNCTION__,
+            Logs::handler(sprintf('%s::%s | %s', __CLASS__, __FUNCTION__,
                 $inputRequestData['phone'], $inputRequestData['msg']));
             switch ($inputRequestData['type']) {
                 case'':
@@ -16,6 +16,7 @@ class SemySMS {
                         $inputRequestData['phone'], $inputRequestData['date'],
                         $inputRequestData['msg']);
                     Wazzup24::alertSemySMS($login, $argsI);
+                    Telegram::notice($argsI['message']);
                     break;
                 case '0':
                     $whatsapp['to'] = WA_SEMYSMS_NOTIFY;
@@ -106,7 +107,7 @@ class SemySMS {
                         $post['device'] = $row->device;
                         $post['token'] = SEMYSMS_TOKEN;
                         $result = json_decode(cURL::executeRequestTest('POST', $url, $post, false, false, false));
-                        DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='semysms' AND login='$login'");
+                        DB::query("UPDATE options SET option_value=CURRENT_TIMESTAMP() WHERE login='$login' AND option_name='semysms_request'");
                         if ($result->code == '0') {
                             DB::query("UPDATE send_to_semysms SET sendTime=CURRENT_TIMESTAMP() WHERE id={$row->id}");
                         } else {
