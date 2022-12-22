@@ -51,7 +51,7 @@ class Wazzup24 {
                         }
                         $post=json_encode($post);
                         $result = json_decode(cURL::executeRequest($url, $post, $headers, false, false));
-                        DB::query("UPDATE request SET last=CURRENT_TIMESTAMP() WHERE service='wazzup24' AND login='$login'");
+                        DB::query("UPDATE options SET option_value=CURRENT_TIMESTAMP() WHERE login='$login' AND option_name='wazzup24_request'");
                         if (isset($result->messageId)) {
                             DB::query("UPDATE send_to_wazzup24 SET sendTime=CURRENT_TIMESTAMP(), result='{$result->messageId}' WHERE id={$row->id}");
                         }
@@ -59,8 +59,10 @@ class Wazzup24 {
                 }
             }
             if (isset($result->error)) {
-                $description = $result->description.' '.$result->data[0]->description ?? $result->description ?? $result->data[0]->description;
-                $error = $result->error . ': ' . implode(', ', $result->data->fields) . $description;
+                $description = $result->description ?? $result->data[0]->description;
+                $error = sprintf('%s: %s. %s', $result->error,
+                    implode(', ', $result->data->fields), $description);
+                #$error = $result->error . ': ' . implode(', ', $result->data->fields) . '. ' . $description;
                 DB::query("UPDATE send_to_wazzup24 SET sendTime=CURRENT_TIMESTAMP(), result='$error' WHERE id={$row->id}");
                 $message = sprintf('%s::%s | %s | %s', __CLASS__, __FUNCTION__,
                     $login, $error);
@@ -103,8 +105,9 @@ class Wazzup24 {
                 $login, serialize($inputRequestData)));
             if (isset($inputRequestData['messages'])) {
                 for ($i = 0; $i < count($inputRequestData['messages']); $i++) {
-                    if ($inputRequestData['messages'][$i]['type']=="text") {
-                        if (date_diff($inputRequestData['messages'][$i]['dateTime'], date_create('Now'))->h > 0) {
+                    if ($inputRequestData['messages'][$i]['type']=="text" &&
+                        $inputRequestData['messages'][$i]['status']=="inbound") {
+                        if (date_diff(date_create($inputRequestData['messages'][$i]['dateTime']), date_create('Now'))->h > 0) {
                             Logs::handler(sprintf('%s::%s | %s | SKP (1H) | %s | %s',
                                 __CLASS__, __FUNCTION__, $login,
                                 $inputRequestData['messages'][$i]['chatId'],
@@ -187,5 +190,9 @@ class Wazzup24 {
             Logs::handler(sprintf('%s::%s | %s', __CLASS__, __FUNCTION__, $login));
             DB::query("DELETE FROM send_to_wazzup24 WHERE login='$login' AND sendTime=0");
         }
+    }
+
+    public function historyClear($login, $args) {
+        DB::query("DELETE FROM send_to_wazzup24 WHERE login='$login' AND sendTime < CURRENT_DATE - INTERVAL {$args['interval']}");
     }
 }
