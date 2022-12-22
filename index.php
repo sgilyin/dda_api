@@ -107,8 +107,8 @@ switch ($inputRequestMethod){
                         service (required) - сервис отправки: chat-api | wazzup24 | semysms';
                     break;
                 case 'clearWa24Queue':
-                    DB::clearWa24Queue();
-                    echo 'Ok';
+                    echo 'Depricated. Use:<br>
+                        https://api.dmitry-dubrovsky.ru/<LOGIN>/?class[method]=Wazzup24::clearWa24Queue';
                     break;
                 case 'vkAdsImportTargetContactsNow':
                     Vkontakte::adsImportTargetContactsNow($inputRequestData);
