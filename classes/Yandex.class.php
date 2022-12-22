@@ -109,7 +109,8 @@ class Yandex {
         }
         $param['user']['phone'] = $args['params']['phone'];
         $param['user']['email'] = $args['params']['email'];
-        $param['user']['first_name'] = $args['params']['first_name'];
+        !isset($args['params']['first_name']) ?: $param['user']['first_name'] = $args['params']['first_name'];
+        !isset($args['params']['group_name']) ?: $param['user']['group_name'] = array($args['params']['group_name']);
         GetCourse::usersAdd($login, $param);
     }
 }
