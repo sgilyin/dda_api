@@ -135,6 +135,13 @@ define('SKOROZVON_CLIENT_SECRET', '');
 define('REMPLANER_ENABLED', false);
 define('REMPLANER_AUTHKEY', '');
 
+#AmoCRM Settings
+define('AMOCRM_ENABLED', false);
+define('AMOCRM_USERNAME', '');
+define('AMOCRM_CLIENT_ID', '');
+define('AMOCRM_CLIENT_SECRET', '');
+define('AMOCRM_REDIRECT_URI', '');
+
 #GC Fields
 #$addFields = new stdClass();
 #$addFields->{'123456'} = '<Enter here>';
