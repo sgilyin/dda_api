@@ -42,16 +42,46 @@ class SemySMS {
                     if ($matches) {
                         $item=explode("|", $matches[0]);
                         global $addFields;
-                        !isset($item[1]) ?: $params['user']['group_name']= array($addFields->{$item[1]});
-                        !isset($item[2]) ?: $params['user']['addfields']['d_utm_source']=$item[2];
-                        !isset($item[3]) ?: $params['user']['addfields']['d_utm_medium']=$item[3];
-                        !isset($item[4]) ?: $params['user']['addfields']['d_utm_content']=$item[4];
-                        !isset($item[5]) ?: $params['user']['addfields']['d_utm_campaign']=$item[5];
-                        !isset($item[6]) ?: $params['user']['addfields']['d_utm_term']=$item[6];
-                        !isset($item[7]) ?: $params['user']['addfields']['d_utm_rs']=$item[7];
-                        !isset($item[8]) ?: $params['user']['addfields']['d_utm_acc']=$item[8];
-                        !isset($item[9]) ?: $params['user']['addfields']['Возраст']=$item[9];
-                        !isset($item[10]) ?: $emailInMessage=$item[10];
+                        if (isset($item[1]) && $item[1] != '') {
+                            $params['user']['group_name']= array($addFields->{$item[1]});
+                        }
+                        if (isset($item[2]) && $item[2] != '') {
+                            $params['user']['addfields']['d_utm_source']=$item[2];
+                        }
+                        if (isset($item[3]) && $item[3] != '') {
+                            $params['user']['addfields']['d_utm_medium']=$item[3];
+                        }
+                        if (isset($item[4]) && $item[4] != '') {
+                            $params['user']['addfields']['d_utm_content']=$item[4];
+                        }
+                        if (isset($item[5]) && $item[5] != '') {
+                            $params['user']['addfields']['d_utm_campaign']=$item[5];
+                        }
+                        if (isset($item[6]) && $item[6] != '') {
+                            $params['user']['addfields']['d_utm_term']=$item[6];
+                        }
+                        if (isset($item[7]) && $item[7] != '') {
+                            $params['user']['addfields']['d_utm_rs']=$item[7];
+                        }
+                        if (isset($item[8]) && $item[8] != '') {
+                            $params['user']['addfields']['d_utm_acc']=$item[8];
+                        }
+                        if (isset($item[9]) && $item[9] != '') {
+                            $params['user']['addfields']['Возраст']=$item[9];
+                        }
+                        if (isset($item[10]) && $item[10] != '') {
+                            $emailInMessage=$item[10];
+                        }
+//                        !isset($item[1]) ?: $params['user']['group_name']= array($addFields->{$item[1]});
+//                        !isset($item[2]) ?: $params['user']['addfields']['d_utm_source']=$item[2];
+//                        !isset($item[3]) ?: $params['user']['addfields']['d_utm_medium']=$item[3];
+//                        !isset($item[4]) ?: $params['user']['addfields']['d_utm_content']=$item[4];
+//                        !isset($item[5]) ?: $params['user']['addfields']['d_utm_campaign']=$item[5];
+//                        !isset($item[6]) ?: $params['user']['addfields']['d_utm_term']=$item[6];
+//                        !isset($item[7]) ?: $params['user']['addfields']['d_utm_rs']=$item[7];
+//                        !isset($item[8]) ?: $params['user']['addfields']['d_utm_acc']=$item[8];
+//                        !isset($item[9]) ?: $params['user']['addfields']['Возраст']=$item[9];
+//                        !isset($item[10]) ?: $emailInMessage=$item[10];
                     }
                     $email = $email ?? $emailInMessage ?? "$phone@facebook.com";
                     $params['user']['phone'] = $phone;
