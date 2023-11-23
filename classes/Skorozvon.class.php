@@ -8,7 +8,7 @@
 
 class Skorozvon {
     private function refreshToken($login) {
-        $opRes = DB::query("SELECT option_value, option_update FROM options WHERE login='$login' AND option_name='skorozvon_refresh'");
+        $opRes = DB::query("SELECT option_value, option_update FROM options WHERE login='$login' AND option_name='skorozvon_refresh' AND option_update > NOW() - INTERVAL 2 HOUR");
         $url = 'https://app.skorozvon.ru/oauth/token';
         $post['client_id'] = SKOROZVON_CLIENT_ID;
         $post['client_secret'] = SKOROZVON_CLIENT_SECRET;
