@@ -32,7 +32,7 @@ class GetCourse {
             if ($page) {
                 preg_match('/window\.requestTime.*(\d{10})/m', $page, $window_requestTime);
                 preg_match('/window\.requestSimpleSign.*([0-9a-z]{32})/m', $page, $window_requestSimpleSign);
-                preg_match('/<form.*data-xdget-id="([0-9]{5}(_\d*)*).*>/m', $page, $xdgetId);
+                preg_match('/<form.*data-xdget-id="(.[0-9]{4,5}(_\d*)*).*>/m', $page, $xdgetId);
                 sleep(rand(4, 11));
                 $params = array(
                     "action" => "processXdget",
@@ -196,5 +196,102 @@ class GetCourse {
                 echo 'Не указан email';
             }
         } else { echo 'Service is not configured. Check config.'; }
+    }
+
+    /**
+     * Перевод массива переменных в строку "имя='значение'" для SQL-запроса
+     * 
+     * @param array $args
+     * @return string
+     */
+    private static function argsToStrSet($args){
+        return implode(', ', array_map(function ($v, $k) { return sprintf("%s='%s'", $k, $v); }, $args, array_keys($args)));
+    }
+
+    /**
+     * Проверка времени начала вебинара (timestamp)
+     * 
+     * @param string $login
+     * @param string $webHash
+     * @return integer
+     */
+    private static function webinarStartTimeGet($login, $webHash) {
+        $query = "SELECT timestamp FROM gc_autowebinars "
+                . "WHERE login = '$login' AND webHash = '$webHash'";
+        $result = DB::query($query);
+        if ($result->num_rows > 0) {
+            return strtotime($result->fetch_object()->timestamp);
+        } else {
+            return time() + 600;
+        }
+    }
+
+    /**
+     * Сбор статистики вебинаров в БД
+     * 
+     * @param string $login
+     * @param array $args
+     */
+    public static function webinarStat($login, $args) {
+        if (GC_ENABLED) {
+            Logs::handler(sprintf('%s::%s | %s | %s', __CLASS__, __FUNCTION__,
+                $login, serialize($args)));
+            switch ($args['action']) {
+                case 'start':
+                    $query = "SELECT timestamp FROM gc_autowebinars "
+                        . "WHERE login = '$login' AND webHash = '{$args['webHash']}'";
+                    $result = DB::query($query);
+                    if ($result->num_rows == 0) {
+                        unset($args['action']);
+                        $strSet = self::argsToStrSet($args);
+                        $query = "INSERT INTO gc_autowebinars SET $strSet, login = '$login'";
+                        DB::query($query);
+                    } else {
+                        Logs::handler(sprintf('%s::%s | %s | webinar %s already exist',
+                            __CLASS__, __FUNCTION__, $login, $args['webHash']));
+                    }
+                    break;
+
+                default:
+                    $startWeb = self::webinarStartTimeGet($login, $args['webHash']);
+                    $delta = time() - $startWeb;
+                    if ($delta > 0 && $delta < 9000) {
+                        $strSet = self::argsToStrSet($args);
+                        $query = "INSERT INTO gc_webinar_stat SET $strSet, login = '$login'";
+                        DB::query($query);
+                        self::webinarAddUserGroup($login, $args);
+                    } else {
+                        Logs::handler(sprintf('%s::%s | %s | %s | ignored (time)',
+                            __CLASS__, __FUNCTION__, $login, serialize($args)));
+                    }
+                    break;
+            }
+        } else { echo 'Service is not configured. Check config.'; }
+    }
+
+    public static function webinarAddUserGroup($login, $args) {
+        $query = "
+SELECT t_ga.webId, IF(TIMESTAMPDIFF(MINUTE, t_ga.timestamp,  max(t_gws.timestamp))/COUNT(t_gws.webHash) > 1.2,COUNT(t_gws.webHash),TIMESTAMPDIFF(MINUTE, t_ga.timestamp,  max(t_gws.timestamp))) webView, t_gu.email email
+FROM gc_webinar_stat t_gws
+LEFT JOIN gc_autowebinars t_ga ON t_ga.webHash = t_gws.webHash
+LEFT JOIN gc_users t_gu ON t_gu.id = t_gws.userId
+WHERE t_gws.userId = {$args['userId']} AND t_gws.webHash = '{$args['webHash']}'
+";
+        $webUser = DB::query($query)->fetch_object();
+        if (intval($webUser->webView >= 30)) {
+            $usersAdd['user']['email'] = $webUser->email;
+            $usersAdd['user']['group_name'][] = "Был 30 мин на вебинаре {$webUser->webId}";
+            if (intval($webUser->webView >= 60)) {
+                $usersAdd['user']['group_name'][] = "Был 60 мин на вебинаре {$webUser->webId}";
+            }
+            if (intval($webUser->webView >= 90)) {
+                $usersAdd['user']['group_name'][] = "Был 90 мин на вебинаре {$webUser->webId}";
+            }
+            if (intval($webUser->webView >= 120)) {
+                $usersAdd['user']['group_name'][] = "Был 120 мин на вебинаре {$webUser->webId}";
+            }
+            $usersAdd['user']['addfields']["Время на МК ДИ {$webUser->webId}"] = intval($webUser->webView);
+            self::usersAdd($login, $usersAdd);
+        }
     }
 }
