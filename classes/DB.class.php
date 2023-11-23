@@ -150,7 +150,7 @@ class DB {
             $name = ($result->num_rows > 0) ? $result->fetch_object()->name : 'Unknown';
             $query = "INSERT INTO ip_route SET ip='$ip', route='$route', name='$name'";
             self::query($query);
-            BX24::sendBotMessage("ip_route: $ip | $route | $name");
+            #BX24::sendBotMessage("ip_route: $ip | $route | $name");
         }
         Logs::handler(__CLASS__.'::'.__FUNCTION__." | $ip | $route | $name");
         return $name;
@@ -282,18 +282,25 @@ class DB {
         }
     }
 
-    public static function deleteUser($login, $inputRequestData){
-        if ($inputRequestData['conditions']){
-            if (isset($inputRequestData['conditions']['phone'])) {
-                $inputRequestData['conditions']['phone'] = substr(preg_replace('/[^0-9]/', '', $inputRequestData['conditions']['phone']), -15);    
-            }
-            foreach ($inputRequestData['conditions'] as $key => $value) {
-                $conditions[] = $key . "='" . $value . "'";
-            }
-            $conditionsString = implode(" AND ", $conditions);
-            Logs::handler(__CLASS__.' | '.__FUNCTION__." | $login | $conditionsString");
+//    public static function deleteUser($login, $inputRequestData){
+//        if ($inputRequestData['conditions']){
+//            if (isset($inputRequestData['conditions']['phone'])) {
+//                $inputRequestData['conditions']['phone'] = substr(preg_replace('/[^0-9]/', '', $inputRequestData['conditions']['phone']), -15);    
+//            }
+//            foreach ($inputRequestData['conditions'] as $key => $value) {
+//                $conditions[] = $key . "='" . $value . "'";
+//            }
+//            $conditionsString = implode(" AND ", $conditions);
+//            Logs::handler(__CLASS__.' | '.__FUNCTION__." | $login | $conditionsString");
+//
+//            return static::query("DELETE FROM gc_users WHERE login='$login' $conditionsString LIMIT 1");
+//        }
+//    }
 
-            return static::query("DELETE FROM gc_users WHERE login='$login' $conditionsString LIMIT 1");
+    public static function deleteUser($login, $args){
+		Logs::handler(sprintf('%s::%s | %s | %s', __CLASS__, __FUNCTION__, $login, serialize(args)));
+        if (isset($args['id'])){
+            return self::query("DELETE FROM gc_users WHERE login='$login' AND id='{$args['id']}' LIMIT 1");
         }
     }
 
