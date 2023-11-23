@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+header('Access-Control-Allow-Origin: *');
 ini_set('max_execution_time', '300');
 #ini_set('memory_limit', '-1');#Для загрузки всего импорта из ГК
 set_time_limit(300);
@@ -210,7 +211,6 @@ switch ($serviceByIP) {
         break;
 
     default:
-        BX24::sendBotMessage("$serviceByIP IP: $inputRemoteAddr");
         if (isset($inputRequestData['class']['method'])) {
             if (isset($inputRequestData['args'])) {
                 $inputRequestData['class']['method']($login, $inputRequestData['args']);
@@ -218,6 +218,7 @@ switch ($serviceByIP) {
                 $inputRequestData['class']['method']($login);
             }
         } else {
+            BX24::sendBotMessage("$serviceByIP IP: $inputRemoteAddr");
             Auth::logIn($login, $inputRequestData);
             if (Auth::checkAccess($login, $inputRequestData)) {
                 DB::query("UPDATE ip_route SET name='manager' WHERE ip='$inputRemoteAddr'");
