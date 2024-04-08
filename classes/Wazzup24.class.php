@@ -55,22 +55,22 @@ class Wazzup24 {
                         if (isset($result->messageId)) {
                             DB::query("UPDATE send_to_wazzup24 SET sendTime=CURRENT_TIMESTAMP(), result='{$result->messageId}' WHERE id={$row->id}");
                         }
+                        if (isset($result->error)) {
+                            $description[] = $result->description ?? '';
+                            $description[] = $result->data->description ?? '';
+                            $error = sprintf('%s %s. %s', $result->error,
+                                implode(', ', $result->data->fields),
+                                implode('. ', $description));
+                            #$error = $result->error . ': ' . implode(', ', $result->data->fields) . '. ' . $description;
+                            DB::query("UPDATE send_to_wazzup24 SET sendTime=CURRENT_TIMESTAMP(), result='$error' WHERE id={$row->id}");
+                            $message = sprintf('%s::%s | %s | %s | %s', __CLASS__,
+                                __FUNCTION__, $login, $row->chatId, $error);
+                            Logs::error($message);
+                            BX24::sendBotMessage($message);
+                            Telegram::alert($message);
+                        }
                     }
                 }
-            }
-            if (isset($result->error)) {
-                $description[] = $result->description ?? '';
-                $description[] = $result->data[0]->description ?? '';
-                $error = sprintf('%s %s. %s', $result->error,
-                    implode(', ', $result->data->fields),
-                    implode('. ', $description));
-                #$error = $result->error . ': ' . implode(', ', $result->data->fields) . '. ' . $description;
-                DB::query("UPDATE send_to_wazzup24 SET sendTime=CURRENT_TIMESTAMP(), result='$error' WHERE id={$row->id}");
-                $message = sprintf('%s::%s | %s | %s', __CLASS__, __FUNCTION__,
-                    $login, $error);
-                Logs::error($message);
-                BX24::sendBotMessage($message);
-                Telegram::alert($message);
             }
             return true;
         } else {
