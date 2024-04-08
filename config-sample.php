@@ -142,6 +142,19 @@ define('AMOCRM_CLIENT_ID', '');
 define('AMOCRM_CLIENT_SECRET', '');
 define('AMOCRM_REDIRECT_URI', '');
 
+#CloudKassir Settings
+define('CLOUDKASSIR_ENABLED', false);
+define('CLOUDKASSIR_URL', '');
+define('CLOUDKASSIR_PUBLIC_ID', '');
+define('CLOUDKASSIR_API_SECRET', '');
+define('CLOUDKASSIR_INN', '');
+define('CLOUDKASSIR_DEVICENUMBER', '');
+define('CLOUDKASSIR_FISCALNUMBER', '');
+define('CLOUDKASSIR_REGNUMBER', '');
+define('CLOUDKASSIR_PAYMENTPLACE', '');
+define('CLOUDKASSIR_OFD', '');
+define('CLOUDKASSIR_MERCHANTEMAIL', '');
+
 #GC Fields
 #$addFields = new stdClass();
 #$addFields->{'123456'} = '<Enter here>';
