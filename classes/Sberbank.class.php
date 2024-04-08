@@ -36,7 +36,7 @@ class Sberbank {
             $jsonParams = new stdClass();
             $jsonParams->email = $inputRequestData['email'];
             $post['jsonParams'] = json_encode($jsonParams);
-            $installments->productType = 'INSTALLMENT';
+            $installments->productType = $inputRequestData['productType'] ?? 'INSTALLMENT';
             $installments->productID = 10;
             $quantity->value = 1;
             $quantity->measure = 'pc';
