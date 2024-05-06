@@ -141,7 +141,8 @@ class SemySMS {
                         if ($result->code == '0') {
                             DB::query("UPDATE send_to_semysms SET sendTime=CURRENT_TIMESTAMP() WHERE id={$row->id}");
                         } else {
-                            $message = __CLASS__.'::'.__FUNCTION__." | $login | $result";
+                            $message = sprintf('%s::%s | %s | %s | %s', __CLASS__,
+                                __FUNCTION__, $login, $row->device, $result->error);
                             Logs::error($message);
                             BX24::sendBotMessage($message);
                             Telegram::alert($message);
