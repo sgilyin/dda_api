@@ -29,7 +29,7 @@ class Wazzup24 {
             for($i = 0; $i < 4; $i++){
                 sleep(rand(11,15));
                 if ($row = DB::query("SELECT * FROM send_to_wazzup24 WHERE sendTime=0 AND login='$login' LIMIT 1")->fetch_object()) {
-                    $alreadySent = DB::checkSentWhatsapp($row->chatId, htmlspecialchars_decode($row->text));
+                    $alreadySent = DB::checkSentWhatsapp($row->chatId, $row->text);
                     if ($alreadySent) {
                         Logs::handler(sprintf('%s::%s | %s | Message %d already sent via %s',
                             __CLASS__, __FUNCTION__, $login, $row->id, $alreadySent));
@@ -56,12 +56,20 @@ class Wazzup24 {
                             DB::query("UPDATE send_to_wazzup24 SET sendTime=CURRENT_TIMESTAMP(), result='{$result->messageId}' WHERE id={$row->id}");
                         }
                         if (isset($result->error)) {
-                            $description[] = $result->description ?? '';
-                            $description[] = $result->data->description ?? '';
-                            $error = sprintf('%s %s. %s', $result->error,
-                                implode(', ', $result->data->fields),
-                                implode('. ', $description));
-                            #$error = $result->error . ': ' . implode(', ', $result->data->fields) . '. ' . $description;
+                            $description = array();
+                            $description[] = $result->error;
+                            !isset($result->description) ?: $description[] = $result->description;
+                            switch (gettype($result->data)) {
+                                case 'object':
+                                    !isset($result->data->fields) ?: $description[] = implode(', ', $result->data->fields);
+                                    break;
+                                case 'array':
+                                    !isset($result->data[0]->description) ?: $description[] = $result->data[0]->description;
+                                    break;
+                                default:
+                                    break;
+                            }
+                            $error = implode('. ', array_unique($description));
                             DB::query("UPDATE send_to_wazzup24 SET sendTime=CURRENT_TIMESTAMP(), result='$error' WHERE id={$row->id}");
                             $message = sprintf('%s::%s | %s | %s | %s', __CLASS__,
                                 __FUNCTION__, $login, $row->chatId, $error);
