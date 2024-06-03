@@ -101,11 +101,13 @@ class SemySMS {
         }
     }
 
+ 
     public static function queue($login, $args) {
         if (SEMYSMS_ENABLED && SEMYSMS_TOKEN != '') {
             Logs::handler(__CLASS__."::".__FUNCTION__." | $login");
             if (isset($args['phone']) && isset($args['msg'])) {
                 $args['device'] = $args['device'] ?? SEMYSMS_DEVICE;
+                $args['msg'] = htmlspecialchars($args['msg']);
                 foreach ($args as $key => $val) {
                     $setArr[] = "$key='$val'";        
                 }
@@ -133,7 +135,7 @@ class SemySMS {
                         $url = 'https://semysms.net/api/3/sms.php';
                         $post = array();
                         $post['phone'] = $row->phone;
-                        $post['msg'] = $row->msg;
+                        $post['msg'] = htmlspecialchars_decode($row->msg);
                         $post['device'] = $row->device;
                         $post['token'] = SEMYSMS_TOKEN;
                         $result = json_decode(cURL::executeRequestTest('POST', $url, $post, false, false, false));
