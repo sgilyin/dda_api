@@ -407,6 +407,7 @@ class DB {
 
     public static function checkSentWhatsapp($phone, $message) {
         $alreadySent = false;
+        $message = htmlspecialchars_decode($message);
         if (static::query("SELECT COUNT(*) AS count FROM send_to_chatapi WHERE sendTime > CURRENT_TIMESTAMP - INTERVAL 24 HOUR AND phone='$phone' AND body='$message'")->fetch_object()->count > 0) {
             $alreadySent = 'ChatApi';
         }
