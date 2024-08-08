@@ -137,19 +137,27 @@ class DB {
             $name = $obj->name;
             $route = $obj->route;
             if ($route == '') {
-                exec('whois -H -K '.$ip.' | grep route', $whois);
-                $route = preg_replace('/.*[ \t]/', '', $whois[0]);
+                exec('whois -H -K '.$ip.' | grep inetnum', $whois);
+                preg_match_all('/((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}/', $whois[0], $matches);
+                $route = sprintf('%s/%d', $matches[0][0], 32 - log(ip2long($matches[0][1]) - ip2long($matches[0][0]) + 1, 2));
                 $query = "UPDATE ip_route SET route='$route' WHERE ip='$ip'";
                 self::query($query);
+                if ($route == '') {
+                    BX24::sendBotMessage("Unknown ip_route: $ip | $name");
+                }
             }
         } else {
-            exec('whois -H -K '.$ip.' | grep route', $whois);
-            $route = preg_replace('/.*[ \t]/', '', $whois[0]);
+            exec('whois -H -K '.$ip.' | grep inetnum', $whois);
+            preg_match_all('/((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}/', $whois[0], $matches);
+            $route = sprintf('%s/%d', $matches[0][0], 32 - log(ip2long($matches[0][1]) - ip2long($matches[0][0]) + 1, 2));
             $query = "SELECT name FROM ip_route WHERE route='$route' LIMIT 1";
             $result = self::query($query);
             $name = ($result->num_rows > 0) ? $result->fetch_object()->name : 'Unknown';
             $query = "INSERT INTO ip_route SET ip='$ip', route='$route', name='$name'";
             self::query($query);
+            if ($route == '') {
+                    BX24::sendBotMessage("Unknown ip_route: $ip | $name");
+            }
             #BX24::sendBotMessage("ip_route: $ip | $route | $name");
         }
         Logs::handler(__CLASS__.'::'.__FUNCTION__." | $ip | $route | $name");
