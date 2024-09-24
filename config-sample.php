@@ -19,6 +19,14 @@
 
 #define('NAME', '<Enter here>');
 
+# Qolio Settings
+define('QOLIO_ENABLED', false);
+define('QOLIO_TOKEN', '');
+define('QOLIO_INTEGRATION_UID', '');
+
+# ONPBX Settings
+define('ONPBX_ENABLED', false);
+
 # DB Settings
 define('DB_HOST', '');
 define('DB_USER', '');
