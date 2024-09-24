@@ -194,6 +194,9 @@ switch ($serviceByIP) {
     case 'Dolyame':
         Dolyame::trap($login, $inputRequestData);
         break;
+    case 'OnPBX':
+        OnPBX::trap($login, $inputRequestData);
+        break;
     case 'SemySMS':
         SemySMS::trap($login, $inputRequestData);
         break;
