@@ -19,6 +19,43 @@ class CloudKassir {
         }
     }
 
+    public function test($login, $args) {
+        if (CLOUDKASSIR_ENABLED) {
+            Logs::handler(sprintf('%s::%s | %s | %s', __CLASS__, __FUNCTION__,
+                $login, serialize($args)));
+            $cr['action'] = '/test';
+            echo self::execute($login, $cr);
+        }
+    }
+
+    public function receipt($login, $args) {
+        if (CLOUDKASSIR_ENABLED) {
+            Logs::handler(sprintf('%s::%s | %s | %s', __CLASS__, __FUNCTION__,
+                $login, serialize($args)));
+            $cr['action'] = '/kkt/receipt';
+            $json = array(
+                'Inn' => CLOUDKASSIR_INN,
+                'Type' => $args['Type'],
+                'CustomerReceipt' => array(
+                    'Items' => array(array(
+                        'Label' => $args['Label'],
+                        'Price' => $args['Amount'],
+                        'Quantity' => 1,
+                        'Vat' => 0,
+                        'Amount' => $args['Amount'])),
+                    'TaxationSystem' => $args['TaxationSystem'],
+                    'Amounts' => array(
+                        'AdvancePayment' => $args['Amount'],
+                    ),
+                    'PaymentPlace' => CLOUDKASSIR_PAYMENTPLACE,
+                ),
+            );
+            $cr['json'] = json_encode($json);
+            var_dump($cr);
+            echo self::execute($login, $cr);
+        }
+    }
+
     public function correctionReceipt($login, $args) {
         if (CLOUDKASSIR_ENABLED) {
             Logs::handler(sprintf('%s::%s | %s | %s', __CLASS__, __FUNCTION__,
