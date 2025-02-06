@@ -19,6 +19,9 @@
 
 #define('NAME', '<Enter here>');
 
+# YOOKASSA Settings
+define('YOOKASSA_ENABLED', false);
+
 # Qolio Settings
 define('QOLIO_ENABLED', false);
 define('QOLIO_TOKEN', '');
