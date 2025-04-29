@@ -19,6 +19,17 @@
 
 #define('NAME', '<Enter here>');
 
+# Yandex Pay
+define('YA_PAY_ENABLED', false);
+define('YA_PAY_LINK_API', '');
+define('YA_PAY_API_KEY', '');
+define('YA_PAY_LINK_SUCCESS', '');
+define('YA_PAY_LINK_ABORT', '');
+define('YA_PAY_LINK_ERROR', '');
+
+# Marquiz Settings
+define('MARQUIZ_ENABLED', false);
+
 # YOOKASSA Settings
 define('YOOKASSA_ENABLED', false);
 

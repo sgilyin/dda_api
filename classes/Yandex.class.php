@@ -113,4 +113,44 @@ class Yandex {
         !isset($args['params']['group_name']) ?: $param['user']['group_name'] = array($args['params']['group_name']);
         GetCourse::usersAdd($login, $param);
     }
+
+    /**
+     * Create Yandex Split Payment Link
+     * 
+     * @param type $login
+     * @param type $args
+     * @return string or add link to GC
+     */
+    public function orders($login, $args) {
+        if (YA_PAY_ENABLED) {
+            Logs::handler(sprintf('%s::%s | %s | %s', __CLASS__, __FUNCTION__,
+                $login, serialize($args)));
+            $item->productId = $args['productId'];
+            $item->quantity->count = '1.00';
+            $item->title = $args['title'];
+            $item->total = $args['amount'];
+            $order->cart->items = array($item);
+            $order->cart->total->amount = $args['amount'];
+            $order->currencyCode = 'RUB';
+            $order->orderId = $args['orderId'];
+            $order->redirectUrls->onAbort = YA_PAY_LINK_ABORT;
+            $order->redirectUrls->onError = YA_PAY_LINK_ERROR;
+            $order->redirectUrls->onSuccess = YA_PAY_LINK_SUCCESS;
+            $headers = array(
+                'Content-Type: application/json',
+                'Authorization: Api-Key ' . YA_PAY_API_KEY,
+            );
+            $link = json_decode(cURL::executeRequest(YA_PAY_LINK_API.__FUNCTION__,
+                json_encode($order), $headers, false, false))->data->paymentUrl;
+            if (isset($args['email'])) {
+                $params['user']['email'] = $args['email'];
+                $params['user']['addfields']['YaSplit'] = $link;
+                return GetCourse::addUser($params);
+            } else {
+                echo $link;
+            }
+        } else {
+            echo 'Service is not configured. Check config.';
+        }
+    }
 }
