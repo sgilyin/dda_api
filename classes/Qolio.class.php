@@ -41,12 +41,13 @@ class Qolio {
             $headers[] = "Content-type:application/json";
             $headers[] = "Authorization:".QOLIO_TOKEN;
             $result = json_decode(cURL::executeRequest($url, json_encode($param), $headers, false, false));
+            Logs::debug(serialize($result));
             if ($result->errors->detail){
                 $message = sprintf('%s::%s | %s | %s', __CLASS__,
                     __FUNCTION__, $login, serialize($param));
                 Logs::error($message);
-                BX24::sendBotMessage($message);
-                Telegram::alert($message);
+                #BX24::sendBotMessage($message);
+                #Telegram::alert($message);
             }
         }
     }
