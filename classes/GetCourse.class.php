@@ -294,4 +294,19 @@ WHERE t_gws.userId = {$args['userId']} AND t_gws.webHash = '{$args['webHash']}'
             self::usersAdd($login, $usersAdd);
         }
     }
+
+    public static function userPhoneCreditRating($login, $param) {
+        if (GC_ENABLED && $param['phone_number']) {
+            Logs::handler(sprintf('%s::%s | %s | %s', __CLASS__, __FUNCTION__,
+                $login, serialize($param)));
+            $creditRating = json_decode(Rixk::checkPhoneCreditRating($login, $param));
+            $args['user']['email'] = $param['email'];
+            $args['user']['phone'] = $param['phone_number'];
+            $args['user']['addfields']['crname'] = $creditRating->identity->full_name;
+            $args['user']['addfields']['crbirth'] = $creditRating->identity->birth_date;
+            $args['user']['addfields']['crdocnum'] = $creditRating->identity->passport_series_number;
+            $args['user']['addfields']['crrate'] = $creditRating->credit_rating;
+            self::usersAdd($login, $args);
+        }
+    }
 }

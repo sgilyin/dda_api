@@ -19,6 +19,11 @@
 
 #define('NAME', '<Enter here>');
 
+# Rixk Settings
+define('RIXK_ENABLED', false);
+define('RIXK_API_BASE', '');
+define('RIXK_API_KEY', '');
+
 # Yandex Pay
 define('YA_PAY_ENABLED', false);
 define('YA_PAY_LINK_API', '');
